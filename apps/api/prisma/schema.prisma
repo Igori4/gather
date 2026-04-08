@@ -1,0 +1,222 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?  @map("password_hash")
+  name         String
+  avatarUrl    String?  @map("avatar_url")
+  provider     String   @default("local")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  groupMemberships GroupMember[]
+  createdGroups    Group[]         @relation("GroupCreator")
+  createdOutings   Outing[]        @relation("OutingCreator")
+  addedPlaces      OutingPlace[]
+  placeVotes       PlaceVote[]
+  proposedSlots    TimeSlot[]
+  timeSlotVotes    TimeSlotVote[]
+  rsvps            RSVP[]
+  chatMessages     ChatMessage[]
+  outingPhotos     OutingPhoto[]
+  refreshTokens    RefreshToken[]
+
+  @@map("users")
+}
+
+model Group {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  coverImageUrl String?  @map("cover_image_url")
+  createdBy     String   @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  creator     User          @relation("GroupCreator", fields: [createdBy], references: [id])
+  members     GroupMember[]
+  outings     Outing[]
+  aiSuggestions AiSuggestion[]
+  invitations Invitation[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  groupId  String   @map("group_id")
+  userId   String   @map("user_id")
+  role     String   @default("member")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
+  @@map("group_members")
+}
+
+model Outing {
+  id          String    @id @default(cuid())
+  groupId     String    @map("group_id")
+  title       String
+  description String?
+  status      String    @default("draft")
+  createdBy   String    @map("created_by")
+  confirmedAt DateTime? @map("confirmed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  group     Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  creator   User          @relation("OutingCreator", fields: [createdBy], references: [id])
+  places    OutingPlace[]
+  timeSlots TimeSlot[]
+  rsvps     RSVP[]
+  messages  ChatMessage[]
+  photos    OutingPhoto[]
+
+  @@map("outings")
+}
+
+model OutingPlace {
+  id        String @id @default(cuid())
+  outingId  String @map("outing_id")
+  placeId   String @map("place_id")
+  name      String
+  address   String
+  lat       Float
+  lng       Float
+  mapboxUrl String? @map("mapbox_url")
+  addedBy   String  @map("added_by")
+
+  outing Outing      @relation(fields: [outingId], references: [id], onDelete: Cascade)
+  adder  User        @relation(fields: [addedBy], references: [id])
+  votes  PlaceVote[]
+
+  @@unique([outingId, placeId])
+  @@map("outing_places")
+}
+
+model PlaceVote {
+  outingId  String   @map("outing_id")
+  placeId   String   @map("place_id")
+  userId    String   @map("user_id")
+  vote      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  place OutingPlace @relation(fields: [outingId, placeId], references: [outingId, placeId], onDelete: Cascade)
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([outingId, placeId, userId])
+  @@map("place_votes")
+}
+
+model TimeSlot {
+  id         String   @id @default(cuid())
+  outingId   String   @map("outing_id")
+  proposedBy String   @map("proposed_by")
+  startsAt   DateTime @map("starts_at")
+  endsAt     DateTime @map("ends_at")
+
+  outing    Outing         @relation(fields: [outingId], references: [id], onDelete: Cascade)
+  proposer  User           @relation(fields: [proposedBy], references: [id])
+  votes     TimeSlotVote[]
+
+  @@map("time_slots")
+}
+
+model TimeSlotVote {
+  slotId    String   @map("slot_id")
+  userId    String   @map("user_id")
+  available Boolean
+  votedAt   DateTime @default(now()) @map("voted_at")
+
+  slot TimeSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([slotId, userId])
+  @@map("time_slot_votes")
+}
+
+model RSVP {
+  outingId  String   @map("outing_id")
+  userId    String   @map("user_id")
+  status    String   @default("maybe")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  outing Outing @relation(fields: [outingId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([outingId, userId])
+  @@map("rsvps")
+}
+
+model ChatMessage {
+  id        String    @id @default(cuid())
+  outingId  String    @map("outing_id")
+  userId    String    @map("user_id")
+  body      String
+  createdAt DateTime  @default(now()) @map("created_at")
+  editedAt  DateTime? @map("edited_at")
+
+  outing Outing @relation(fields: [outingId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+model AiSuggestion {
+  id          String    @id @default(cuid())
+  groupId     String    @map("group_id")
+  payload     Json
+  generatedAt DateTime  @default(now()) @map("generated_at")
+  dismissedAt DateTime? @map("dismissed_at")
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@map("ai_suggestions")
+}
+
+model OutingPhoto {
+  id         String   @id @default(cuid())
+  outingId   String   @map("outing_id")
+  userId     String   @map("user_id")
+  url        String
+  caption    String?
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+
+  outing Outing @relation(fields: [outingId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("outing_photos")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  tokenHash String   @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  revoked   Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model Invitation {
+  id         String    @id @default(cuid())
+  groupId    String    @map("group_id")
+  email      String
+  role       String    @default("member")
+  token      String    @unique
+  expiresAt  DateTime  @map("expires_at")
+  acceptedAt DateTime? @map("accepted_at")
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@map("invitations")
+}
