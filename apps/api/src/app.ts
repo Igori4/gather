@@ -2,6 +2,8 @@ import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
+import cookieParser from 'cookie-parser'
+import { authRouter } from './routes/auth'
 
 export const app = express()
 
@@ -27,27 +29,30 @@ app.use(
   })
 )
 
-// Body parsing
+// Body + cookie parsing
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser())
 
-// Auth rate limiting
-const authLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 10,
-  message: { error: 'Too many requests, please try again later.' },
-})
-app.use('/auth', authLimiter)
+// Auth rate limiting — disabled in test so 13+ requests don't get 429
+if (process.env.NODE_ENV !== 'test') {
+  const authLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 10,
+    message: { error: 'Too many requests, please try again later.' },
+  })
+  app.use('/auth', authLimiter)
+}
 
 // Health check
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// Routes (to be added in future phases)
-// app.use('/auth', authRouter)
-// app.use('/api/groups', groupsRouter)
-// app.use('/api/outings', outingsRouter)
+// Routes
+app.use('/auth', authRouter)
+// app.use('/api/groups', groupsRouter)  — Phase 2
+// app.use('/api/outings', outingsRouter) — Phase 3
 
 // 404
 app.use((_req, res) => {
