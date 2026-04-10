@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import cookieParser from 'cookie-parser'
 import { authRouter } from './routes/auth'
+import { groupsRouter } from './routes/groups'
 
 export const app = express()
 
@@ -51,7 +52,7 @@ app.get('/health', (_req, res) => {
 
 // Routes
 app.use('/auth', authRouter)
-// app.use('/api/groups', groupsRouter)  — Phase 2
+app.use('/api/groups', groupsRouter)
 // app.use('/api/outings', outingsRouter) — Phase 3
 
 // 404

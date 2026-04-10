@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/User/.claude/**)",
+      "mcp__ide__getDiagnostics",
+      "Bash(grep -r \"getAxiosInstance\\\\|getClientConfig\" E:/Ihor/Other/Study/IM_React/src --include=*.ts --include=*.tsx)",
+      "Bash(npx tsc:*)",
+      "Bash(mkdir -p \"E:\\\\Ihor\\\\Other\\\\Study\\\\RestaurantManager\")",
+      "Bash(mv \"E:\\\\Ihor\\\\Other\\\\Study\\\\IM_React\" \"E:\\\\Ihor\\\\Other\\\\Study\\\\RestaurantManager\\\\RestaurantManager.WebApp\")",
+      "Bash(mkdir -p \"E:\\\\Ihor\\\\Other\\\\Study\\\\RestaurantManager\\\\RestaurantManager.WebApi\")",
+      "Bash(npm run:*)",
+      "Bash(npm install:*)"
+    ]
+  }
+}
