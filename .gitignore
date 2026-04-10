@@ -35,8 +35,8 @@ coverage/
 playwright-report/
 test-results/
 
-# Prisma
-apps/api/prisma/migrations/
+# Prisma generated client (not migrations — those must be committed)
+apps/api/node_modules/.prisma/
 
 # Supabase
 .supabase/
