@@ -23,6 +23,7 @@ export default [
       'react-hooks': reactHooksPlugin,
     },
     rules: {
+      'no-undef': 'off',
       ...tsPlugin.configs.recommended.rules,
       ...reactPlugin.configs.recommended.rules,
       ...reactHooksPlugin.configs.recommended.rules,

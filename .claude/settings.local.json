@@ -9,7 +9,9 @@
       "Bash(mv \"E:\\\\Ihor\\\\Other\\\\Study\\\\IM_React\" \"E:\\\\Ihor\\\\Other\\\\Study\\\\RestaurantManager\\\\RestaurantManager.WebApp\")",
       "Bash(mkdir -p \"E:\\\\Ihor\\\\Other\\\\Study\\\\RestaurantManager\\\\RestaurantManager.WebApi\")",
       "Bash(npm run:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest add button card input label form)",
+      "Bash(npm list:*)"
     ]
   }
 }
