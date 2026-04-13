@@ -7,10 +7,12 @@
 
 import { Router } from 'express'
 import bcrypt from 'bcrypt'
-import { RegisterSchema, LoginSchema } from '@gather/shared'
+import crypto from 'crypto'
+import { RegisterSchema, LoginSchema, ForgotPasswordSchema, ResetPasswordSchema } from '@gather/shared'
 import { prisma } from '../lib/prisma'
 import { signAccessToken, signRefreshToken, hashToken, verifyRefreshToken } from '../lib/jwt'
 import { requireAuth, AuthRequest } from '../middleware/auth'
+import { sendPasswordResetEmail } from '../lib/email'
 
 export const authRouter = Router()
 
@@ -289,4 +291,142 @@ authRouter.get('/me', requireAuth, async (req, res) => {
   })
   if (!user) return res.status(404).json({ error: 'User not found' })
   return res.json(user)
+})
+
+/**
+ * @openapi
+ * /auth/forgot-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Request a password reset email
+ *     description: >
+ *       Always returns 200 regardless of whether the email is registered,
+ *       to prevent email enumeration. If the email is found, a reset link
+ *       valid for 1 hour is sent to that address.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email: { type: string, format: email }
+ *     responses:
+ *       200:
+ *         description: Request accepted (email may or may not have been sent)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string }
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+// ─── POST /auth/forgot-password ───────────────────────────────────────────────
+authRouter.post('/forgot-password', async (req, res) => {
+  const parsed = ForgotPasswordSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() })
+  }
+  const { email } = parsed.data
+
+  // Always return 200 — never reveal whether an email is registered
+  const user = await prisma.user.findUnique({ where: { email } })
+  if (user) {
+    const rawToken = crypto.randomBytes(32).toString('hex')
+    const tokenHash = hashToken(rawToken)
+
+    // Invalidate any existing unexpired tokens for this user before creating a new one
+    await prisma.passwordResetToken.deleteMany({
+      where: { userId: user.id, usedAt: null, expiresAt: { gt: new Date() } },
+    })
+
+    await prisma.passwordResetToken.create({
+      data: {
+        userId: user.id,
+        tokenHash,
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+      },
+    })
+
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173'
+    const resetUrl = `${frontendUrl}/reset-password?token=${rawToken}`
+    try {
+      await sendPasswordResetEmail(email, resetUrl)
+    } catch (err) {
+      console.error('Failed to send password reset email:', err)
+      // Still return 200 — a send failure must not leak whether the email is registered
+    }
+  }
+
+  return res.json({ message: 'If that email is registered, you will receive a reset link.' })
+})
+
+/**
+ * @openapi
+ * /auth/reset-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Reset password using a token from the reset email
+ *     description: >
+ *       Validates the token (must not be used or expired), updates the user's
+ *       password, marks the token as used, and revokes all active sessions.
+ *       The user must log in again after a successful reset.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token, password]
+ *             properties:
+ *               token:    { type: string, description: 'Raw reset token from the email link' }
+ *               password: { type: string, minLength: 8 }
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string }
+ *       400:
+ *         description: Token is invalid, expired, or already used — or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+// ─── POST /auth/reset-password ────────────────────────────────────────────────
+authRouter.post('/reset-password', async (req, res) => {
+  const parsed = ResetPasswordSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() })
+  }
+  const { token, password } = parsed.data
+
+  const tokenHash = hashToken(token)
+  const stored = await prisma.passwordResetToken.findUnique({ where: { tokenHash } })
+
+  if (!stored || stored.usedAt || stored.expiresAt < new Date()) {
+    return res.status(400).json({ message: 'This reset link is invalid or has expired.' })
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10)
+
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: stored.userId }, data: { passwordHash } }),
+    prisma.passwordResetToken.update({ where: { id: stored.id }, data: { usedAt: new Date() } }),
+    // Revoke all sessions — the user must log in fresh with their new password
+    prisma.refreshToken.deleteMany({ where: { userId: stored.userId } }),
+  ])
+
+  return res.json({ message: 'Password reset successfully.' })
 })

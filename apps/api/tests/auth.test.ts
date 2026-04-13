@@ -9,6 +9,7 @@ jest.mock('../src/lib/prisma', () => ({
     user: {
       findUnique: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
     },
     refreshToken: {
       create: jest.fn(),
@@ -16,13 +17,30 @@ jest.mock('../src/lib/prisma', () => ({
       update: jest.fn(),
       deleteMany: jest.fn(),
     },
+    passwordResetToken: {
+      create: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      deleteMany: jest.fn(),
+    },
+    $transaction: jest.fn().mockImplementation((ops: Promise<unknown>[]) => Promise.all(ops)),
   },
 }))
+
+// Mock Resend email helper so tests never send real emails
+jest.mock('../src/lib/email', () => ({
+  sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
+}))
+
+import { sendPasswordResetEmail } from '../src/lib/email'
+const mockSendEmail = sendPasswordResetEmail as jest.Mock
 
 // Cast to plain objects of mocks — avoids fighting TypeScript's PrismaClient types
 const db = prisma as unknown as {
   user: Record<string, jest.Mock>
   refreshToken: Record<string, jest.Mock>
+  passwordResetToken: Record<string, jest.Mock>
+  $transaction: jest.Mock
 }
 
 beforeAll(() => {
@@ -224,5 +242,147 @@ describe('GET /auth/me', () => {
   it('returns 401 without a token', async () => {
     const res = await request(app).get('/auth/me')
     expect(res.status).toBe(401)
+  })
+})
+
+// ─── FORGOT PASSWORD ──────────────────────────────────────────────────────────
+
+describe('POST /auth/forgot-password', () => {
+  it('returns 200 and sends an email when the email is registered', async () => {
+    db.user.findUnique.mockResolvedValue({ id: 'u1', email: 'alice@example.com' })
+    db.passwordResetToken.deleteMany.mockResolvedValue({ count: 0 })
+    db.passwordResetToken.create.mockResolvedValue({})
+
+    const res = await request(app)
+      .post('/auth/forgot-password')
+      .send({ email: 'alice@example.com' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.message).toBeDefined()
+    expect(db.passwordResetToken.create).toHaveBeenCalledTimes(1)
+    expect(mockSendEmail).toHaveBeenCalledTimes(1)
+    expect(mockSendEmail).toHaveBeenCalledWith('alice@example.com', expect.stringContaining('/reset-password?token='))
+  })
+
+  it('returns 200 without sending email when email is not registered', async () => {
+    db.user.findUnique.mockResolvedValue(null)
+
+    const res = await request(app)
+      .post('/auth/forgot-password')
+      .send({ email: 'nobody@example.com' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.message).toBeDefined()
+    expect(db.passwordResetToken.create).not.toHaveBeenCalled()
+    expect(mockSendEmail).not.toHaveBeenCalled()
+  })
+
+  it('returns 200 even when email send fails', async () => {
+    db.user.findUnique.mockResolvedValue({ id: 'u1', email: 'alice@example.com' })
+    db.passwordResetToken.deleteMany.mockResolvedValue({ count: 0 })
+    db.passwordResetToken.create.mockResolvedValue({})
+    mockSendEmail.mockRejectedValueOnce(new Error('Resend is down'))
+
+    const res = await request(app)
+      .post('/auth/forgot-password')
+      .send({ email: 'alice@example.com' })
+
+    expect(res.status).toBe(200)
+  })
+
+  it('returns 400 on invalid email format', async () => {
+    const res = await request(app)
+      .post('/auth/forgot-password')
+      .send({ email: 'not-an-email' })
+
+    expect(res.status).toBe(400)
+    expect(db.passwordResetToken.create).not.toHaveBeenCalled()
+  })
+})
+
+// ─── RESET PASSWORD ───────────────────────────────────────────────────────────
+
+describe('POST /auth/reset-password', () => {
+  const validToken = 'a'.repeat(64) // 64 hex chars — matches randomBytes(32).toString('hex') length
+
+  it('resets the password and returns 200', async () => {
+    db.passwordResetToken.findUnique.mockResolvedValue({
+      id: 'prt1',
+      userId: 'u1',
+      usedAt: null,
+      expiresAt: new Date(Date.now() + 60_000),
+    })
+    db.user.update.mockResolvedValue({})
+    db.passwordResetToken.update.mockResolvedValue({})
+    db.refreshToken.deleteMany.mockResolvedValue({ count: 1 })
+
+    const res = await request(app)
+      .post('/auth/reset-password')
+      .send({ token: validToken, password: 'newpassword1' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.message).toBeDefined()
+    expect(db.$transaction).toHaveBeenCalledTimes(1)
+  })
+
+  it('returns 400 when token is not found', async () => {
+    db.passwordResetToken.findUnique.mockResolvedValue(null)
+
+    const res = await request(app)
+      .post('/auth/reset-password')
+      .send({ token: validToken, password: 'newpassword1' })
+
+    expect(res.status).toBe(400)
+    expect(db.$transaction).not.toHaveBeenCalled()
+  })
+
+  it('returns 400 when token has already been used', async () => {
+    db.passwordResetToken.findUnique.mockResolvedValue({
+      id: 'prt1',
+      userId: 'u1',
+      usedAt: new Date(Date.now() - 60_000),
+      expiresAt: new Date(Date.now() + 60_000),
+    })
+
+    const res = await request(app)
+      .post('/auth/reset-password')
+      .send({ token: validToken, password: 'newpassword1' })
+
+    expect(res.status).toBe(400)
+    expect(db.$transaction).not.toHaveBeenCalled()
+  })
+
+  it('returns 400 when token has expired', async () => {
+    db.passwordResetToken.findUnique.mockResolvedValue({
+      id: 'prt1',
+      userId: 'u1',
+      usedAt: null,
+      expiresAt: new Date(Date.now() - 60_000), // expired
+    })
+
+    const res = await request(app)
+      .post('/auth/reset-password')
+      .send({ token: validToken, password: 'newpassword1' })
+
+    expect(res.status).toBe(400)
+    expect(db.$transaction).not.toHaveBeenCalled()
+  })
+
+  it('returns 400 on invalid body (missing password)', async () => {
+    const res = await request(app)
+      .post('/auth/reset-password')
+      .send({ token: validToken })
+
+    expect(res.status).toBe(400)
+    expect(db.passwordResetToken.findUnique).not.toHaveBeenCalled()
+  })
+
+  it('returns 400 on invalid body (short password)', async () => {
+    const res = await request(app)
+      .post('/auth/reset-password')
+      .send({ token: validToken, password: 'short' })
+
+    expect(res.status).toBe(400)
+    expect(db.passwordResetToken.findUnique).not.toHaveBeenCalled()
   })
 })

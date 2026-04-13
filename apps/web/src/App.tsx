@@ -1,13 +1,13 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import RegisterPage from '@/pages/auth/RegisterPage'
-import LoginPage from '@/pages/auth/LoginPage'
+import { authRoutes } from '@/routes/authRoutes'
+import { groupRoutes } from '@/routes/groupRoutes'
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/" element={<Navigate to="/register" replace />} />
+      {authRoutes}
+      {groupRoutes}
+      <Route path="/" element={<Navigate to="/groups" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

@@ -8,6 +8,9 @@ const config: Config = {
   moduleNameMapper: {
     '@gather/shared': '<rootDir>/../../packages/shared/src',
   },
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', { tsconfig: { types: ['node', 'jest'] } }],
+  },
   coverageDirectory: 'coverage',
   collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts'],
   coverageThreshold: {

@@ -24,7 +24,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { AuthLayout } from './AuthLayout'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -55,8 +54,7 @@ export default function RegisterPage() {
       : null
 
   return (
-    <AuthLayout>
-      <Card>
+    <Card>
         <CardHeader>
           <CardTitle>Create an account</CardTitle>
           <CardDescription>Enter your details to get started</CardDescription>
@@ -127,6 +125,5 @@ export default function RegisterPage() {
           </form>
         </Form>
       </Card>
-    </AuthLayout>
   )
 }

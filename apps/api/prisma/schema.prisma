@@ -26,7 +26,8 @@ model User {
   rsvps            RSVP[]
   chatMessages     ChatMessage[]
   outingPhotos     OutingPhoto[]
-  refreshTokens    RefreshToken[]
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
@@ -205,6 +206,18 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
 }
 
 model Invitation {

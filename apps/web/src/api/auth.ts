@@ -1,4 +1,4 @@
-import type { RegisterInput, LoginInput } from '@gather/shared'
+import type { RegisterInput, LoginInput, ForgotPasswordInput, ResetPasswordInput } from '@gather/shared'
 import { api } from '@/lib/axios'
 import type { AuthUser } from '@/stores/authStore'
 
@@ -14,5 +14,15 @@ export async function register(data: RegisterInput): Promise<AuthResponse> {
 
 export async function login(data: LoginInput): Promise<AuthResponse> {
   const response = await api.post<AuthResponse>('/auth/login', data)
+  return response.data
+}
+
+export async function forgotPassword(data: ForgotPasswordInput): Promise<{ message: string }> {
+  const response = await api.post<{ message: string }>('/auth/forgot-password', data)
+  return response.data
+}
+
+export async function resetPassword(data: ResetPasswordInput): Promise<{ message: string }> {
+  const response = await api.post<{ message: string }>('/auth/reset-password', data)
   return response.data
 }

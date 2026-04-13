@@ -23,7 +23,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { AuthLayout } from './AuthLayout'
 import { Input } from '@/components/ui/input'
 
 export default function LoginPage() {
@@ -55,8 +54,7 @@ export default function LoginPage() {
       : null
 
   return (
-    <AuthLayout>
-      <Card>
+    <Card>
         <CardHeader>
           <CardTitle>Log in to your account</CardTitle>
           <CardDescription>Enter your email and password to log in</CardDescription>
@@ -100,6 +98,12 @@ export default function LoginPage() {
               <Button type="submit" className="w-full" disabled={mutation.isPending}>
                 {mutation.isPending ? 'Logging in…' : 'Log in'}
               </Button>
+              <Link
+                to="/forgot-password"
+                className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+              >
+                Forgot your password?
+              </Link>
               <p className="text-sm text-muted-foreground text-center">
                 Don&apos;t have an account?{' '}
                 <Link
@@ -113,6 +117,5 @@ export default function LoginPage() {
           </form>
         </Form>
       </Card>
-    </AuthLayout>
   )
 }
