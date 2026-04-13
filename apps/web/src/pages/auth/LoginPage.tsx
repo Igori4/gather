@@ -1,10 +1,10 @@
+import axios from 'axios'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
-import { RegisterSchema, type RegisterInput } from '@gather/shared'
-import axios from 'axios'
-import { register } from '@/api/auth'
+import { LoginSchema, type LoginInput } from '@gather/shared'
+import { login } from '@/api/auth'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,22 +23,22 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
 import { AuthLayout } from './AuthLayout'
+import { Input } from '@/components/ui/input'
 
-export default function RegisterPage() {
+export default function LoginPage() {
   const navigate = useNavigate()
   const setUser = useAuthStore(s => s.setUser)
   const setAccessToken = useAuthStore(s => s.setAccessToken)
 
-  const form = useForm<RegisterInput>({
-    resolver: zodResolver(RegisterSchema),
-    defaultValues: { name: '', email: '', password: '' },
+  const form = useForm<LoginInput>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: { email: '', password: '' },
   })
 
-  const mutation = useMutation({ mutationFn: register })
+  const mutation = useMutation({ mutationFn: login })
 
-  async function onSubmit(data: RegisterInput) {
+  async function onSubmit(data: LoginInput) {
     try {
       const result = await mutation.mutateAsync(data)
       setUser(result.user)
@@ -51,34 +51,20 @@ export default function RegisterPage() {
 
   const errorMessage =
     mutation.error && axios.isAxiosError(mutation.error)
-      ? (mutation.error.response?.data?.message ?? 'Registration failed')
+      ? (mutation.error.response?.data?.message ?? 'Login failed')
       : null
 
   return (
     <AuthLayout>
       <Card>
         <CardHeader>
-          <CardTitle>Create an account</CardTitle>
-          <CardDescription>Enter your details to get started</CardDescription>
+          <CardTitle>Log in to your account</CardTitle>
+          <CardDescription>Enter your email and password to log in</CardDescription>
         </CardHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Jane Smith" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name="email"
@@ -112,15 +98,15 @@ export default function RegisterPage() {
 
             <CardFooter className="flex flex-col gap-3">
               <Button type="submit" className="w-full" disabled={mutation.isPending}>
-                {mutation.isPending ? 'Creating account…' : 'Create account'}
+                {mutation.isPending ? 'Logging in…' : 'Log in'}
               </Button>
               <p className="text-sm text-muted-foreground text-center">
-                Already have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link
-                  to="/login"
+                  to="/register"
                   className="font-medium text-primary underline-offset-4 hover:underline"
                 >
-                  Sign in
+                  Sign up
                 </Link>
               </p>
             </CardFooter>

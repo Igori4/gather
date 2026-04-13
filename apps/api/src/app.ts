@@ -3,8 +3,10 @@ import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import cookieParser from 'cookie-parser'
+import swaggerUi from 'swagger-ui-express'
 import { authRouter } from './routes/auth'
 import { groupsRouter } from './routes/groups'
+import { swaggerSpec } from './lib/swagger'
 
 export const app = express()
 
@@ -48,6 +50,13 @@ if (process.env.NODE_ENV !== 'test') {
 // Health check
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
+// Swagger UI — available at /docs
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.get('/docs.json', (_req, res) => {
+  res.setHeader('Content-Type', 'application/json')
+  res.send(swaggerSpec)
 })
 
 // Routes

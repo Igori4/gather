@@ -1,3 +1,10 @@
+/**
+ * @openapi
+ * tags:
+ *   name: Auth
+ *   description: Authentication — register, login, token refresh, logout, current user
+ */
+
 import { Router } from 'express'
 import bcrypt from 'bcrypt'
 import { RegisterSchema, LoginSchema } from '@gather/shared'
@@ -36,6 +43,47 @@ async function issueTokens(userId: string, res: import('express').Response) {
   return accessToken
 }
 
+/**
+ * @openapi
+ * /auth/register:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Register a new user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password, name]
+ *             properties:
+ *               email:    { type: string, format: email }
+ *               password: { type: string, minLength: 8 }
+ *               name:     { type: string }
+ *     responses:
+ *       201:
+ *         description: User created — returns access token and user object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken: { type: string }
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       409:
+ *         description: Email already registered
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // ─── POST /auth/register ─────────────────────────────────────────────────────
 authRouter.post('/register', async (req, res) => {
   const parsed = RegisterSchema.safeParse(req.body)
@@ -62,6 +110,40 @@ authRouter.post('/register', async (req, res) => {
   })
 })
 
+/**
+ * @openapi
+ * /auth/login:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Log in with email and password
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:    { type: string, format: email }
+ *               password: { type: string }
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken: { type: string }
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // ─── POST /auth/login ─────────────────────────────────────────────────────────
 authRouter.post('/login', async (req, res) => {
   const parsed = LoginSchema.safeParse(req.body)
@@ -90,6 +172,28 @@ authRouter.post('/login', async (req, res) => {
   })
 })
 
+/**
+ * @openapi
+ * /auth/refresh:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Refresh access token using the httpOnly refresh cookie
+ *     responses:
+ *       200:
+ *         description: New access token issued
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken: { type: string }
+ *       401:
+ *         description: Missing, invalid, or expired refresh token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // ─── POST /auth/refresh ───────────────────────────────────────────────────────
 authRouter.post('/refresh', async (req, res) => {
   const token = req.cookies?.refreshToken as string | undefined
@@ -128,6 +232,24 @@ authRouter.post('/refresh', async (req, res) => {
   return res.json({ accessToken })
 })
 
+/**
+ * @openapi
+ * /auth/logout:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Logout — revokes all refresh tokens and clears the cookie
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       204:
+ *         description: Logged out successfully
+ *       401:
+ *         description: Not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // ─── POST /auth/logout ────────────────────────────────────────────────────────
 authRouter.post('/logout', requireAuth, async (req, res) => {
   const { userId } = req as AuthRequest
@@ -136,6 +258,28 @@ authRouter.post('/logout', requireAuth, async (req, res) => {
   return res.status(204).send()
 })
 
+/**
+ * @openapi
+ * /auth/me:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Get the current authenticated user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // ─── GET /auth/me ─────────────────────────────────────────────────────────────
 authRouter.get('/me', requireAuth, async (req, res) => {
   const { userId } = req as AuthRequest
