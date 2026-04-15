@@ -1,7 +1,19 @@
 FROM node:20-alpine
-WORKDIR /app
+WORKDIR /workspace
+
+# Copy root workspace manifest and lockfile so npm can resolve workspaces
 COPY package*.json ./
+
+# Copy each workspace's manifest before npm install (workspace discovery)
+COPY packages/shared/package.json ./packages/shared/
+COPY apps/api/package.json ./apps/api/
+
+# Install all workspace deps from the root (hoists to /workspace/node_modules)
 RUN npm install
-COPY . .
+
+# Copy source — volumes in compose will override these at runtime for hot-reload
+COPY packages/shared ./packages/shared
+COPY apps/api ./apps/api
+
+WORKDIR /workspace/apps/api
 EXPOSE 4000
-CMD ["npm", "run", "dev"]

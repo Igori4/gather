@@ -1,6 +1,12 @@
 import { Resend } from 'resend'
 
 export async function sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
+  // In development, always log the URL so you can test without a real email service.
+  // Check your terminal (or `docker logs gather_api`) for the reset link.
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`\n[DEV] Password reset link for ${email}:\n      ${resetUrl}\n`)
+  }
+
   const resend = new Resend(process.env.RESEND_API_KEY)
   await resend.emails.send({
     from: process.env.EMAIL_FROM ?? 'noreply@gather.app',
