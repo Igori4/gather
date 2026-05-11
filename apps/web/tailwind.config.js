@@ -11,6 +11,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Plus Jakarta Sans Variable', 'sans-serif'],
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
@@ -47,9 +50,28 @@ export default {
         },
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        sm: '0.25rem',
+        DEFAULT: '0.5rem',
+        md: '0.75rem',
+        lg: '1rem',
+        xl: '1.5rem',
+        full: '9999px',
+      },
+      spacing: {
+        page: '24px',
+        gutter: '16px',
+        'stack-sm': '8px',
+        'stack-md': '16px',
+        'stack-lg': '32px',
+      },
+      fontSize: {
+        'headline-xl': ['2.5rem', { lineHeight: '3rem', fontWeight: '700', letterSpacing: '-0.02em' }],
+        'headline-lg': ['2rem', { lineHeight: '2.5rem', fontWeight: '700', letterSpacing: '-0.01em' }],
+        'headline-md': ['1.5rem', { lineHeight: '2rem', fontWeight: '600' }],
+        'body-lg': ['1.125rem', { lineHeight: '1.75rem', fontWeight: '400' }],
+        'body-md': ['1rem', { lineHeight: '1.5rem', fontWeight: '400' }],
+        'label-md': ['0.875rem', { lineHeight: '1.25rem', fontWeight: '600', letterSpacing: '0.01em' }],
+        'label-sm': ['0.75rem', { lineHeight: '1rem', fontWeight: '500' }],
       },
       keyframes: {
         'accordion-down': {

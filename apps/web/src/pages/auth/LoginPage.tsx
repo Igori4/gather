@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import axios from 'axios'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -37,16 +38,19 @@ export default function LoginPage() {
 
   const mutation = useMutation({ mutationFn: login })
 
-  async function onSubmit(data: LoginInput) {
+  const onSubmit = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const data = form.getValues()
     try {
       const result = await mutation.mutateAsync(data)
       setUser(result.user)
       setAccessToken(result.accessToken)
       navigate('/')
-    } catch {
+    } catch (error) {
+      console.log('result', error)
       // error displayed via mutation.error below
     }
-  }
+  }, [mutation, navigate, setUser, setAccessToken])
 
   const errorMessage =
     mutation.error && axios.isAxiosError(mutation.error)
@@ -61,7 +65,7 @@ export default function LoginPage() {
         </CardHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={onSubmit}>
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}

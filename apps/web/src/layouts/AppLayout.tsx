@@ -21,9 +21,10 @@ function initials(name: string) {
 
 export function AppLayout() {
   const user = useAuthStore(s => s.user)
+  const isInitialized = useAuthStore(s => s.isInitialized)
   const logout = useAuthStore(s => s.logout)
 
-  // Not logged in — send to login
+  if (!isInitialized) return null
   if (!user) return <Navigate to="/login" replace />
 
   async function handleLogout() {

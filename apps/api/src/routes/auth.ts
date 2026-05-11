@@ -155,6 +155,7 @@ authRouter.post('/login', async (req, res) => {
   const { email, password } = parsed.data
 
   const user = await prisma.user.findUnique({ where: { email } })
+  console.log('user', user)
   // Same error for "user not found" and "wrong password"
   // so attackers can't enumerate which emails are registered
   if (!user || !user.passwordHash) {
@@ -231,7 +232,10 @@ authRouter.post('/refresh', async (req, res) => {
   if (!user) return res.status(401).json({ error: 'User not found' })
 
   const accessToken = await issueTokens(userId, res)
-  return res.json({ accessToken })
+  return res.json({
+    accessToken,
+    user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl },
+  })
 })
 
 /**

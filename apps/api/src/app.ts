@@ -38,7 +38,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 
 // Auth rate limiting — disabled in test so 13+ requests don't get 429
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV === 'production') {
   const authLimiter = rateLimit({
     windowMs: 60 * 1000,
     max: 10,
