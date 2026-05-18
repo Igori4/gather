@@ -12,7 +12,8 @@
       "Bash(npm install:*)",
       "Bash(npx shadcn@latest add button card input label form)",
       "Bash(npm list:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(xargs ls:*)"
     ]
   }
 }
