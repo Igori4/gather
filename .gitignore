@@ -37,6 +37,7 @@ test-results/
 
 # Prisma generated client (not migrations — those must be committed)
 apps/api/node_modules/.prisma/
+apps/api/src/generated/
 
 # Supabase
 .supabase/

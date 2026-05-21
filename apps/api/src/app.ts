@@ -4,9 +4,12 @@ import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import cookieParser from 'cookie-parser'
 import swaggerUi from 'swagger-ui-express'
-import { authRouter } from './routes/auth'
+import { createProxyMiddleware } from 'http-proxy-middleware'
+// import { authRouter } from './routes/auth'
 import { groupsRouter } from './routes/groups'
 import { swaggerSpec } from './lib/swagger'
+
+const AUTH_APP_URL = process.env.AUTH_APP_URL ?? 'http://localhost:4001'
 
 export const app = express()
 
@@ -32,7 +35,23 @@ app.use(
   })
 )
 
-// Body + cookie parsing
+// Proxy BEFORE body parsers — body stream must not be consumed before forwarding
+app.use(
+  createProxyMiddleware({
+    target: AUTH_APP_URL,
+    changeOrigin: true,
+    pathFilter: ['/auth', '/profile'],
+    on: {
+      error: (_err, _req, res) => {
+        (res as import('express').Response)
+          .status(502)
+          .json({ error: 'Auth service unavailable' })
+      },
+    },
+  })
+)
+
+// Body + cookie parsing (for all non-proxied routes)
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
@@ -60,7 +79,7 @@ app.get('/docs.json', (_req, res) => {
 })
 
 // Routes
-app.use('/auth', authRouter)
+// app.use('/auth', authRouter)
 app.use('/api/groups', groupsRouter)
 // app.use('/api/outings', outingsRouter) — Phase 3
 

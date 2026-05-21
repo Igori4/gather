@@ -6,9 +6,10 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev --workspace=apps/web\" \"npm run dev --workspace=apps/api\"",
+    "dev": "concurrently \"npm run dev --workspace=apps/web\" \"npm run dev --workspace=apps/api\" \"npm run dev --workspace=apps/auth-app\"",
     "dev:web": "npm run dev --workspace=apps/web",
     "dev:api": "npm run dev --workspace=apps/api",
+    "dev:auth": "npm run dev --workspace=apps/auth-app",
     "build": "npm run build --workspaces --if-present",
     "lint": "eslint apps/*/src packages/*/src --ext .ts,.tsx",
     "format": "prettier --write .",
