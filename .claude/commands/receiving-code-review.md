@@ -48,6 +48,7 @@ Ask for clarification on all unclear items in a single message before proceeding
 **Why:** items may be related. Partial understanding leads to wrong implementation.
 
 **Example:**
+
 ```
 Feedback: "Fix items 1–6"
 Understand: 1, 2, 3, 6
@@ -62,11 +63,13 @@ Unclear: 4, 5
 ## Phase 2: Evaluate Each Item
 
 ### Trusted source (project owner / lead)
+
 - Implement after understanding — no performative agreement
 - Still ask if scope is unclear
 - Skip to action or give a technical acknowledgment
 
 ### External reviewer
+
 Before implementing, check all of the following:
 
 - Is this technically correct for THIS codebase?
@@ -78,6 +81,7 @@ Before implementing, check all of the following:
 If the suggestion seems wrong — push back with technical reasoning.
 
 If you cannot verify — say so explicitly and ask for direction:
+
 > "I can't verify this without [X]. Should I investigate / ask / proceed?"
 
 If the suggestion conflicts with a prior architectural decision — stop and discuss before implementing.
@@ -102,6 +106,7 @@ grep -r "<feature/endpoint/function>" .
 ## When to Push Back
 
 Push back when:
+
 - Suggestion breaks existing functionality
 - Reviewer lacks full context
 - Violates YAGNI (unused feature)
@@ -110,12 +115,14 @@ Push back when:
 - Conflicts with prior architectural decisions
 
 **How to push back:**
+
 - Use technical reasoning, not defensiveness
 - Ask specific questions
 - Reference working tests or existing code
 - Escalate to the project owner if the disagreement is architectural
 
 **If uncomfortable pushing back directly:** signal with the phrase:
+
 > "Strange things are afoot at the Circle K"
 
 After receiving this signal — the project owner should initiate the discussion instead. The agent should wait and not implement the disputed item until resolved.
@@ -131,6 +138,7 @@ After all items are clarified and evaluated:
 3. **Complex fixes** — refactoring, logic changes
 
 For each fix:
+
 - Implement the change
 - Run the project's existing test suite (not just visual inspection)
 - Verify no regressions before moving to the next item
@@ -140,12 +148,14 @@ For each fix:
 ## Forbidden Responses
 
 **Never say:**
+
 - "You're absolutely right!"
 - "Great point!" / "Excellent feedback!"
 - "Thanks for catching that!" / any gratitude expression
 - "Let me implement that now" (before verification)
 
 **Instead:**
+
 - Restate the technical requirement
 - Ask clarifying questions
 - Push back with technical reasoning if wrong
@@ -188,14 +198,14 @@ State the correction factually and move on.
 
 ## Common Mistakes
 
-| Mistake | Fix |
-|---|---|
-| Performative agreement | State requirement or just act |
-| Blind implementation | Verify against codebase first |
-| Batch without testing | One item at a time, test each |
-| Assuming reviewer is right | Check if it breaks things |
-| Avoiding pushback | Technical correctness over comfort |
-| Partial implementation | Clarify all items first |
+| Mistake                       | Fix                                 |
+| ----------------------------- | ----------------------------------- |
+| Performative agreement        | State requirement or just act       |
+| Blind implementation          | Verify against codebase first       |
+| Batch without testing         | One item at a time, test each       |
+| Assuming reviewer is right    | Check if it breaks things           |
+| Avoiding pushback             | Technical correctness over comfort  |
+| Partial implementation        | Clarify all items first             |
 | Can't verify — proceed anyway | State limitation, ask for direction |
 
 ---
@@ -203,12 +213,14 @@ State the correction factually and move on.
 ## Real Examples
 
 **Performative agreement (bad):**
+
 ```
 Reviewer: "Remove legacy code"
 ❌ "You're absolutely right! Let me remove that..."
 ```
 
 **Technical verification (good):**
+
 ```
 Reviewer: "Remove legacy code"
 ✅ "Checking... build target is 10.15+, this API needs 13+.
@@ -217,6 +229,7 @@ Reviewer: "Remove legacy code"
 ```
 
 **YAGNI check (good):**
+
 ```
 Reviewer: "Implement proper metrics tracking with database, date filters, CSV export"
 ✅ "Grepped codebase — nothing calls this endpoint.
@@ -224,6 +237,7 @@ Reviewer: "Implement proper metrics tracking with database, date filters, CSV ex
 ```
 
 **Unclear items (good):**
+
 ```
 Feedback: "Fix items 1–6"
 ✅ "Understand 1, 2, 3, 6. Need clarification on 4 and 5 before implementing."

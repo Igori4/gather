@@ -39,6 +39,7 @@ If you have not completed Phase 1, you cannot propose fixes.
 Use for ANY technical issue: test failures, bugs, unexpected behavior, performance problems, build failures, integration issues.
 
 **Use this especially when:**
+
 - Under time pressure — emergencies make guessing tempting
 - "Just one quick fix" seems obvious
 - You have already tried multiple fixes
@@ -46,6 +47,7 @@ Use for ANY technical issue: test failures, bugs, unexpected behavior, performan
 - You do not fully understand the issue
 
 **Do not skip when:**
+
 - Issue seems simple — simple bugs have root causes too
 - You are in a hurry — rushing guarantees rework
 
@@ -55,11 +57,11 @@ Use for ANY technical issue: test failures, bugs, unexpected behavior, performan
 
 Three techniques are defined at the end of this document. Apply them as follows:
 
-| Technique | When to apply |
-|---|---|
-| **Root Cause Tracing** | Error is deep in call stack — trace backward to find originating trigger |
-| **Defense-in-Depth Validation** | Fix found — add validation at every layer to make the bug structurally impossible |
-| **Condition-Based Waiting** | Test is flaky due to timing — replace arbitrary `setTimeout` with condition polling |
+| Technique                       | When to apply                                                                       |
+| ------------------------------- | ----------------------------------------------------------------------------------- |
+| **Root Cause Tracing**          | Error is deep in call stack — trace backward to find originating trigger            |
+| **Defense-in-Depth Validation** | Fix found — add validation at every layer to make the bug structurally impossible   |
+| **Condition-Based Waiting**     | Test is flaky due to timing — replace arbitrary `setTimeout` with condition polling |
 
 ---
 
@@ -74,16 +76,19 @@ Complete each phase before proceeding to the next.
 **Before attempting any fix:**
 
 **1. Read Error Messages Carefully**
+
 - Do not skip past errors or warnings — they often contain the exact solution
 - Read stack traces completely
 - Note line numbers, file paths, error codes
 
 **2. Reproduce Consistently**
+
 - Can you trigger it reliably?
 - What are the exact steps?
 - If not reproducible → gather more data, do not guess
 
 **3. Check Recent Changes**
+
 - What changed that could cause this?
 - Git diff, recent commits, new dependencies, config changes, environmental differences
 
@@ -115,6 +120,7 @@ Run once to gather evidence showing WHERE it breaks. Then analyze. Then investig
 When the error is deep in the call stack — use the Root Cause Tracing technique (defined below).
 
 Quick version:
+
 - Where does the bad value originate?
 - What called this with the bad value?
 - Keep tracing up until you find the source
@@ -151,12 +157,14 @@ Quick version:
 **Fix the root cause, not the symptom:**
 
 **1. Create a Failing Test Case First**
+
 - Simplest possible reproduction
 - Automated test if possible, one-off test script if no framework
 - Must exist before implementing the fix
 - Use the `test-driven-development` skill for writing proper failing tests
 
 **2. Implement a Single Fix**
+
 - Address the root cause identified
 - One change at a time
 - No "while I'm here" improvements
@@ -164,23 +172,24 @@ Quick version:
 
 **Agent handoff (for complex fixes):**
 
-| Fix complexity | Action |
-|---|---|
-| Simple — single file, obvious change | Implement directly |
+| Fix complexity                            | Action                                                                                     |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Simple — single file, obvious change      | Implement directly                                                                         |
 | Complex — multiple files or cross-cutting | Dispatch `feature-implementer` with root cause finding and confirmed hypothesis as context |
-| Complex test coverage needed | Dispatch `test-engineer` after fix is verified |
+| Complex test coverage needed              | Dispatch `test-engineer` after fix is verified                                             |
 
 **3. Verify the Fix**
+
 - Test passes?
 - No other tests broken?
 - Issue actually resolved?
 
 **4. If Fix Does Not Work — Stop and Count**
 
-| Attempts so far | Action |
-|---|---|
-| < 3 | Return to Phase 1, re-analyze with new information |
-| ≥ 3 | Architectural problem — see below |
+| Attempts so far | Action                                             |
+| --------------- | -------------------------------------------------- |
+| < 3             | Return to Phase 1, re-analyze with new information |
+| ≥ 3             | Architectural problem — see below                  |
 
 Do not attempt Fix #4 without completing the architectural check below.
 
@@ -189,11 +198,13 @@ Do not attempt Fix #4 without completing the architectural check below.
 ### Architectural Check (After 3+ Failed Fixes)
 
 **Signals indicating an architectural problem:**
+
 - Each fix reveals new shared state, coupling, or problem in a different place
 - Fixes require massive refactoring to implement
 - Each fix creates new symptoms elsewhere
 
 **Stop and prepare for discussion before attempting more fixes. Bring:**
+
 - List of all fixes attempted and what each revealed
 - The pattern of where new symptoms appeared
 - A specific question: "Is this pattern fundamentally sound, or should we refactor the architecture?"
@@ -236,27 +247,27 @@ When you see these: **stop, return to Phase 1.**
 
 ## Common Rationalizations
 
-| Excuse | Reality |
-|---|---|
-| "Issue is simple, don't need process" | Simple issues have root causes too. Process is fast for simple bugs. |
-| "Emergency, no time for process" | Systematic debugging is faster than guess-and-check thrashing. |
-| "Just try this first, then investigate" | First fix sets the pattern. Do it right from the start. |
-| "I'll write test after confirming fix works" | Untested fixes don't stick. Test first proves it. |
-| "Multiple fixes at once saves time" | Can't isolate what worked. Causes new bugs. |
-| "Reference too long, I'll adapt the pattern" | Partial understanding guarantees bugs. Read it completely. |
-| "I see the problem, let me fix it" | Seeing symptoms ≠ understanding root cause. |
-| "One more fix attempt" (after 2+ failures) | 3+ failures = architectural problem. Question the pattern, don't fix again. |
+| Excuse                                       | Reality                                                                     |
+| -------------------------------------------- | --------------------------------------------------------------------------- |
+| "Issue is simple, don't need process"        | Simple issues have root causes too. Process is fast for simple bugs.        |
+| "Emergency, no time for process"             | Systematic debugging is faster than guess-and-check thrashing.              |
+| "Just try this first, then investigate"      | First fix sets the pattern. Do it right from the start.                     |
+| "I'll write test after confirming fix works" | Untested fixes don't stick. Test first proves it.                           |
+| "Multiple fixes at once saves time"          | Can't isolate what worked. Causes new bugs.                                 |
+| "Reference too long, I'll adapt the pattern" | Partial understanding guarantees bugs. Read it completely.                  |
+| "I see the problem, let me fix it"           | Seeing symptoms ≠ understanding root cause.                                 |
+| "One more fix attempt" (after 2+ failures)   | 3+ failures = architectural problem. Question the pattern, don't fix again. |
 
 ---
 
 ## Quick Reference
 
-| Phase | Key Activities | Exit Criteria |
-|---|---|---|
-| **1. Root Cause** | Read errors, reproduce, check changes, gather evidence | Can state WHAT is wrong and WHY |
-| **2. Pattern** | Find working examples, compare differences | Differences identified and understood |
-| **3. Hypothesis** | Form single theory, test minimally | Hypothesis confirmed or replaced |
-| **4. Implementation** | Create failing test, fix, verify | Test passes, no regressions |
+| Phase                 | Key Activities                                         | Exit Criteria                         |
+| --------------------- | ------------------------------------------------------ | ------------------------------------- |
+| **1. Root Cause**     | Read errors, reproduce, check changes, gather evidence | Can state WHAT is wrong and WHY       |
+| **2. Pattern**        | Find working examples, compare differences             | Differences identified and understood |
+| **3. Hypothesis**     | Form single theory, test minimally                     | Hypothesis confirmed or replaced      |
+| **4. Implementation** | Create failing test, fix, verify                       | Test passes, no regressions           |
 
 ---
 
@@ -298,16 +309,19 @@ Bugs often manifest deep in the call stack. Fix where the error appears = treati
 ## The Tracing Process
 
 **1. Observe the symptom**
+
 ```
 Error: git init failed in /Users/jesse/project/packages/core
 ```
 
 **2. Find the immediate cause**
+
 ```typescript
-await execFileAsync('git', ['init'], { cwd: projectDir });
+await execFileAsync('git', ['init'], { cwd: projectDir })
 ```
 
 **3. Ask: what called this?**
+
 ```typescript
 WorktreeManager.createSessionWorktree(projectDir, sessionId)
   → Session.initializeWorkspace()
@@ -316,14 +330,16 @@ WorktreeManager.createSessionWorktree(projectDir, sessionId)
 ```
 
 **4. Keep tracing — what value was passed?**
+
 - `projectDir = ''` (empty string!)
 - Empty string as `cwd` resolves to `process.cwd()`
 - That is the source code directory
 
 **5. Find the original trigger**
+
 ```typescript
-const context = setupCoreTest(); // Returns { tempDir: '' }
-Project.create('name', context.tempDir); // Accessed before beforeEach!
+const context = setupCoreTest() // Returns { tempDir: '' }
+Project.create('name', context.tempDir) // Accessed before beforeEach!
 ```
 
 ## Adding Stack Traces
@@ -332,14 +348,14 @@ When you cannot trace manually, add instrumentation:
 
 ```typescript
 async function gitInit(directory: string) {
-  const stack = new Error().stack;
+  const stack = new Error().stack
   console.error('DEBUG git init:', {
     directory,
     cwd: process.cwd(),
     nodeEnv: process.env.NODE_ENV,
     stack,
-  });
-  await execFileAsync('git', ['init'], { cwd: directory });
+  })
+  await execFileAsync('git', ['init'], { cwd: directory })
 }
 ```
 
@@ -362,43 +378,47 @@ A single validation check can be bypassed by different code paths, refactoring, 
 ## The Four Layers
 
 **Layer 1: Entry point**
+
 ```typescript
 function createProject(name: string, workingDirectory: string) {
   if (!workingDirectory || workingDirectory.trim() === '') {
-    throw new Error('workingDirectory cannot be empty');
+    throw new Error('workingDirectory cannot be empty')
   }
   if (!existsSync(workingDirectory)) {
-    throw new Error(`workingDirectory does not exist: ${workingDirectory}`);
+    throw new Error(`workingDirectory does not exist: ${workingDirectory}`)
   }
 }
 ```
 
 **Layer 2: Business logic**
+
 ```typescript
 function initializeWorkspace(projectDir: string, sessionId: string) {
   if (!projectDir) {
-    throw new Error('projectDir required for workspace initialization');
+    throw new Error('projectDir required for workspace initialization')
   }
 }
 ```
 
 **Layer 3: Environment guard**
+
 ```typescript
 async function gitInit(directory: string) {
   if (process.env.NODE_ENV === 'test') {
-    const normalized = normalize(resolve(directory));
-    const tmpDir = normalize(resolve(tmpdir()));
+    const normalized = normalize(resolve(directory))
+    const tmpDir = normalize(resolve(tmpdir()))
     if (!normalized.startsWith(tmpDir)) {
-      throw new Error(`Refusing git init outside temp dir during tests: ${directory}`);
+      throw new Error(`Refusing git init outside temp dir during tests: ${directory}`)
     }
   }
 }
 ```
 
 **Layer 4: Debug instrumentation**
+
 ```typescript
 async function gitInit(directory: string) {
-  logger.debug('About to git init', { directory, cwd: process.cwd(), stack: new Error().stack });
+  logger.debug('About to git init', { directory, cwd: process.cwd(), stack: new Error().stack })
 }
 ```
 
@@ -421,22 +441,22 @@ Flaky tests often guess at timing with arbitrary delays. This creates race condi
 
 ```typescript
 // ❌ Guessing at timing
-await new Promise(r => setTimeout(r, 50));
-const result = getResult();
+await new Promise(r => setTimeout(r, 50))
+const result = getResult()
 
 // ✅ Waiting for condition
-await waitFor(() => getResult() !== undefined);
-const result = getResult();
+await waitFor(() => getResult() !== undefined)
+const result = getResult()
 ```
 
 ## Quick Patterns
 
-| Scenario | Pattern |
-|---|---|
+| Scenario       | Pattern                                              |
+| -------------- | ---------------------------------------------------- |
 | Wait for event | `waitFor(() => events.find(e => e.type === 'DONE'))` |
-| Wait for state | `waitFor(() => machine.state === 'ready')` |
-| Wait for count | `waitFor(() => items.length >= 5)` |
-| Wait for file | `waitFor(() => fs.existsSync(path))` |
+| Wait for state | `waitFor(() => machine.state === 'ready')`           |
+| Wait for count | `waitFor(() => items.length >= 5)`                   |
+| Wait for file  | `waitFor(() => fs.existsSync(path))`                 |
 
 ## Implementation
 
@@ -446,14 +466,14 @@ async function waitFor<T>(
   description: string,
   timeoutMs = 5000
 ): Promise<T> {
-  const startTime = Date.now();
+  const startTime = Date.now()
   while (true) {
-    const result = condition();
-    if (result) return result;
+    const result = condition()
+    if (result) return result
     if (Date.now() - startTime > timeoutMs) {
-      throw new Error(`Timeout waiting for ${description} after ${timeoutMs}ms`);
+      throw new Error(`Timeout waiting for ${description} after ${timeoutMs}ms`)
     }
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise(r => setTimeout(r, 10))
   }
 }
 ```
@@ -468,8 +488,8 @@ async function waitFor<T>(
 
 ```typescript
 // Tool ticks every 100ms — need 2 ticks to verify partial output
-await waitForEvent(manager, 'TOOL_STARTED');   // First: wait for condition
-await new Promise(r => setTimeout(r, 200));    // Then: wait for timed behavior
+await waitForEvent(manager, 'TOOL_STARTED') // First: wait for condition
+await new Promise(r => setTimeout(r, 200)) // Then: wait for timed behavior
 // 200ms = 2 ticks at 100ms intervals — documented and justified
 ```
 

@@ -25,11 +25,13 @@ Dispatch the `code-reviewer` agent to catch issues before they cascade.
 ## When to Request Review
 
 **Mandatory:**
+
 - After each task in subagent-driven development
 - After completing a major feature
 - Before merge to main
 
 **Optional but valuable:**
+
 - When stuck — fresh perspective
 - Before refactoring — baseline check
 - After fixing a complex bug
@@ -56,23 +58,23 @@ BASE_SHA=$(git rev-parse origin/main)     # divergence from main
 
 Fill all placeholders before dispatching. Do not leave any placeholder empty:
 
-| Placeholder | Source |
-|---|---|
-| `{WHAT_WAS_IMPLEMENTED}` | what you just built — one sentence |
-| `{PLAN_OR_REQUIREMENTS}` | path to plan file, or inline requirements |
-| `{BASE_SHA}` | from Step 1 |
-| `{HEAD_SHA}` | from Step 1 |
-| `{DESCRIPTION}` | brief summary of changes — 1–3 bullets from `git log --oneline {BASE_SHA}..{HEAD_SHA}` |
+| Placeholder              | Source                                                                                 |
+| ------------------------ | -------------------------------------------------------------------------------------- |
+| `{WHAT_WAS_IMPLEMENTED}` | what you just built — one sentence                                                     |
+| `{PLAN_OR_REQUIREMENTS}` | path to plan file, or inline requirements                                              |
+| `{BASE_SHA}`             | from Step 1                                                                            |
+| `{HEAD_SHA}`             | from Step 1                                                                            |
+| `{DESCRIPTION}`          | brief summary of changes — 1–3 bullets from `git log --oneline {BASE_SHA}..{HEAD_SHA}` |
 
 Use the **Code Reviewer Agent Template** section below as the prompt for the `code-reviewer` agent.
 
 ### Step 3: Act on Feedback
 
-| Severity | Action |
-|---|---|
-| **Critical** | Fix immediately before any other work |
+| Severity      | Action                                          |
+| ------------- | ----------------------------------------------- |
+| **Critical**  | Fix immediately before any other work           |
 | **Important** | Fix before proceeding to the next task or batch |
-| **Minor** | Log for later — do not block progress |
+| **Minor**     | Log for later — do not block progress           |
 
 For pushback on reviewer findings — use the `receiving-code-review` skill.
 
@@ -91,6 +93,7 @@ For pushback on reviewer findings — use the `receiving-code-review` skill.
 ## Red Flags
 
 **Never:**
+
 - Skip review because "it's simple"
 - Ignore Critical issues
 - Proceed past next task with unfixed Important issues
@@ -173,6 +176,7 @@ Read the full diff before forming any opinion. Do not review code you have not s
 ## Review Checklist
 
 **Code Quality:**
+
 - [ ] Clean separation of concerns?
 - [ ] Proper error handling?
 - [ ] Type safety (if applicable)?
@@ -180,24 +184,28 @@ Read the full diff before forming any opinion. Do not review code you have not s
 - [ ] Edge cases handled?
 
 **Architecture:**
+
 - [ ] Sound design decisions?
 - [ ] Scalability considerations?
 - [ ] Performance implications?
 - [ ] Security concerns?
 
 **Testing:**
+
 - [ ] Tests actually test logic (not just mocks)?
 - [ ] Edge cases covered?
 - [ ] Integration tests where needed?
 - [ ] All tests passing?
 
 **Requirements:**
+
 - [ ] All plan requirements met?
 - [ ] Implementation matches spec?
 - [ ] No scope creep?
 - [ ] Breaking changes documented?
 
 **Production Readiness:**
+
 - [ ] Migration strategy if schema changes?
 - [ ] Backward compatibility considered?
 - [ ] Documentation complete?
@@ -209,31 +217,36 @@ Read the full diff before forming any opinion. Do not review code you have not s
 
 Use this to categorize — do not escalate severity for emphasis:
 
-| Severity | Definition |
-|---|---|
-| **Critical** | Bugs, security issues, data loss risk, broken functionality — blocks merge |
+| Severity      | Definition                                                                                              |
+| ------------- | ------------------------------------------------------------------------------------------------------- |
+| **Critical**  | Bugs, security issues, data loss risk, broken functionality — blocks merge                              |
 | **Important** | Architecture problems, missing required features, poor error handling, test gaps — fix before next task |
-| **Minor** | Code style, optimization opportunities, documentation improvements — non-blocking |
+| **Minor**     | Code style, optimization opportunities, documentation improvements — non-blocking                       |
 
 ---
 
 ## Output Format
 
 ### Strengths
+
 What is well done — be specific with file:line references.
 
 ### Issues
 
 #### Critical (Must Fix Before Merge)
+
 #### Important (Fix Before Next Task)
+
 #### Minor (Non-Blocking)
 
 **For each issue:**
+
 - `File:line` — what is wrong
 - Why it matters
 - How to fix (if not obvious)
 
 ### Recommendations
+
 Improvements for code quality, architecture, or process that do not fit the above categories.
 
 ### Assessment
@@ -247,6 +260,7 @@ Improvements for code quality, architecture, or process that do not fit the abov
 ## Rules
 
 **Do:**
+
 - Read the full diff before reviewing
 - Categorize by actual severity — not everything is Critical
 - Be specific: file:line, not vague descriptions
@@ -255,6 +269,7 @@ Improvements for code quality, architecture, or process that do not fit the abov
 - Give a clear verdict
 
 **Do not:**
+
 - Say "looks good" without checking every checklist item
 - Mark nitpicks as Critical
 - Give feedback on code you did not read

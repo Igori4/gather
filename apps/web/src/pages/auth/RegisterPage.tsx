@@ -55,75 +55,75 @@ export default function RegisterPage() {
 
   return (
     <Card>
-        <CardHeader>
-          <CardTitle>Create an account</CardTitle>
-          <CardDescription>Enter your details to get started</CardDescription>
-        </CardHeader>
+      <CardHeader>
+        <CardTitle>Create an account</CardTitle>
+        <CardDescription>Enter your details to get started</CardDescription>
+      </CardHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Jane Smith" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Jane Smith" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="jane@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="jane@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Min. 8 characters" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="Min. 8 characters" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
-            </CardContent>
+            {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
+          </CardContent>
 
-            <CardFooter className="flex flex-col gap-3">
-              <Button type="submit" className="w-full" disabled={mutation.isPending}>
-                {mutation.isPending ? 'Creating account…' : 'Create account'}
-              </Button>
-              <p className="text-sm text-muted-foreground text-center">
-                Already have an account?{' '}
-                <Link
-                  to="/login"
-                  className="font-medium text-primary underline-offset-4 hover:underline"
-                >
-                  Sign in
-                </Link>
-              </p>
-            </CardFooter>
-          </form>
-        </Form>
-      </Card>
+          <CardFooter className="flex flex-col gap-3">
+            <Button type="submit" className="w-full" disabled={mutation.isPending}>
+              {mutation.isPending ? 'Creating account…' : 'Create account'}
+            </Button>
+            <p className="text-sm text-muted-foreground text-center">
+              Already have an account?{' '}
+              <Link
+                to="/login"
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
+                Sign in
+              </Link>
+            </p>
+          </CardFooter>
+        </form>
+      </Form>
+    </Card>
   )
 }

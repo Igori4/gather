@@ -25,10 +25,12 @@ Convert static UI screenshots into maintainable frontend code with high visual f
 ## Scope Boundaries
 
 **In scope:**
+
 - New files and components created from the screenshot
 - Style tokens defined for this UI
 
 **Out of scope unless explicitly requested:**
+
 - Modifying existing components not visible in the screenshot
 - Refactoring existing styles or design tokens
 - Adding functionality not implied by the screenshot (routing, data fetching, state management)

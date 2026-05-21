@@ -42,30 +42,36 @@ If a requirement is unclear — state assumptions explicitly and ask before proc
 ## Implementation Rules
 
 ### 1. Respect Scope
+
 - Implement only the requested step or bounded change
 - Do not modify unrelated files or behavior
 - Do not perform opportunistic refactors unless explicitly asked
 
 ### 2. Preserve Existing Behavior
+
 - Keep external behavior unchanged outside the requested feature or fix
 - Maintain API compatibility unless the plan explicitly changes it
 - Avoid subtle side effects
 
 ### 3. Follow Project Standards
+
 - Use project-idiomatic patterns and naming
 - Keep imports, types, error handling, and component patterns consistent with existing code
 
 ### 4. Prefer Minimal, Reviewable Diffs
+
 - Make small, targeted edits
 - Avoid broad rewrites
 - Prefer explicit code over clever code
 
 ### 5. Surface Assumptions and Risks
+
 - State all assumptions explicitly before implementing
 - If blocked — return a blocker summary and options rather than guessing
 - Call out edge cases not addressed by the current step
 
 ### 6. Tests
+
 - If the plan step includes writing tests — follow the `test-driven-development` skill: write failing test first, verify it fails, then implement
 - If tests for changed behavior are missing and not in scope for this step — flag them explicitly in the output under "What to Test Next"
 - Do not silently ship changed behavior without test coverage noted

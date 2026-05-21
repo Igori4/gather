@@ -25,15 +25,18 @@ Execute a plan by dispatching a fresh subagent per task, with two-stage review a
 ## When to Use
 
 **Use this skill when:**
+
 - You have an implementation plan
 - Tasks are mostly independent (no tight sequential coupling)
 - You are staying in the current session
 
 **Use `executing-plans` skill instead when:**
+
 - Tasks must be executed in a parallel session
 - Human review is required between every task (not just per batch)
 
 **Use `brainstorming` skill first when:**
+
 - No plan exists yet
 
 ---
@@ -76,13 +79,13 @@ When dispatching any subagent — provide full task text directly. Do not make s
 
 Context to include per task (include only what is relevant — do not dump everything):
 
-| Context item | Include when |
-|---|---|
-| Where this task fits in the plan | always |
-| What prior tasks produced | task builds on prior work |
+| Context item                         | Include when                   |
+| ------------------------------------ | ------------------------------ |
+| Where this task fits in the plan     | always                         |
+| What prior tasks produced            | task builds on prior work      |
 | Architectural decisions already made | task touches existing patterns |
-| Dependencies and constraints | task has explicit dependencies |
-| Things to avoid | known pitfalls exist |
+| Dependencies and constraints         | task has explicit dependencies |
+| Things to avoid                      | known pitfalls exist           |
 
 ---
 
@@ -91,6 +94,7 @@ Context to include per task (include only what is relevant — do not dump every
 When a reviewer finds issues — resume the `feature-implementer` with reviewer findings rather than dispatching a new one. Resuming preserves full implementation context.
 
 **If the agent context was lost** — dispatch a fresh `feature-implementer` with:
+
 - Original full task text
 - All context from initial dispatch
 - Reviewer findings appended as "Issues to fix before reporting back"
@@ -229,13 +233,16 @@ or
 **Only dispatch after spec compliance review is ✅.**
 
 **Before dispatching — get SHAs:**
+
 ```bash
 git log --oneline -10
 ```
+
 - `BASE_SHA` = commit immediately before `feature-implementer`'s first commit for this task
 - `HEAD_SHA` = latest commit after all implementer fixes
 
 Use the `requesting-code-review` skill with the `code-reviewer` agent:
+
 - `WHAT_WAS_IMPLEMENTED`: from implementer's report
 - `PLAN_OR_REQUIREMENTS`: Task N from [plan-file]
 - `BASE_SHA`: [commit before this task]
@@ -248,7 +255,7 @@ Use the `requesting-code-review` skill with the `code-reviewer` agent:
 
 **Dispatch the `code-reviewer` agent after all tasks are complete.**
 
-```
+````
 You are the code-reviewer agent doing a final review of the complete implementation before merge.
 
 ## What Was Built
@@ -267,11 +274,12 @@ HEAD_SHA: [current HEAD]
 ```bash
 git diff --stat {BASE_SHA}..{HEAD_SHA}
 git diff {BASE_SHA}..{HEAD_SHA}
-```
+````
 
 ## Your Job
 
 Review the full implementation for:
+
 - All plan requirements met across all tasks
 - No regressions introduced between tasks
 - Consistent patterns and conventions across the full changeset
@@ -279,6 +287,7 @@ Review the full implementation for:
 
 Output format:
 Strengths / Issues (Critical, Important, Minor) / Assessment (Ready to merge? Yes/No/With fixes)
+
 ```
 
 ---
@@ -286,6 +295,7 @@ Strengths / Issues (Critical, Important, Minor) / Assessment (Ready to merge? Ye
 ## Example Workflow
 
 ```
+
 [Read plan: docs/plans/feature-plan.md]
 [Extract all 5 tasks with full text and context]
 [Create TodoWrite with all 5 tasks]
@@ -299,10 +309,11 @@ You: "User level (~/.config/superpowers/hooks/)"
 [Re-dispatch feature-implementer with answer]
 
 feature-implementer reports:
-  - Implemented install-hook command
-  - 5/5 tests passing
-  - Self-review: missed --force flag, added it
-  - Committed
+
+- Implemented install-hook command
+- 5/5 tests passing
+- Self-review: missed --force flag, added it
+- Committed
 
 [Dispatch spec compliance reviewer]
 Spec reviewer: ✅ Spec compliant
@@ -317,14 +328,16 @@ code-reviewer: No issues. Assessment: Ready to merge.
 [Dispatch feature-implementer with full Task 2 text + context]
 
 feature-implementer reports:
-  - Added verify/repair modes
-  - 8/8 tests passing
-  - Committed
+
+- Added verify/repair modes
+- 8/8 tests passing
+- Committed
 
 [Dispatch spec compliance reviewer]
 Spec reviewer: ❌ Issues:
-  - Missing: progress reporting (spec says "report every 100 items") — indexer.ts:130
-  - Extra: --json flag added (not requested) — cli.ts:44
+
+- Missing: progress reporting (spec says "report every 100 items") — indexer.ts:130
+- Extra: --json flag added (not requested) — cli.ts:44
 
 [Resume feature-implementer with reviewer findings]
 feature-implementer: removed --json flag, added progress reporting
@@ -349,6 +362,7 @@ code-reviewer: ✅ Approved
 code-reviewer: All requirements met. Ready to merge.
 
 [Use finishing-a-development-branch skill]
+
 ```
 
 ---
@@ -402,3 +416,4 @@ If any task is blocked — stop, report the blocker, and wait. Do not skip to th
 ---
 
 Worker compliance: followed subagent-driven-dev format
+```

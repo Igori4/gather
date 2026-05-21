@@ -36,6 +36,7 @@ npx lighthouse <URL> --output=json --output-path=./lighthouse-report.json --chro
 ```
 
 **Record these metrics:**
+
 - Performance score (0–100)
 - LCP — Largest Contentful Paint (target: < 2.5s)
 - CLS — Cumulative Layout Shift (target: < 0.1)
@@ -60,12 +61,12 @@ ls -lh .next/static/chunks/ | sort -k5 -rh | head -10
 
 ## Phase 2: Identify the Bottleneck
 
-| Symptom | Likely cause |
-|---|---|
-| High LCP | Unoptimized images, render-blocking JS/CSS, slow TTFB |
-| High CLS | Images without dimensions, injected content above fold |
-| High INP / TBT | Large JS bundles, long tasks on main thread |
-| Large bundle | Unused deps, no code splitting, full library imports |
+| Symptom        | Likely cause                                           |
+| -------------- | ------------------------------------------------------ |
+| High LCP       | Unoptimized images, render-blocking JS/CSS, slow TTFB  |
+| High CLS       | Images without dimensions, injected content above fold |
+| High INP / TBT | Large JS bundles, long tasks on main thread            |
+| Large bundle   | Unused deps, no code splitting, full library imports   |
 
 Pick the **top 1–2 issues by measured impact**. Do not fix everything at once.
 
@@ -76,21 +77,25 @@ Pick the **top 1–2 issues by measured impact**. Do not fix everything at once.
 One change at a time — multiple simultaneous changes make verification meaningless.
 
 **Common LCP fixes:**
+
 - Convert images to WebP/AVIF
 - Add `fetchpriority="high"` to the LCP element
 - Use `next/image` for automatic optimization
 - Remove `loading="lazy"` from above-the-fold images
 
 **Common TBT/INP fixes:**
+
 - Code-split with `React.lazy()` + `Suspense`
 - Defer heavy third-party scripts
 - Break up long synchronous tasks
 
 **Common bundle fixes:**
+
 - Named imports: `import { debounce } from 'lodash-es'` not `import _ from 'lodash'`
 - Replace heavy libs with lighter alternatives
 
 **Common CLS fixes:**
+
 - Add explicit `width` and `height` to all `<img>` tags
 - Reserve space for dynamic content with `min-height`
 
@@ -105,6 +110,7 @@ npx lighthouse <URL> --output=json --output-path=./lighthouse-report-after.json 
 ```
 
 Compare before vs. after:
+
 - Did the target metric improve?
 - Did any other metric regress?
 - Is the improvement meaningful? (> 10% for scores, > 200ms for time metrics)

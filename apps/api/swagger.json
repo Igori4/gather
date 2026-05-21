@@ -74,9 +74,7 @@
   "paths": {
     "/auth/register": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Register a new user",
         "requestBody": {
           "required": true,
@@ -84,11 +82,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "email",
-                  "password",
-                  "name"
-                ],
+                "required": ["email", "password", "name"],
                 "properties": {
                   "email": {
                     "type": "string",
@@ -150,9 +144,7 @@
     },
     "/auth/login": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Log in with email and password",
         "requestBody": {
           "required": true,
@@ -160,10 +152,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "email",
-                  "password"
-                ],
+                "required": ["email", "password"],
                 "properties": {
                   "email": {
                     "type": "string",
@@ -211,9 +200,7 @@
     },
     "/auth/refresh": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Refresh access token using the httpOnly refresh cookie",
         "responses": {
           "200": {
@@ -246,9 +233,7 @@
     },
     "/auth/logout": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Logout — revokes all refresh tokens and clears the cookie",
         "security": [
           {
@@ -274,9 +259,7 @@
     },
     "/auth/me": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Get the current authenticated user",
         "security": [
           {
@@ -309,9 +292,7 @@
     },
     "/api/groups": {
       "post": {
-        "tags": [
-          "Groups"
-        ],
+        "tags": ["Groups"],
         "summary": "Create a new group (creator becomes admin)",
         "security": [
           {
@@ -324,9 +305,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "name"
-                ],
+                "required": ["name"],
                 "properties": {
                   "name": {
                     "type": "string"
@@ -373,9 +352,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Groups"
-        ],
+        "tags": ["Groups"],
         "summary": "List all groups the current user belongs to",
         "security": [
           {
@@ -411,9 +388,7 @@
     },
     "/api/groups/accept-invite": {
       "post": {
-        "tags": [
-          "Groups"
-        ],
+        "tags": ["Groups"],
         "summary": "Accept an invitation token and join the group",
         "security": [
           {
@@ -426,9 +401,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "token"
-                ],
+                "required": ["token"],
                 "properties": {
                   "token": {
                     "type": "string"
@@ -474,9 +447,7 @@
     },
     "/api/groups/{id}": {
       "get": {
-        "tags": [
-          "Groups"
-        ],
+        "tags": ["Groups"],
         "summary": "Get a single group with its members (members only)",
         "security": [
           {
@@ -529,9 +500,7 @@
     },
     "/api/groups/{id}/invite": {
       "post": {
-        "tags": [
-          "Groups"
-        ],
+        "tags": ["Groups"],
         "summary": "Generate an invitation token (admin only)",
         "security": [
           {
@@ -554,10 +523,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "email",
-                  "role"
-                ],
+                "required": ["email", "role"],
                 "properties": {
                   "email": {
                     "type": "string",
@@ -565,10 +531,7 @@
                   },
                   "role": {
                     "type": "string",
-                    "enum": [
-                      "admin",
-                      "member"
-                    ]
+                    "enum": ["admin", "member"]
                   }
                 }
               }

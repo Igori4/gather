@@ -1,4 +1,9 @@
-import type { RegisterInput, LoginInput, ForgotPasswordInput, ResetPasswordInput } from '@gather/shared'
+import type {
+  RegisterInput,
+  LoginInput,
+  ForgotPasswordInput,
+  ResetPasswordInput,
+} from '@gather/shared'
 import { api } from '@/lib/axios'
 import type { AuthUser } from '@/stores/authStore'
 

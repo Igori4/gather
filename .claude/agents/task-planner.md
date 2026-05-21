@@ -42,6 +42,7 @@ If the task is ambiguous or too large to plan as a single unit — state that be
 ### 1. Clarify the Goal
 
 Restate the task in precise implementation terms:
+
 - What behavior should change
 - What must remain unchanged
 - What is explicitly out of scope
@@ -49,6 +50,7 @@ Restate the task in precise implementation terms:
 ### 2. Minimize Scope
 
 Prefer the smallest viable implementation:
+
 - Identify exact files and modules likely to change
 - Avoid broad refactors unless required by the task
 - Preserve public APIs unless the task explicitly requires changes

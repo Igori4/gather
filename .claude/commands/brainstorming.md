@@ -1,5 +1,5 @@
 ---
-description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
+description: 'You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation.'
 ---
 
 # Brainstorming Ideas Into Designs
@@ -15,6 +15,7 @@ Start by understanding the current task scope, then ask questions one at a time 
 ## The Process
 
 **Understanding the idea:**
+
 - Check current task scope: relevant files, docs, and recent changes in scope only
 - Avoid broad codebase sweeps unless explicitly requested
 - Ask questions one at a time to refine the idea
@@ -23,11 +24,13 @@ Start by understanding the current task scope, then ask questions one at a time 
 - Focus on understanding: purpose, constraints, success criteria
 
 **Exploring approaches:**
+
 - Propose 2-3 different approaches with trade-offs
 - Present options conversationally with your recommendation and reasoning
 - Lead with your recommended option and explain why
 
 **Presenting the design:**
+
 - Once you believe you understand what you're building, present the design
 - Break it into sections of 200-300 words
 - Ask after each section whether it looks right so far
@@ -39,9 +42,11 @@ Start by understanding the current task scope, then ask questions one at a time 
 ## After the Design
 
 **Documentation:**
+
 - Create `docs/plans/` if it doesn't exist, then write the validated design to `docs/plans/YYYY-MM-DD-<topic>-design.md`
 
 **Implementation (if continuing):**
+
 - Ask: "Ready to set up for implementation?"
 - Use the writing-plans skill to create a detailed implementation plan
 
@@ -50,6 +55,7 @@ Start by understanding the current task scope, then ask questions one at a time 
 ## Output Contract
 
 A complete brainstorming session must produce:
+
 - Confirmed understanding of purpose, constraints, and success criteria
 - 2-3 explored approaches with trade-offs and a clear recommendation
 - Design document validated section by section with user confirmation

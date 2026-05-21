@@ -8,7 +8,12 @@
 import { Router } from 'express'
 import bcrypt from 'bcrypt'
 import crypto from 'crypto'
-import { RegisterSchema, LoginSchema, ForgotPasswordSchema, ResetPasswordSchema } from '@gather/shared'
+import {
+  RegisterSchema,
+  LoginSchema,
+  ForgotPasswordSchema,
+  ResetPasswordSchema,
+} from '@gather/shared'
 import { prisma } from '../lib/prisma'
 import { signAccessToken, signRefreshToken, hashToken, verifyRefreshToken } from '../lib/jwt'
 import { requireAuth, AuthRequest } from '../middleware/auth'
@@ -22,8 +27,8 @@ function setRefreshCookie(res: import('express').Response, token: string) {
   res.cookie('refreshToken', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
-    sameSite: 'strict',                            // blocks cross-site requests
-    maxAge: 7 * 24 * 60 * 60 * 1000,              // 7 days in ms
+    sameSite: 'strict', // blocks cross-site requests
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
   })
 }
 

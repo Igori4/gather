@@ -31,6 +31,7 @@ Guide completion of development work by presenting clear options and handling th
 3. Run the detected test command
 
 **If tests fail:**
+
 ```
 Tests failing (<N> failures). Must fix before completing:
 
@@ -94,6 +95,7 @@ git merge <feature-branch>
 ```
 
 If tests pass after merge:
+
 ```bash
 git branch -d <feature-branch>
 ```
@@ -117,6 +119,7 @@ git log <base-branch>..HEAD --oneline
 ```
 
 **If `gh` CLI is available:**
+
 ```bash
 gh pr create --title "<derived from branch name or last commit>" --body "$(cat <<'EOF'
 ## Summary
@@ -159,6 +162,7 @@ Type 'discard' to confirm, or anything else to cancel.
 Wait. Do not proceed until "discard" is received exactly.
 
 If confirmed:
+
 ```bash
 # Ensure we are not on the branch being deleted
 git checkout <base-branch>
@@ -175,11 +179,13 @@ Then: proceed to Step 5 (cleanup worktree).
 **Only for Options 1 and 4.**
 
 Check if a worktree exists for this branch:
+
 ```bash
 git worktree list | grep <feature-branch>
 ```
 
 If found:
+
 ```bash
 git worktree remove <worktree-path>
 ```
@@ -192,18 +198,19 @@ If not found — skip silently.
 
 ## Option / Worktree Reference
 
-| Option | Merge | Push | Worktree | Branch |
-|--------|-------|------|----------|--------|
-| 1. Merge locally | ✓ | — | Remove | Delete (`-d`) |
-| 2. Create PR | — | ✓ | Keep | Keep |
-| 3. Keep as-is | — | — | Keep | Keep |
-| 4. Discard | — | — | Remove | Delete (`-D`) |
+| Option           | Merge | Push | Worktree | Branch        |
+| ---------------- | ----- | ---- | -------- | ------------- |
+| 1. Merge locally | ✓     | —    | Remove   | Delete (`-d`) |
+| 2. Create PR     | —     | ✓    | Keep     | Keep          |
+| 3. Keep as-is    | —     | —    | Keep     | Keep          |
+| 4. Discard       | —     | —    | Remove   | Delete (`-D`) |
 
 ---
 
 ## Red Flags
 
 **Never:**
+
 - Proceed past Step 1 with failing tests
 - Merge without re-verifying tests on the merged result
 - Delete work without typed "discard" confirmation
@@ -211,6 +218,7 @@ If not found — skip silently.
 - Run `git branch -D` while still on that branch
 
 **Always:**
+
 - Detect test command from project config — do not guess
 - Derive PR content from `git log` — do not invent
 - Present exactly 4 options and wait for input
@@ -236,6 +244,7 @@ If tests fail in Step 1 — output stops there. Report failures clearly.
 ## Integration
 
 **Called by:**
+
 - `subagent-driven-development` — after all tasks complete
 - `executing-plans` — after all batches complete
 

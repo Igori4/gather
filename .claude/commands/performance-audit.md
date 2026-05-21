@@ -46,6 +46,7 @@ npx lighthouse <URL> --output=json --output-path=./lighthouse-report.json --chro
 If a URL isn't available yet, use DevTools → Lighthouse tab on the local dev server.
 
 **Record these metrics:**
+
 - Performance score (0–100)
 - LCP — Largest Contentful Paint (target: < 2.5s)
 - CLS — Cumulative Layout Shift (target: < 0.1)
@@ -69,6 +70,7 @@ ls -lh dist/assets/ || ls -lh .next/static/chunks/
 ### Check Network
 
 DevTools → Network tab → disable cache → reload. Note:
+
 - Total transfer size and request count
 - Largest resources (images, JS chunks)
 - Waterfall bottlenecks (long chains of sequential requests)
@@ -79,13 +81,13 @@ DevTools → Network tab → disable cache → reload. Note:
 
 Categorize the primary issue based on what Lighthouse flagged. Most perf problems fall into one bucket:
 
-| Symptom | Likely cause |
-|---|---|
-| High LCP | Unoptimized images, render-blocking JS/CSS, slow server response (TTFB) |
-| High CLS | Images without dimensions, injected content above fold, font swap |
-| High INP / TBT | Large JS bundles, long tasks on main thread, heavy event handlers |
-| High FCP | Render-blocking resources, slow TTFB |
-| Large bundle | Unused deps, no code splitting, full library imports |
+| Symptom        | Likely cause                                                            |
+| -------------- | ----------------------------------------------------------------------- |
+| High LCP       | Unoptimized images, render-blocking JS/CSS, slow server response (TTFB) |
+| High CLS       | Images without dimensions, injected content above fold, font swap       |
+| High INP / TBT | Large JS bundles, long tasks on main thread, heavy event handlers       |
+| High FCP       | Render-blocking resources, slow TTFB                                    |
+| Large bundle   | Unused deps, no code splitting, full library imports                    |
 
 Pick the **top 1–2 issues by measured impact**. Do not try to fix everything at once — it makes verification meaningless.
 
@@ -107,6 +109,7 @@ grep -r "fetchpriority\|priority" src/ --include="*.tsx" --include="*.jsx"
 ```
 
 Common fixes:
+
 - Convert images to WebP/AVIF
 - Add `fetchpriority="high"` to the LCP element
 - Use `next/image` (handles format, sizing, lazy loading automatically)
@@ -124,6 +127,7 @@ grep -r "^import" src/ --include="*.tsx" | grep -v "from 'react'" | head -30
 ```
 
 Common fixes:
+
 - Code-split with `React.lazy()` + `Suspense` for below-fold components
 - Defer heavy third-party scripts (`<Script strategy="lazyOnload">` in Next.js)
 - Move expensive computation to a Web Worker
@@ -140,6 +144,7 @@ npx bundlephobia <package-name>
 ```
 
 Common fixes:
+
 - Import only what you use: `import { debounce } from 'lodash-es'` not `import _ from 'lodash'`
 - Replace heavy libs with lighter alternatives (e.g., `date-fns` instead of `moment`)
 - Enable tree-shaking: use ES module imports, not CommonJS
@@ -148,6 +153,7 @@ Common fixes:
 ### CLS — layout shifting
 
 Common fixes:
+
 - Add `width` and `height` to all `<img>` tags (browser reserves space before image loads)
 - Reserve space for ads/embeds with `min-height` on the container
 - Use `font-display: optional` or match fallback font metrics to avoid FOUT shift
@@ -172,6 +178,7 @@ npx lighthouse <URL> --output=json --output-path=./lighthouse-report-after.json 
 ```
 
 Compare before vs. after:
+
 - Did the target metric improve?
 - Did any other metric regress?
 - Is the improvement meaningful? (> 10% for scores, > 200ms for time-based metrics)

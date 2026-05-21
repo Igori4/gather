@@ -31,12 +31,14 @@ Load plan, review critically, execute tasks in batches, report for review betwee
 3. Review critically — classify any issues found:
 
 **Critical gap** (stop and raise before starting):
+
 - A required dependency or file does not exist
 - An instruction contradicts another instruction
 - The approach conflicts with existing architecture in a way the plan doesn't address
 - A verification step is impossible as written
 
 **Minor concern** (note it, proceed):
+
 - Naming or style ambiguity that has a reasonable default
 - A step that is more complex than anticipated but still actionable
 - Missing context that can be inferred from existing code
@@ -49,11 +51,13 @@ Load plan, review critically, execute tasks in batches, report for review betwee
 ### Step 2: Execute Batch
 
 **Batch size:** default 3 tasks, adjusted by complexity:
+
 - Simple tasks (config changes, type fixes, straightforward additions) → up to 5
 - Complex tasks (new subsystems, data flow changes, cross-cutting concerns) → 1–2
 - Mixed → use judgment, keep batch reviewable in one sitting
 
 For each task in the batch:
+
 1. Mark as `in_progress`
 2. Follow each step exactly — the plan has bite-sized steps for a reason
 3. Run verifications as specified in the plan
@@ -61,13 +65,13 @@ For each task in the batch:
 
 **Which agent to use per task type:**
 
-| Task type | Agent to dispatch |
-|---|---|
-| Implementation step | `feature-implementer` |
-| Writing or updating tests | `test-engineer` |
-| Unfamiliar API or library | `api-researcher` before implementing |
-| Code cleanup after implementation | `code-simplifier` |
-| Verification / acceptance check | `acceptance-checker` |
+| Task type                         | Agent to dispatch                    |
+| --------------------------------- | ------------------------------------ |
+| Implementation step               | `feature-implementer`                |
+| Writing or updating tests         | `test-engineer`                      |
+| Unfamiliar API or library         | `api-researcher` before implementing |
+| Code cleanup after implementation | `code-simplifier`                    |
+| Verification / acceptance check   | `acceptance-checker`                 |
 
 For straightforward tasks — execute directly without dispatching a separate agent.
 For complex or risky tasks — dispatch the appropriate agent with full task context from the plan.
@@ -77,6 +81,7 @@ For complex or risky tasks — dispatch the appropriate agent with full task con
 ### Step 3: Report
 
 When batch is complete, report:
+
 - What was implemented (one line per task)
 - Which agents were dispatched and for which tasks
 - Verification output for each task
@@ -90,6 +95,7 @@ Then wait. Do not start the next batch until feedback is received.
 ### Step 4: Continue
 
 Based on feedback:
+
 - Apply requested changes if needed
 - Execute next batch (return to Step 2)
 - Repeat until all tasks complete
@@ -109,6 +115,7 @@ After all tasks are complete and verified:
 ## When to Stop and Ask for Help
 
 **STOP executing immediately when:**
+
 - A blocker appears mid-batch (missing dependency, test fails, instruction unclear)
 - A critical gap appears that wasn't visible during Step 1 review
 - Verification fails more than once for the same task
@@ -123,6 +130,7 @@ Do not continue the batch after hitting a blocker. Report what was completed, wh
 ## When to Revisit Earlier Steps
 
 **Return to Step 1 (Review) when:**
+
 - Partner updates the plan based on your feedback
 - Fundamental approach needs rethinking after a blocker
 
@@ -135,6 +143,7 @@ Do not continue the batch after hitting a blocker. Report what was completed, wh
 **Never start implementation on `main` or `master` branch without explicit user consent.**
 
 If current branch is `main`/`master` and the plan does not specify a branch:
+
 - Stop before Step 2
 - Ask which branch to use
 
@@ -159,10 +168,12 @@ If a batch is interrupted by a blocker — report completed tasks, state the blo
 ## Integration
 
 **Required workflow skills:**
+
 - `writing-plans` — creates the plan this skill executes
 - `finishing-a-development-branch` — completes development after all tasks
 
 **Subagents should use:**
+
 - `test-driven-development` — for TDD within each task that involves behavior changes
 
 ---

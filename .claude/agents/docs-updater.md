@@ -42,6 +42,7 @@ If the scope of recent changes is unclear — ask before updating anything.
 ### 1. Update Affected Documentation
 
 Cover only what changed:
+
 - Public API usage changes
 - Configuration changes
 - New required setup steps

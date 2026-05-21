@@ -45,15 +45,15 @@
   .dark {
     /* bg from inverse-surface, surfaces stepped lighter */
     --background: 30 8% 15%;
-    --foreground: 24 52% 94%;        /* inverse-on-surface */
+    --foreground: 24 52% 94%; /* inverse-on-surface */
 
     --card: 30 8% 22%;
     --card-foreground: 24 52% 94%;
 
-    --popover: 30 8% 19%;            /* inverse-surface exact */
+    --popover: 30 8% 19%; /* inverse-surface exact */
     --popover-foreground: 24 52% 94%;
 
-    --primary: 9 100% 83%;           /* inverse-primary */
+    --primary: 9 100% 83%; /* inverse-primary */
     --primary-foreground: 3 100% 12%;
 
     --secondary: 112 15% 30%;

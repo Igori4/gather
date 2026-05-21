@@ -1,36 +1,44 @@
-import { Request, Response, NextFunction } from 'express'
-import { verifyAccessToken } from '../lib/jwt'
+import { Request, Response, NextFunction } from 'express';
+import { verifyAccessToken } from '../lib/jwt';
 
 export interface AuthRequest extends Request {
-  userId: string
+  userId: string;
 }
 
-export function requireAuth(req: Request, res: Response, next: NextFunction): void {
-  const header = req.headers.authorization
+export function requireAuth(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) {
-    res.status(401).json({ error: 'Unauthorized' })
-    return
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
   }
   try {
-    const token = header.slice(7)
-    const payload = verifyAccessToken(token)
-    ;(req as AuthRequest).userId = payload.userId
-    next()
+    const token = header.slice(7);
+    const payload = verifyAccessToken(token);
+    (req as AuthRequest).userId = payload.userId;
+    next();
   } catch {
-    res.status(401).json({ error: 'Invalid or expired token' })
+    res.status(401).json({ error: 'Invalid or expired token' });
   }
 }
 
-export function requireGuest(req: Request, res: Response, next: NextFunction): void {
-  const header = req.headers.authorization
+export function requireGuest(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) {
-    next()
-    return
+    next();
+    return;
   }
   try {
-    verifyAccessToken(header.slice(7))
-    res.status(403).json({ error: 'Already authenticated' })
+    verifyAccessToken(header.slice(7));
+    res.status(403).json({ error: 'Already authenticated' });
   } catch {
-    next()
+    next();
   }
 }

@@ -65,17 +65,20 @@ If a changed file has no attack surface (e.g. config, docs, types only) — note
 Scan every item for every file with an attack surface. Priority order — stop and escalate Critical findings immediately, do not wait for the full checklist:
 
 **Critical priority (scan first):**
+
 - [ ] **Injection** — SQL, command, template, header injection
 - [ ] **Authentication** — auth checks on all protected operations?
 - [ ] **Authorization / IDOR** — access control verified, not just auth?
 - [ ] **Cryptography** — secure random, proper algorithms, no secrets in logs?
 
 **High priority:**
+
 - [ ] **XSS** — all outputs in templates properly escaped?
 - [ ] **CSRF** — state-changing operations protected?
 - [ ] **Race conditions** — TOCTOU in any read-then-write patterns?
 
 **Medium priority:**
+
 - [ ] **Session** — fixation, expiration, secure flags?
 - [ ] **Information disclosure** — error messages, logs, timing attacks?
 - [ ] **DoS** — unbounded operations, missing rate limits, resource exhaustion?
@@ -143,6 +146,7 @@ If Phase 1 returns an empty diff — stop and report that. No further phases nee
 ## After Review
 
 To address findings — route through `using-superpowers`:
+
 - Critical/High bugs → pipeline 2 (`bug-repro-triager -> feature-implementer -> ...`)
 - Security issues → pipeline 2 with `systematic-debugging` skill
 - Minor issues → log for later or pipeline 1

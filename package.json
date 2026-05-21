@@ -11,7 +11,7 @@
     "dev:api": "npm run dev --workspace=apps/api",
     "dev:auth": "npm run dev --workspace=apps/auth-app",
     "build": "npm run build --workspaces --if-present",
-    "lint": "eslint apps/*/src packages/*/src --ext .ts,.tsx",
+    "lint": "eslint apps/api/src apps/auth-app/src apps/web/src packages/shared/src",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "npm run typecheck --workspaces --if-present",

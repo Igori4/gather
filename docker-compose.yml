@@ -29,13 +29,13 @@ services:
     container_name: gather_mailpit
     restart: unless-stopped
     ports:
-      - '8025:8025'   # web UI
-      - '1025:1025'   # SMTP (unused by Resend, but available for nodemailer)
+      - '8025:8025' # web UI
+      - '1025:1025' # SMTP (unused by Resend, but available for nodemailer)
 
   # ─── API (Express) ───────────────────────────────────────────────────────────
   api:
     build:
-      context: .                          # monorepo root — gives Dockerfile access to all packages
+      context: . # monorepo root — gives Dockerfile access to all packages
       dockerfile: apps/api/Dockerfile.dev
     container_name: gather_api
     restart: unless-stopped
@@ -52,13 +52,13 @@ services:
       AUTH_APP_URL: http://auth-app:4001
       FRONTEND_URL: http://localhost:5173
     env_file:
-      - .env                              # provides JWT secrets, RESEND_API_KEY, etc.
+      - .env # provides JWT secrets, RESEND_API_KEY, etc.
     ports:
       - '4000:4000'
     volumes:
-      - ./apps/api:/workspace/apps/api              # hot-reload source
+      - ./apps/api:/workspace/apps/api # hot-reload source
       - ./packages/shared:/workspace/packages/shared # hot-reload shared schemas
-      - workspace_modules:/workspace/node_modules    # preserve container's node_modules
+      - workspace_modules:/workspace/node_modules # preserve container's node_modules
     # Run migrations first, then start the dev server WITHOUT dotenv-cli
     # (Docker already injects env vars — using dotenv would re-load .env and
     #  overwrite the DATABASE_URL above with the Supabase pooler URL)

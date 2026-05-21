@@ -1,10 +1,10 @@
-import { config } from 'dotenv'
-import { resolve } from 'path'
-import { defineConfig, env } from 'prisma/config'
+import { config } from 'dotenv';
+import { resolve } from 'path';
+import { defineConfig, env } from 'prisma/config';
 
-const root = resolve(__dirname, '../..')
-config({ path: resolve(root, '.env.local') })
-config({ path: resolve(root, '.env') })
+const root = resolve(__dirname, '../..');
+config({ path: resolve(root, '.env.local') });
+config({ path: resolve(root, '.env') });
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
@@ -14,4 +14,4 @@ export default defineConfig({
   datasource: {
     url: env('AUTH_DATABASE_URL'),
   },
-})
+});

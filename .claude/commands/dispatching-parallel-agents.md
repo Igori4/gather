@@ -37,12 +37,14 @@ Multiple failures?
 ```
 
 **Use when:**
+
 - 3+ test files failing with different root causes
 - Multiple subsystems broken independently
 - Each problem can be understood without context from others
 - No shared state between investigations
 
 **Don't use when:**
+
 - Failures are related (fix one might fix others)
 - Need to understand full system state first
 - Agents would edit the same files
@@ -67,15 +69,15 @@ If any condition fails — investigate together before dispatching.
 
 Match the problem domain to the correct agent:
 
-| Problem type | Agent to dispatch |
-|---|---|
+| Problem type                             | Agent to dispatch                           |
+| ---------------------------------------- | ------------------------------------------- |
 | Test failures, bugs, unexpected behavior | `bug-repro-triager` → `feature-implementer` |
-| Code quality, correctness review | `code-reviewer` |
-| Unfamiliar API or library behavior | `api-researcher` |
-| Algorithm or domain research | `research` |
-| New implementation step | `feature-implementer` |
-| Test coverage gaps | `test-engineer` |
-| Code clarity and maintainability | `code-simplifier` |
+| Code quality, correctness review         | `code-reviewer`                             |
+| Unfamiliar API or library behavior       | `api-researcher`                            |
+| Algorithm or domain research             | `research`                                  |
+| New implementation step                  | `feature-implementer`                       |
+| Test coverage gaps                       | `test-engineer`                             |
+| Code clarity and maintainability         | `code-simplifier`                           |
 
 Each dispatched agent must receive: specific scope, clear goal, constraints, and expected output format.
 
@@ -86,6 +88,7 @@ Each dispatched agent must receive: specific scope, clear goal, constraints, and
 ### 1. Identify Independent Domains
 
 Group failures by what's broken:
+
 - File A tests: Tool approval flow
 - File B tests: Batch completion behavior
 - File C tests: Abort functionality
@@ -95,6 +98,7 @@ Each domain is independent — fixing tool approval doesn't affect abort tests.
 ### 2. Create Focused Agent Tasks
 
 Each agent gets:
+
 - **Specific scope:** One test file or subsystem
 - **Clear goal:** Make these tests pass
 - **Constraints:** Don't change other code
@@ -103,15 +107,16 @@ Each agent gets:
 ### 3. Dispatch in Parallel
 
 ```typescript
-Agent("Fix agent-tool-abort.test.ts failures")
-Agent("Fix batch-completion-behavior.test.ts failures")
-Agent("Fix tool-approval-race-conditions.test.ts failures")
+Agent('Fix agent-tool-abort.test.ts failures')
+Agent('Fix batch-completion-behavior.test.ts failures')
+Agent('Fix tool-approval-race-conditions.test.ts failures')
 // All three run concurrently
 ```
 
 ### 4. Review and Integrate
 
 When agents return:
+
 - Read each summary
 - Verify fixes don't conflict (see Conflict Resolution below)
 - Run full test suite
@@ -122,6 +127,7 @@ When agents return:
 ## Agent Prompt Structure
 
 Good agent prompts are:
+
 1. **Focused** — one clear problem domain
 2. **Self-contained** — all context needed to understand the problem
 3. **Specific about output** — what should the agent return?
@@ -173,6 +179,7 @@ After agents return, check for conflicts before integrating:
 **No conflict:** agents edited different files → integrate directly, run full suite.
 
 **Conflict detected** (agents edited the same file or same function):
+
 1. Do not auto-merge
 2. Read both summaries to understand intent
 3. Manually reconcile the overlapping changes
@@ -198,6 +205,7 @@ After agents return:
 **Scenario:** 6 test failures across 3 files after major refactoring
 
 **Failures:**
+
 - `agent-tool-abort.test.ts`: 3 failures (timing issues)
 - `batch-completion-behavior.test.ts`: 2 failures (tools not executing)
 - `tool-approval-race-conditions.test.ts`: 1 failure (execution count = 0)
@@ -205,6 +213,7 @@ After agents return:
 **Independence check:** abort logic / batch completion / race conditions — separate subsystems, separate files ✓
 
 **Dispatch:**
+
 ```
 Agent 1 → bug-repro-triager: agent-tool-abort.test.ts
 Agent 2 → bug-repro-triager: batch-completion-behavior.test.ts
@@ -212,6 +221,7 @@ Agent 3 → bug-repro-triager: tool-approval-race-conditions.test.ts
 ```
 
 **Results:**
+
 - Agent 1: Replaced timeouts with event-based waiting
 - Agent 2: Fixed event structure bug (threadId in wrong place)
 - Agent 3: Added wait for async tool execution to complete

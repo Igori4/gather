@@ -17,10 +17,9 @@ export const app = express()
 app.use(helmet())
 
 // CORS — restrict to known frontend origins
-const allowedOrigins = [
-  'http://localhost:5173',
-  process.env.CORS_ORIGIN,
-].filter(Boolean) as string[]
+const allowedOrigins = ['http://localhost:5173', process.env.CORS_ORIGIN].filter(
+  Boolean
+) as string[]
 
 app.use(
   cors({
@@ -43,9 +42,7 @@ app.use(
     pathFilter: ['/auth', '/profile'],
     on: {
       error: (_err, _req, res) => {
-        (res as import('express').Response)
-          .status(502)
-          .json({ error: 'Auth service unavailable' })
+        ;(res as import('express').Response).status(502).json({ error: 'Auth service unavailable' })
       },
     },
   })

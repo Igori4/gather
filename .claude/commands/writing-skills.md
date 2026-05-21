@@ -35,6 +35,7 @@ NO SKILL WITHOUT A FAILING TEST FIRST
 Wrote the skill before running a baseline scenario? Delete it. Start over.
 
 **No exceptions:**
+
 - Not for "simple additions"
 - Not for "just adding a section"
 - Not for "documentation updates"
@@ -55,11 +56,13 @@ A skill is a reference guide for proven techniques, patterns, or tools that help
 ## When to Create a Skill
 
 **Create when:**
+
 - Technique was not intuitively obvious
 - You would reference it again across projects
 - Pattern applies broadly, not just to one project
 
 **Do not create for:**
+
 - One-off solutions
 - Standard practices well-documented elsewhere
 - Project-specific conventions — put those in the project's config file
@@ -69,24 +72,25 @@ A skill is a reference guide for proven techniques, patterns, or tools that help
 
 ## TDD Mapping for Skills
 
-| TDD Concept | Skill Creation |
-|---|---|
-| Test case | Pressure scenario with subagent |
-| Production code | Skill document (.md file) |
-| Test fails (RED) | Agent violates rule without skill (baseline) |
-| Test passes (GREEN) | Agent complies with skill present |
-| Refactor | Close loopholes while maintaining compliance |
-| Write test first | Run baseline scenario BEFORE writing skill |
-| Watch it fail | Document exact rationalizations agent uses |
-| Minimal code | Write skill addressing those specific violations |
-| Watch it pass | Verify agent now complies |
-| Refactor cycle | Find new rationalizations → plug → re-verify |
+| TDD Concept         | Skill Creation                                   |
+| ------------------- | ------------------------------------------------ |
+| Test case           | Pressure scenario with subagent                  |
+| Production code     | Skill document (.md file)                        |
+| Test fails (RED)    | Agent violates rule without skill (baseline)     |
+| Test passes (GREEN) | Agent complies with skill present                |
+| Refactor            | Close loopholes while maintaining compliance     |
+| Write test first    | Run baseline scenario BEFORE writing skill       |
+| Watch it fail       | Document exact rationalizations agent uses       |
+| Minimal code        | Write skill addressing those specific violations |
+| Watch it pass       | Verify agent now complies                        |
+| Refactor cycle      | Find new rationalizations → plug → re-verify     |
 
 ---
 
 ## Skill File Structure
 
 **Frontmatter (YAML):**
+
 - `description` — required, max 1024 characters total for all frontmatter
 - `allowed-tools` — optional
 - `argument-hint` — optional
@@ -99,18 +103,23 @@ description: Use when [specific triggering conditions and symptoms]
 # Skill Name
 
 ## Overview
+
 What is this? Core principle in 1–2 sentences.
 
 ## When to Use
+
 Bullet list with symptoms and use cases. When NOT to use.
 
 ## Core Pattern
+
 Before/after code comparison (for techniques and patterns).
 
 ## Quick Reference
+
 Table or bullets for scanning common operations.
 
 ## Common Mistakes
+
 What goes wrong and how to fix it.
 ```
 
@@ -143,6 +152,7 @@ description: Use when tests have race conditions, timing dependencies, or pass/f
 ```
 
 **Content rules:**
+
 - Describe the problem or context, not the skill's steps
 - Use concrete triggers and symptoms
 - Keep technology-agnostic unless the skill is technology-specific
@@ -152,6 +162,7 @@ description: Use when tests have race conditions, timing dependencies, or pass/f
 ### Keyword Coverage
 
 Use words Claude would search for:
+
 - Error messages: "Hook timed out", "race condition", "ENOTEMPTY"
 - Symptoms: "flaky", "hanging", "zombie", "pollution"
 - Synonyms: "timeout / hang / freeze", "cleanup / teardown / afterEach"
@@ -160,10 +171,12 @@ Use words Claude would search for:
 ### Token Efficiency
 
 **Target word counts:**
+
 - Frequently-loaded skills: under 200 words total
 - Other skills: under 500 words — still be concise
 
 **Techniques:**
+
 - Reference `--help` instead of documenting all flags inline
 - Cross-reference other skills instead of repeating their content
 - One excellent example beats multiple mediocre ones
@@ -172,6 +185,7 @@ Use words Claude would search for:
 ### Naming
 
 Use active voice, verb-first, gerunds work well for processes:
+
 - `condition-based-waiting` not `async-test-helpers`
 - `writing-plans` not `plan-writing`
 - `root-cause-tracing` not `debugging-techniques`
@@ -183,6 +197,7 @@ Use active voice, verb-first, gerunds work well for processes:
 ### RED — Write Failing Test (Baseline)
 
 Run pressure scenario with a subagent WITHOUT the skill. Document:
+
 - What choices did they make?
 - What rationalizations did they use (verbatim)?
 - Which pressures triggered violations?
@@ -203,12 +218,12 @@ Agent found a new rationalization? Add an explicit counter. Re-test until bullet
 
 ## Testing by Skill Type
 
-| Skill type | Test with | Success criteria |
-|---|---|---|
-| **Discipline-enforcing** (TDD, verification) | Pressure scenarios with combined stressors: time + sunk cost + exhaustion | Agent follows rule under maximum pressure |
-| **Technique** (condition-based-waiting) | Application scenarios, edge cases, missing-information tests | Agent successfully applies technique to new scenario |
-| **Pattern** (mental models) | Recognition scenarios, counter-examples | Agent correctly identifies when/how to apply |
-| **Reference** (API docs, guides) | Retrieval scenarios, gap testing | Agent finds and correctly applies reference information |
+| Skill type                                   | Test with                                                                 | Success criteria                                        |
+| -------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------- |
+| **Discipline-enforcing** (TDD, verification) | Pressure scenarios with combined stressors: time + sunk cost + exhaustion | Agent follows rule under maximum pressure               |
+| **Technique** (condition-based-waiting)      | Application scenarios, edge cases, missing-information tests              | Agent successfully applies technique to new scenario    |
+| **Pattern** (mental models)                  | Recognition scenarios, counter-examples                                   | Agent correctly identifies when/how to apply            |
+| **Reference** (API docs, guides)             | Retrieval scenarios, gap testing                                          | Agent finds and correctly applies reference information |
 
 ---
 
@@ -217,15 +232,18 @@ Agent found a new rationalization? Add an explicit counter. Re-test until bullet
 ### Close every loophole explicitly
 
 **Bad:**
+
 ```markdown
 Write code before test? Delete it.
 ```
 
 **Good:**
+
 ```markdown
 Write code before test? Delete it. Start over.
 
 No exceptions:
+
 - Do not keep it as "reference"
 - Do not "adapt" it while writing tests
 - Delete means delete
@@ -234,6 +252,7 @@ No exceptions:
 ### Address "spirit vs letter" arguments
 
 Add early in the skill:
+
 ```markdown
 **Violating the letter of the rules is violating the spirit of the rules.**
 ```
@@ -243,16 +262,17 @@ Add early in the skill:
 Capture every excuse agents used in baseline testing:
 
 ```markdown
-| Excuse | Reality |
-|---|---|
+| Excuse               | Reality                                    |
+| -------------------- | ------------------------------------------ |
 | "Too simple to test" | Simple code breaks. Test takes 30 seconds. |
-| "I'll test after" | Tests passing immediately prove nothing. |
+| "I'll test after"    | Tests passing immediately prove nothing.   |
 ```
 
 ### Create a Red Flags list
 
 ```markdown
 ## Red Flags — Stop and Start Over
+
 - [specific rationalization observed in baseline]
 - [another rationalization]
 
@@ -263,14 +283,14 @@ All of these mean: delete and start over.
 
 ## Common Mistakes
 
-| Mistake | Fix |
-|---|---|
-| Narrative example ("in session X we found...") | Rewrite as reusable pattern — remove session reference |
-| Multi-language examples | Keep one excellent example in the most relevant language |
-| Flowchart for linear steps | Use numbered list instead |
-| Generic labels (step1, helper2) | Labels must have semantic meaning |
-| Description summarizes workflow | Description = triggering conditions only |
-| Skill written before baseline test | Delete and follow Iron Law |
+| Mistake                                        | Fix                                                      |
+| ---------------------------------------------- | -------------------------------------------------------- |
+| Narrative example ("in session X we found...") | Rewrite as reusable pattern — remove session reference   |
+| Multi-language examples                        | Keep one excellent example in the most relevant language |
+| Flowchart for linear steps                     | Use numbered list instead                                |
+| Generic labels (step1, helper2)                | Labels must have semantic meaning                        |
+| Description summarizes workflow                | Description = triggering conditions only                 |
+| Skill written before baseline test             | Delete and follow Iron Law                               |
 
 ---
 
@@ -279,11 +299,13 @@ All of these mean: delete and start over.
 **Stop after each skill and complete this before starting the next.**
 
 **RED Phase:**
+
 - [ ] Pressure scenarios created (3+ combined pressures for discipline skills)
 - [ ] Scenarios run WITHOUT skill — baseline behavior documented verbatim
 - [ ] Rationalization patterns identified
 
 **GREEN Phase:**
+
 - [ ] Frontmatter: description starts with "Use when...", triggering conditions only, no workflow summary
 - [ ] Keywords throughout for search (errors, symptoms, tools)
 - [ ] Skill addresses specific baseline failures from RED — not hypothetical cases
@@ -291,12 +313,14 @@ All of these mean: delete and start over.
 - [ ] Scenarios run WITH skill — agent now complies
 
 **REFACTOR Phase:**
+
 - [ ] New rationalizations identified and countered
 - [ ] Rationalization table built from all test iterations
 - [ ] Red Flags list created
 - [ ] Re-tested until bulletproof
 
 **Quality:**
+
 - [ ] Word count within target (under 500 words for most skills)
 - [ ] No narrative storytelling or session-specific references
 - [ ] No slash-command syntax in cross-references — use skill names

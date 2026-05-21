@@ -111,7 +111,7 @@ The style is a blend of **Minimalism** and **Modern** design movements. It prior
 
 ## Colors
 
-This design system utilizes a palette inspired by natural transitions and organic materials. 
+This design system utilizes a palette inspired by natural transitions and organic materials.
 
 - **Sunset Orange (Primary):** Used for primary actions and key brand moments. It conveys energy and social warmth.
 - **Sage Green (Secondary):** Used for success states, secondary coordination tags, and balanced accents. It provides a grounding effect.
@@ -132,7 +132,7 @@ Page margins are set to a minimum of 24px on mobile to ensure the interface does
 
 ## Elevation & Depth
 
-Visual hierarchy is achieved primarily through **tonal layers** and **ambient shadows**. 
+Visual hierarchy is achieved primarily through **tonal layers** and **ambient shadows**.
 
 - **Depth Tiers:** Instead of heavy shadows, the system uses subtle color shifts in background surfaces to indicate nesting (e.g., a slightly darker neutral for a container background).
 - **Shadow Quality:** Where shadows are necessary (such as for floating action buttons or primary cards), they are extra-diffused with low opacity (10-15%) and a slight tint of the Primary or Secondary color. This prevents "dirty" gray shadows and keeps the UI feeling warm and illuminated by natural light.

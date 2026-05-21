@@ -70,9 +70,7 @@ export default function ForgotPasswordPage() {
     <Card>
       <CardHeader>
         <CardTitle>Forgot your password?</CardTitle>
-        <CardDescription>
-          Enter your email and we&apos;ll send you a reset link
-        </CardDescription>
+        <CardDescription>Enter your email and we&apos;ll send you a reset link</CardDescription>
       </CardHeader>
 
       <Form {...form}>

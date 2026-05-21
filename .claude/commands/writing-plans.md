@@ -61,47 +61,57 @@ Every plan must start with this header:
 
 ### Standard task (with TDD — use for all behavior changes):
 
-```markdown
+````markdown
 ### Task N: [Component Name]
 
 **Files:**
+
 - Create: `exact/path/to/file.ts`
 - Modify: `exact/path/to/existing.ts:123–145`
 - Test: `tests/exact/path/to/test.ts`
 
 **Step 1: Write the failing test**
+
 ```typescript
 test('specific behavior description', () => {
   const result = function(input);
   expect(result).toBe(expected);
 });
 ```
+````
 
 **Step 2: Run test — verify it fails**
+
 ```bash
 npm test tests/path/test.ts -- --testNamePattern="specific behavior"
 ```
+
 Expected: FAIL — "function is not defined" (or similar missing-feature message)
 
 **Step 3: Write minimal implementation**
+
 ```typescript
 function name(input: Type): ReturnType {
-  return expected;
+  return expected
 }
 ```
 
 **Step 4: Run test — verify it passes**
+
 ```bash
 npm test tests/path/test.ts -- --testNamePattern="specific behavior"
 ```
+
 Expected: PASS
 
 **Step 5: Commit**
+
 ```bash
 git add tests/path/test.ts src/path/file.ts
 git commit -m "feat: add specific feature"
 ```
-```
+
+````
 
 ---
 
@@ -127,8 +137,9 @@ Expected output: [what success looks like]
 ```bash
 git add exact/path/to/file
 git commit -m "chore: [description]"
-```
-```
+````
+
+````
 
 ---
 
@@ -149,7 +160,7 @@ Independent groups (can run in parallel):
 - Group A: Tasks 1, 2
 - Group B: Tasks 3, 4 (after Group A)
 - Group C: Task 5 (after Group B)
-```
+````
 
 This map is used by `subagent-driven-development` and `dispatching-parallel-agents` skills to determine which tasks can run concurrently.
 

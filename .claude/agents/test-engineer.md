@@ -40,6 +40,7 @@ If the behavior to be tested is unclear — list assumptions before writing any 
 ## TDD Integration
 
 For **bug fixes:** write a failing test that reproduces the bug before any fix is implemented. Follow the `test-driven-development` skill cycle:
+
 1. Write failing test — verify it fails for the right reason
 2. Fix is implemented (by `feature-implementer`)
 3. Verify test now passes

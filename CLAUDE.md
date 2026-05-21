@@ -19,22 +19,22 @@ gather/                          ← npm workspaces root
 
 ## Tech Stack
 
-| Layer        | Technology                                                          |
-|--------------|---------------------------------------------------------------------|
-| Frontend     | React 18, Vite, React Router v6, TanStack Query v5, Zustand, Axios |
-| Forms        | React Hook Form + `@hookform/resolvers` + Zod                      |
-| Maps         | Mapbox GL JS                                                        |
-| Charts       | Recharts                                                            |
-| Real-time    | Socket.IO (client ↔ server)                                         |
-| Backend      | Express 4, Helmet, CORS, express-rate-limit, cookie-parser          |
-| ORM          | Prisma 5 (PostgreSQL via Supabase)                                  |
-| Auth         | JWT (15m access / 7d refresh) + Google OAuth via Passport.js        |
-| Email        | Resend                                                              |
-| AI           | Google Gemini (`@google/generative-ai`, gemini-1.5-flash)           |
-| Validation   | Zod (shared schemas in `packages/shared`)                           |
-| Monitoring   | Sentry (frontend + backend, separate DSNs)                          |
-| Deploy       | Frontend → Vercel, Backend → Railway (~€5/mo)                       |
-| Node         | >=20.0.0                                                            |
+| Layer      | Technology                                                         |
+| ---------- | ------------------------------------------------------------------ |
+| Frontend   | React 18, Vite, React Router v6, TanStack Query v5, Zustand, Axios |
+| Forms      | React Hook Form + `@hookform/resolvers` + Zod                      |
+| Maps       | Mapbox GL JS                                                       |
+| Charts     | Recharts                                                           |
+| Real-time  | Socket.IO (client ↔ server)                                        |
+| Backend    | Express 4, Helmet, CORS, express-rate-limit, cookie-parser         |
+| ORM        | Prisma 5 (PostgreSQL via Supabase)                                 |
+| Auth       | JWT (15m access / 7d refresh) + Google OAuth via Passport.js       |
+| Email      | Resend                                                             |
+| AI         | Google Gemini (`@google/generative-ai`, gemini-1.5-flash)          |
+| Validation | Zod (shared schemas in `packages/shared`)                          |
+| Monitoring | Sentry (frontend + backend, separate DSNs)                         |
+| Deploy     | Frontend → Vercel, Backend → Railway (~€5/mo)                      |
+| Node       | >=20.0.0                                                           |
 
 ## Common Commands
 
@@ -70,17 +70,20 @@ npm run db:studio --workspace=apps/api
 **Update this section as PBIs complete.** Mark `[x]` when done, add notes if scope changed.
 
 ### Epic 1 — Auth & Security
+
 - [x] **PBI-1.1** Auth API — register, login, refresh, logout, `/me`, forgot/reset password → `apps/api/src/routes/auth.ts`
 - [x] **PBI-1.2** Auth UI — LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage → `apps/web/src/pages/auth/`
 - [x] **PBI-1.3** JWT + Zustand store + axios silent-refresh interceptor
 - [ ] **PBI-1.4** Google OAuth — Passport.js strategy on API + OAuth button on login/register pages
 
 ### Epic 2 — Groups
+
 - [x] **PBI-2.1** Groups API — create, list, get, invite by email, accept invitation → `apps/api/src/routes/groups.ts`
 - [ ] **PBI-2.2** Groups UI — GroupListPage (cards + create modal), GroupDetailPage (member list, roles) → `apps/web/src/pages/groups/`
 - [ ] **PBI-2.3** Group management — edit name/description/cover, remove member, leave group (admin-only guarded in API + UI)
 
 ### Epic 3 — Outing Planning Flow ← **core domain, start here after groups UI**
+
 - [ ] **PBI-3.1** Outings API — create outing, list for group, get detail → `apps/api/src/routes/outings.ts`
 - [ ] **PBI-3.2** Place search — Mapbox place search, add/remove place to outing
 - [ ] **PBI-3.3** Place voting API — cast vote (up/down), get tally per place
@@ -90,6 +93,7 @@ npm run db:studio --workspace=apps/api
 - [ ] **PBI-3.7** Outings list UI — OutingCard grid on GroupDetailPage, create outing modal
 
 ### Epic 4 — Real-Time (Socket.IO)
+
 - [ ] **PBI-4.1** Chat REST API — send (persists to DB), list messages (cursor pagination), edit/soft-delete own → `apps/api/src/routes/chat.ts`
 - [ ] **PBI-4.2** Socket.IO rooms — join/leave `outing:{id}` on mount/unmount, group membership auth guard → `apps/api/src/socket/`
 - [ ] **PBI-4.3** Live chat UI — `chat:message` + `chat:message:edited` events; ChatWindow + Message components; infinite scroll → `apps/web/src/components/chat/`
@@ -99,38 +103,45 @@ npm run db:studio --workspace=apps/api
 - [ ] **PBI-4.7** Presence indicators — `presence:join/leave`, avatar strip on outing page, unread badge on outing card
 
 ### Epic 5 — AI Suggestions (Gemini)
+
 - [ ] **PBI-5.1** Gemini service — client, prompt builder, Zod-validated JSON response, static fallback → `apps/api/src/lib/gemini.ts`
 - [ ] **PBI-5.2** AI suggestions API — `POST /api/groups/:id/ai-suggestions` (on-demand, 5/day limit), store in DB, dismiss endpoint → `apps/api/src/routes/ai.ts`
 - [ ] **PBI-5.3** AI suggestions UI — "Get ideas" button, spinner, 3 suggestion cards (name, category, why, cost, maps link)
 - [ ] **PBI-5.4** Weekly nudge cron — node-cron every Monday, inactive groups (14+ days), send Resend email with 2 suggestions → `apps/api/src/jobs/weeklyNudge.ts`
 
 ### Epic 6 — File Uploads (Supabase Storage)
+
 - [ ] **PBI-6.1** Upload service — presigned URL flow, MIME whitelist (jpg/png/webp), 5 MB limit → `apps/api/src/routes/uploads.ts` + `apps/api/src/lib/supabase.ts`
 - [ ] **PBI-6.2** Profile photo upload — avatar on UserProfilePage, URL saved to `users.avatar_url`
 - [ ] **PBI-6.3** Group cover image — cover on group create/edit modal
 - [ ] **PBI-6.4** Post-outing photos — upload on completed outing, stored in `outing_photos`, gallery view
 
 ### Epic 7 — History Feed & Stats
+
 - [ ] **PBI-7.1** Outing history feed — completed outings list, photo gallery per outing → `apps/web/src/pages/outings/OutingHistoryPage.tsx`
 - [ ] **PBI-7.2** Group stats — Recharts heatmap (outing frequency by month) + activity timeline on GroupDetailPage
 
 ### Epic 8 — Automated Emails
+
 - [x] **PBI-8.1** Invite email via Resend — already in groups API
 - [ ] **PBI-8.2** Reminder emails — 24h + 1h before confirmed outing; node-cron queries confirmed outings → `apps/api/src/jobs/reminderEmails.ts`
 
 ### Epic 9 — Testing
+
 - [x] **PBI-9.1** Auth + groups API tests (Jest + Supertest) → `apps/api/tests/`
 - [ ] **PBI-9.2** Outings/chat/AI/uploads API tests — route coverage to 80%
 - [ ] **PBI-9.3** Frontend unit tests — Vitest + RTL for hooks (useAuth, useChatRoom, usePresence, useOuting) + key components
 - [ ] **PBI-9.4** Playwright E2E — 4 scenarios: full flow, real-time (2 contexts), role guard, AI suggestions → `e2e/`
 
 ### Epic 10 — Production & Polish
+
 - [ ] **PBI-10.1** Sentry — frontend DSN in Vite, backend DSN in Express error handler
 - [ ] **PBI-10.2** Lighthouse audit — fix perf/a11y issues, reach score ≥85
 - [ ] **PBI-10.3** Railway deploy — Dockerfile.prod, env vars, health check
 - [ ] **PBI-10.4** README — one-command local setup, architecture diagram, feature walkthrough, cost table, badges
 
 ### Suggested implementation order
+
 ```
 PBI-1.4 → PBI-2.2 → PBI-2.3 →
 PBI-3.1 → PBI-3.2 → PBI-3.3 → PBI-3.4 → PBI-3.5 → PBI-3.6 → PBI-3.7 →
@@ -148,6 +159,7 @@ PBI-10.1 → PBI-10.2 → PBI-10.3 → PBI-10.4
 ## Conventions
 
 ### Shared Schemas (`packages/shared`)
+
 - All request/response shapes → Zod schemas in `packages/shared/src/schemas/`
 - Infer TS types from schemas — **never** duplicate type definitions
 - Both API handlers and frontend forms consume the same schema
@@ -157,6 +169,7 @@ PBI-10.1 → PBI-10.2 → PBI-10.3 → PBI-10.4
 ### API (`apps/api`)
 
 **File layout:**
+
 ```
 src/
 ├── routes/        ← one file per domain: auth.ts, groups.ts, outings.ts, chat.ts, ai.ts, uploads.ts
@@ -168,6 +181,7 @@ src/
 ```
 
 **Rules:**
+
 - Singleton `prisma` from `src/lib/prisma.ts` — never instantiate PrismaClient directly
 - Register routes in `src/app.ts`: `app.use('/api/outings', outingsRouter)` etc.
 - Auth middleware: `authenticate` from `src/middleware/auth.ts` — attaches `req.user`
@@ -177,6 +191,7 @@ src/
 - Services layer: extract DB logic from route handlers into `src/services/` for testability
 
 **Adding a new route file:**
+
 1. Create `src/routes/<domain>.ts` with an Express Router
 2. Register in `src/app.ts`: `app.use('/api/<domain>', domainRouter)`
 3. Add API tests in `tests/<domain>.test.ts`
@@ -184,6 +199,7 @@ src/
 ### Frontend (`apps/web`)
 
 **File layout:**
+
 ```
 src/
 ├── pages/
@@ -203,6 +219,7 @@ src/
 ```
 
 **Rules:**
+
 - HTTP client: `api` from `src/lib/axios.ts` — has silent 401→refresh interceptor, never use raw `fetch`
 - Socket: `getSocket()` / `connectSocket()` / `disconnectSocket()` from `src/lib/socket.ts`
 - Auth state: `useAuthStore` from `src/stores/authStore.ts` (Zustand)
@@ -211,11 +228,13 @@ src/
 - Path alias `@/` maps to `src/` — use it everywhere
 
 **Adding a new page:**
+
 1. Create `src/pages/<domain>/<PageName>.tsx`
 2. Add route to `src/routes/<domain>Routes.tsx`
 3. Compose into `src/App.tsx` via the routes file
 
 **TanStack Query pattern:**
+
 ```ts
 // hooks/useOutings.ts
 export function useOutings(groupId: string) {
@@ -254,6 +273,7 @@ export function useCreateOuting() {
 | `presence:leave` | server → room | `{ userId }` |
 
 **Client hook pattern:**
+
 ```ts
 // hooks/useChatRoom.ts
 useEffect(() => {
@@ -286,6 +306,7 @@ useEffect(() => {
 ### Testing
 
 **API (Jest + Supertest):**
+
 - Tests in `apps/api/tests/`, pattern `**/*.test.ts`
 - Coverage threshold: 80% lines + branches — enforced in CI
 - Uses `ts-jest`, `@gather/shared` mapped to local source
@@ -293,17 +314,20 @@ useEffect(() => {
 - Gemini client mocked — no real API calls in CI
 
 **Web (Vitest + RTL):**
+
 - Setup in `src/tests/setup.ts`
 - API calls mocked with MSW (`src/tests/handlers.ts`)
 - Test custom hooks, form validation, key components
 - Coverage threshold: 80%
 
 **E2E (Playwright):**
+
 - Config: `apps/web/playwright.config.ts`
 - 4 scenarios: full flow, real-time (2 contexts), role guard, AI suggestions
 - Runs on PRs targeting `main` only
 
 ### Code Style
+
 - TypeScript strict mode — no `any`, use Zod inference or explicit types
 - ESLint + Prettier enforced via Husky pre-commit (lint-staged)
 - Named exports preferred
@@ -316,23 +340,23 @@ useEffect(() => {
 
 All models in `apps/api/prisma/schema.prisma`. IDs are cuid strings.
 
-| Model | Key fields | Notes |
-|-------|-----------|-------|
-| `User` | id, email, passwordHash?, name, avatarUrl?, provider | provider = `"local"` or `"google"` |
-| `Group` | id, name, description?, coverImageUrl?, createdBy | |
-| `GroupMember` | groupId+userId (PK), role, joinedAt | role: `"admin"` \| `"member"` |
-| `Outing` | id, groupId, title, description?, status, createdBy, confirmedAt? | status: `"draft"` \| `"voting"` \| `"confirmed"` \| `"done"` |
-| `OutingPlace` | id, outingId, placeId, name, address, lat, lng, mapboxUrl?, addedBy | unique(outingId, placeId) |
-| `PlaceVote` | outingId+placeId+userId (PK), vote | vote: `"up"` \| `"down"` |
-| `TimeSlot` | id, outingId, proposedBy, startsAt, endsAt | |
-| `TimeSlotVote` | slotId+userId (PK), available (bool), votedAt | |
-| `RSVP` | outingId+userId (PK), status | status: `"going"` \| `"maybe"` \| `"not_going"` |
-| `ChatMessage` | id, outingId, userId, body, createdAt, editedAt? | |
-| `AiSuggestion` | id, groupId, payload (Json), generatedAt, dismissedAt? | payload = array of suggestions |
-| `OutingPhoto` | id, outingId, userId, url, caption?, uploadedAt | |
-| `Invitation` | id, groupId, email, role, token (unique), expiresAt, acceptedAt? | |
-| `RefreshToken` | id, userId, tokenHash, expiresAt, revoked | |
-| `PasswordResetToken` | id, userId, tokenHash (unique), expiresAt, usedAt? | |
+| Model                | Key fields                                                          | Notes                                                        |
+| -------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `User`               | id, email, passwordHash?, name, avatarUrl?, provider                | provider = `"local"` or `"google"`                           |
+| `Group`              | id, name, description?, coverImageUrl?, createdBy                   |                                                              |
+| `GroupMember`        | groupId+userId (PK), role, joinedAt                                 | role: `"admin"` \| `"member"`                                |
+| `Outing`             | id, groupId, title, description?, status, createdBy, confirmedAt?   | status: `"draft"` \| `"voting"` \| `"confirmed"` \| `"done"` |
+| `OutingPlace`        | id, outingId, placeId, name, address, lat, lng, mapboxUrl?, addedBy | unique(outingId, placeId)                                    |
+| `PlaceVote`          | outingId+placeId+userId (PK), vote                                  | vote: `"up"` \| `"down"`                                     |
+| `TimeSlot`           | id, outingId, proposedBy, startsAt, endsAt                          |                                                              |
+| `TimeSlotVote`       | slotId+userId (PK), available (bool), votedAt                       |                                                              |
+| `RSVP`               | outingId+userId (PK), status                                        | status: `"going"` \| `"maybe"` \| `"not_going"`              |
+| `ChatMessage`        | id, outingId, userId, body, createdAt, editedAt?                    |                                                              |
+| `AiSuggestion`       | id, groupId, payload (Json), generatedAt, dismissedAt?              | payload = array of suggestions                               |
+| `OutingPhoto`        | id, outingId, userId, url, caption?, uploadedAt                     |                                                              |
+| `Invitation`         | id, groupId, email, role, token (unique), expiresAt, acceptedAt?    |                                                              |
+| `RefreshToken`       | id, userId, tokenHash, expiresAt, revoked                           |                                                              |
+| `PasswordResetToken` | id, userId, tokenHash (unique), expiresAt, usedAt?                  |                                                              |
 
 ---
 
@@ -340,16 +364,16 @@ All models in `apps/api/prisma/schema.prisma`. IDs are cuid strings.
 
 See `.env.example` at root. **Never** hardcode secrets.
 
-| Group | Variables |
-|-------|-----------|
-| JWT | `JWT_SECRET`, `JWT_EXPIRES_IN`, `REFRESH_TOKEN_SECRET`, `REFRESH_TOKEN_EXPIRES_IN` |
-| DB | `DATABASE_URL` (Supabase PostgreSQL connection string) |
-| Supabase | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` |
-| Google OAuth | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` |
-| Email | `RESEND_API_KEY`, `EMAIL_FROM` |
-| AI | `GEMINI_API_KEY` |
-| Frontend | `VITE_API_URL`, `VITE_SOCKET_URL`, `VITE_MAPBOX_TOKEN`, `VITE_SENTRY_DSN` |
-| Backend | `SENTRY_DSN`, `CORS_ORIGIN`, `NODE_ENV` |
+| Group        | Variables                                                                          |
+| ------------ | ---------------------------------------------------------------------------------- |
+| JWT          | `JWT_SECRET`, `JWT_EXPIRES_IN`, `REFRESH_TOKEN_SECRET`, `REFRESH_TOKEN_EXPIRES_IN` |
+| DB           | `DATABASE_URL` (Supabase PostgreSQL connection string)                             |
+| Supabase     | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`                  |
+| Google OAuth | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`                  |
+| Email        | `RESEND_API_KEY`, `EMAIL_FROM`                                                     |
+| AI           | `GEMINI_API_KEY`                                                                   |
+| Frontend     | `VITE_API_URL`, `VITE_SOCKET_URL`, `VITE_MAPBOX_TOKEN`, `VITE_SENTRY_DSN`          |
+| Backend      | `SENTRY_DSN`, `CORS_ORIGIN`, `NODE_ENV`                                            |
 
 ---
 
@@ -415,6 +439,7 @@ POST   /api/uploads/presigned            ← returns Supabase presigned URL
 ```
 draft → voting → confirmed → done
 ```
+
 - `draft`: outing created, places being added
 - `voting`: place voting open (auto or admin triggers)
 - `confirmed`: admin confirmed place + time slot; triggers reminder email schedule
@@ -424,22 +449,22 @@ draft → voting → confirmed → done
 
 ## Key Existing Files
 
-| File | Purpose |
-|------|---------|
-| `apps/api/src/app.ts` | Express app, all middleware, route registration |
-| `apps/api/src/index.ts` | HTTP server entry, Socket.IO init |
-| `apps/api/src/routes/auth.ts` | Full auth API (436 lines, with OpenAPI docs) |
-| `apps/api/src/routes/groups.ts` | Groups API (312 lines) |
-| `apps/api/src/middleware/auth.ts` | JWT `authenticate` middleware |
-| `apps/api/src/lib/prisma.ts` | Prisma singleton |
-| `apps/api/src/lib/jwt.ts` | Token sign/verify helpers |
-| `apps/api/src/lib/email.ts` | Resend email helper |
-| `apps/api/src/socket/index.ts` | Socket.IO init (skeleton — add handlers here) |
-| `apps/api/prisma/schema.prisma` | Full DB schema (13 models) |
-| `apps/web/src/lib/axios.ts` | Axios instance with silent refresh |
-| `apps/web/src/lib/socket.ts` | Socket.IO client helpers |
-| `apps/web/src/stores/authStore.ts` | Zustand auth store |
-| `apps/web/src/routes/authRoutes.tsx` | Auth page routes |
-| `apps/web/src/routes/groupRoutes.tsx` | App routes (extend this for new pages) |
-| `apps/web/src/pages/auth/LoginPage.tsx` | Login form — reference for form pattern |
-| `packages/shared/src/schemas/` | All Zod schemas — start here for any new domain |
+| File                                    | Purpose                                         |
+| --------------------------------------- | ----------------------------------------------- |
+| `apps/api/src/app.ts`                   | Express app, all middleware, route registration |
+| `apps/api/src/index.ts`                 | HTTP server entry, Socket.IO init               |
+| `apps/api/src/routes/auth.ts`           | Full auth API (436 lines, with OpenAPI docs)    |
+| `apps/api/src/routes/groups.ts`         | Groups API (312 lines)                          |
+| `apps/api/src/middleware/auth.ts`       | JWT `authenticate` middleware                   |
+| `apps/api/src/lib/prisma.ts`            | Prisma singleton                                |
+| `apps/api/src/lib/jwt.ts`               | Token sign/verify helpers                       |
+| `apps/api/src/lib/email.ts`             | Resend email helper                             |
+| `apps/api/src/socket/index.ts`          | Socket.IO init (skeleton — add handlers here)   |
+| `apps/api/prisma/schema.prisma`         | Full DB schema (13 models)                      |
+| `apps/web/src/lib/axios.ts`             | Axios instance with silent refresh              |
+| `apps/web/src/lib/socket.ts`            | Socket.IO client helpers                        |
+| `apps/web/src/stores/authStore.ts`      | Zustand auth store                              |
+| `apps/web/src/routes/authRoutes.tsx`    | Auth page routes                                |
+| `apps/web/src/routes/groupRoutes.tsx`   | App routes (extend this for new pages)          |
+| `apps/web/src/pages/auth/LoginPage.tsx` | Login form — reference for form pattern         |
+| `packages/shared/src/schemas/`          | All Zod schemas — start here for any new domain |

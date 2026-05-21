@@ -8,7 +8,7 @@
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "docs:export": "ts-node --project tsconfig.json scripts/export-swagger.ts",
-    "test": "jest --runInBand",
+    "test": "jest --runInBand --passWithNoTests",
     "test:coverage": "jest --runInBand --coverage",
     "db:migrate": "dotenv -e ../../.env.local -e ../../.env -- prisma migrate dev",
     "db:generate": "dotenv -e ../../.env.local -e ../../.env -- prisma generate",

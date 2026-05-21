@@ -25,21 +25,27 @@ Always follow the phases below in order. Do not skip phases.
 ## Core Principles
 
 ### Ask Clarifying Questions
+
 Identify ambiguities, edge cases, and underspecified behavior. Ask specific concrete questions rather than making assumptions. Always ask questions **before** architecture design or implementation. Wait for user answers before proceeding.
 
 ### Understand Before Acting
+
 Read and understand existing codebase patterns before implementing anything. Never start coding without understanding existing abstractions, architecture patterns, testing conventions, and extension points.
 
 ### Read Files Identified by Agents
+
 When agents return lists of important files — read those files carefully before proceeding. Use them to build deep architectural context.
 
 ### Prefer Simple and Elegant Code
+
 Prioritize readability, maintainability, consistency with project conventions, and minimal complexity.
 
 ### Test Thoroughly
+
 All new code must have appropriate test coverage: normal behavior, edge cases, error handling.
 
 ### Use TodoWrite
+
 Track all progress with TodoWrite. Update todos throughout the workflow.
 
 ---

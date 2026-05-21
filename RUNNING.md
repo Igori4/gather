@@ -20,7 +20,7 @@ docker compose up --build
 ```
 
 | Service  | URL                   |
-|----------|-----------------------|
+| -------- | --------------------- |
 | Web      | http://localhost:5173 |
 | API      | http://localhost:4000 |
 | Mailpit  | http://localhost:8025 |
@@ -29,11 +29,13 @@ docker compose up --build
 **Hot reload:** file changes reflect automatically (polling enabled for Windows).
 
 Stop:
+
 ```powershell
 docker compose down
 ```
 
 Stop + wipe DB volume:
+
 ```powershell
 docker compose down -v
 ```
@@ -125,11 +127,11 @@ npm run test --workspace=apps/web   # Web tests only (Vitest)
 
 ## Ports Reference
 
-| Service       | Port  |
-|---------------|-------|
-| Web (Vite)    | 5173  |
-| API (Express) | 4000  |
-| Postgres      | 5432  |
-| Mailpit SMTP  | 1025  |
-| Mailpit UI    | 8025  |
-| Prisma Studio | 5555  |
+| Service       | Port |
+| ------------- | ---- |
+| Web (Vite)    | 5173 |
+| API (Express) | 4000 |
+| Postgres      | 5432 |
+| Mailpit SMTP  | 1025 |
+| Mailpit UI    | 8025 |
+| Prisma Studio | 5555 |

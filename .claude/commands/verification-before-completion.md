@@ -54,17 +54,18 @@ Skipping any step = asserting without evidence.
 
 ## Common Failures
 
-| Claim | What actually proves it | What does not prove it |
-|---|---|---|
-| Tests pass | Test command output: 0 failures | Previous run, "should pass" |
-| Linter clean | Linter output: 0 errors | Partial check, extrapolation |
-| Build succeeds | Build command: exit 0 | Linter passing, logs look good |
-| Bug fixed | Test for original symptom passes | Code changed, assumed fixed |
-| Regression test works | Red-green cycle completed | Test passes once |
-| Agent completed | VCS diff shows actual changes | Agent reports "success" |
-| Requirements met | Line-by-line checklist verified | Tests passing |
+| Claim                 | What actually proves it          | What does not prove it         |
+| --------------------- | -------------------------------- | ------------------------------ |
+| Tests pass            | Test command output: 0 failures  | Previous run, "should pass"    |
+| Linter clean          | Linter output: 0 errors          | Partial check, extrapolation   |
+| Build succeeds        | Build command: exit 0            | Linter passing, logs look good |
+| Bug fixed             | Test for original symptom passes | Code changed, assumed fixed    |
+| Regression test works | Red-green cycle completed        | Test passes once               |
+| Agent completed       | VCS diff shows actual changes    | Agent reports "success"        |
+| Requirements met      | Line-by-line checklist verified  | Tests passing                  |
 
 **Checking agent completion via VCS diff:**
+
 ```bash
 git diff HEAD~1..HEAD --stat   # files changed
 git diff HEAD~1..HEAD          # actual changes
@@ -93,28 +94,30 @@ When fatigued and tempted to skip: run the command anyway. Exhaustion does not c
 
 ## Rationalization Prevention
 
-| Excuse | Reality |
-|---|---|
-| "Should work now" | Run the verification |
-| "I'm confident" | Confidence is not evidence |
-| "Just this once" | No exceptions |
-| "Linter passed" | Linter does not check compilation |
-| "Agent said success" | Verify independently via VCS diff |
-| "I'm tired" | Exhaustion is not an excuse |
-| "Partial check is enough" | Partial proves nothing |
-| "Different words so rule doesn't apply" | Spirit over letter |
+| Excuse                                  | Reality                           |
+| --------------------------------------- | --------------------------------- |
+| "Should work now"                       | Run the verification              |
+| "I'm confident"                         | Confidence is not evidence        |
+| "Just this once"                        | No exceptions                     |
+| "Linter passed"                         | Linter does not check compilation |
+| "Agent said success"                    | Verify independently via VCS diff |
+| "I'm tired"                             | Exhaustion is not an excuse       |
+| "Partial check is enough"               | Partial proves nothing            |
+| "Different words so rule doesn't apply" | Spirit over letter                |
 
 ---
 
 ## Key Patterns
 
 **Tests:**
+
 ```
 ✅ [Run test command] → [Output: 34/34 pass] → "All tests pass"
 ❌ "Should pass now" / "Looks correct"
 ```
 
 **Regression tests (TDD Red-Green):**
+
 ```
 ✅ Write test → Run (fails) → Implement fix → Run (passes)
    → Revert fix → Run (MUST fail) → Restore fix → Run (passes)
@@ -122,18 +125,21 @@ When fatigued and tempted to skip: run the command anyway. Exhaustion does not c
 ```
 
 **Build:**
+
 ```
 ✅ [Run build command] → [Exit 0] → "Build passes"
 ❌ "Linter passed" — linter does not check compilation
 ```
 
 **Requirements:**
+
 ```
 ✅ Re-read plan → Create checklist → Verify each item → Report gaps or completion
 ❌ "Tests pass, phase complete"
 ```
 
 **Agent delegation:**
+
 ```
 ✅ Agent reports success → git diff HEAD~1..HEAD → verify actual changes → report real state
 ❌ Trust agent report without checking diff
@@ -144,6 +150,7 @@ When fatigued and tempted to skip: run the command anyway. Exhaustion does not c
 ## When to Apply
 
 **Always before:**
+
 - Any variation of success or completion claims
 - Any expression of satisfaction about work state
 - Committing, creating a PR, or marking a task complete
@@ -151,6 +158,7 @@ When fatigued and tempted to skip: run the command anyway. Exhaustion does not c
 - Delegating to subagents
 
 **Rule applies to:**
+
 - Exact phrases and paraphrases
 - Implications of success
 - Any communication suggesting completion or correctness

@@ -26,7 +26,7 @@ if (typeof window !== 'undefined') {
 
 export const useTheme = create<ThemeStore>()(
   persist(
-    (set) => ({
+    set => ({
       theme: 'system',
       setTheme: (theme: Theme) => {
         applyTheme(theme)
@@ -35,9 +35,9 @@ export const useTheme = create<ThemeStore>()(
     }),
     {
       name: 'theme',
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => state => {
         if (state) applyTheme(state.theme)
       },
-    },
-  ),
+    }
+  )
 )
