@@ -47,8 +47,7 @@ export default function LoginPage() {
         setUser(result.user)
         setAccessToken(result.accessToken)
         navigate('/')
-      } catch (error) {
-        console.log('result', error)
+      } catch {
         // error displayed via mutation.error below
       }
     },

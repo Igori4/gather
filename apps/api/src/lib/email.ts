@@ -7,6 +7,9 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string): P
     console.log(`\n[DEV] Password reset link for ${email}:\n      ${resetUrl}\n`)
   }
 
+  if (process.env.NODE_ENV === 'production' && !process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is required in production')
+  }
   const resend = new Resend(process.env.RESEND_API_KEY)
   await resend.emails.send({
     from: process.env.EMAIL_FROM ?? 'noreply@gather.app',

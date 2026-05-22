@@ -10,6 +10,9 @@ import { groupsRouter } from './routes/groups'
 import { swaggerSpec } from './lib/swagger'
 
 const AUTH_APP_URL = process.env.AUTH_APP_URL ?? 'http://localhost:4001'
+if (process.env.NODE_ENV === 'production' && !process.env.AUTH_APP_URL) {
+  console.error('[security] AUTH_APP_URL not set in production — auth proxy will target localhost:4001')
+}
 
 export const app = express()
 
@@ -41,7 +44,8 @@ app.use(
     changeOrigin: true,
     pathFilter: ['/auth', '/profile'],
     on: {
-      error: (_err, _req, res) => {
+      error: (err, _req, res) => {
+        console.error('[proxy] Auth service error:', err)
         ;(res as import('express').Response).status(502).json({ error: 'Auth service unavailable' })
       },
     },
@@ -85,8 +89,9 @@ app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' })
 })
 
-// Error handler
+// Error handler — log structured, never leak stack traces to client
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error(err)
+  console.error('[error]', { message: err.message, stack: err.stack })
+  // TODO PBI-10.1: Sentry.captureException(err)
   res.status(500).json({ error: 'Internal server error' })
 })

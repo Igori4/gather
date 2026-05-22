@@ -20,8 +20,8 @@ api.interceptors.response.use(
         await api.post('/auth/refresh')
         return api(originalRequest)
       } catch {
-        // Refresh failed — redirect to login
-        if (window.location.pathname !== '/login') {
+        // Refresh failed — redirect to login (strip query params to avoid loop)
+        if (window.location.pathname.split('?')[0] !== '/login') {
           window.location.href = '/login'
         } else {
           return Promise.reject(error)

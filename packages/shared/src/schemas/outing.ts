@@ -11,7 +11,7 @@ export const AddPlaceSchema = z.object({
   address: z.string().min(1),
   lat: z.number(),
   lng: z.number(),
-  mapboxUrl: z.string().url().optional(),
+  mapboxUrl: z.string().url().max(2000).optional(),
 })
 
 export const CastVoteSchema = z.object({

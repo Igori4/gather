@@ -104,7 +104,7 @@ authRouter.post('/register', async (req, res) => {
     return res.status(409).json({ error: 'Email already registered' })
   }
 
-  const passwordHash = await bcrypt.hash(password, 10)
+  const passwordHash = await bcrypt.hash(password, 12)
   const user = await prisma.user.create({
     data: { email, passwordHash, name },
   })
@@ -160,7 +160,6 @@ authRouter.post('/login', async (req, res) => {
   const { email, password } = parsed.data
 
   const user = await prisma.user.findUnique({ where: { email } })
-  console.log('user', user)
   // Same error for "user not found" and "wrong password"
   // so attackers can't enumerate which emails are registered
   if (!user || !user.passwordHash) {
@@ -364,6 +363,9 @@ authRouter.post('/forgot-password', async (req, res) => {
       },
     })
 
+    if (process.env.NODE_ENV === 'production' && !process.env.FRONTEND_URL) {
+      console.error('[security] FRONTEND_URL not set in production — reset links will point to localhost')
+    }
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173'
     const resetUrl = `${frontendUrl}/reset-password?token=${rawToken}`
     try {
@@ -424,11 +426,11 @@ authRouter.post('/reset-password', async (req, res) => {
   const tokenHash = hashToken(token)
   const stored = await prisma.passwordResetToken.findUnique({ where: { tokenHash } })
 
-  if (!stored || stored.usedAt || stored.expiresAt < new Date()) {
+  if (!stored || stored.usedAt || stored.expiresAt <= new Date()) {
     return res.status(400).json({ message: 'This reset link is invalid or has expired.' })
   }
 
-  const passwordHash = await bcrypt.hash(password, 10)
+  const passwordHash = await bcrypt.hash(password, 12)
 
   await prisma.$transaction([
     prisma.user.update({ where: { id: stored.userId }, data: { passwordHash } }),

@@ -1,6 +1,9 @@
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 
+if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET env var is required')
+if (!process.env.REFRESH_TOKEN_SECRET) throw new Error('REFRESH_TOKEN_SECRET env var is required')
+
 export interface TokenPayload {
   userId: string
 }

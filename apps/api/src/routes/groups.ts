@@ -158,7 +158,7 @@ groupsRouter.post('/accept-invite', async (req, res) => {
   }
 
   const invitation = await prisma.invitation.findUnique({ where: { token } })
-  if (!invitation || invitation.acceptedAt || invitation.expiresAt < new Date()) {
+  if (!invitation || invitation.acceptedAt || invitation.expiresAt <= new Date()) {
     return res.status(400).json({ error: 'Invalid or expired invitation' })
   }
 
