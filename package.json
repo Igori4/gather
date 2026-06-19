@@ -6,12 +6,11 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev --workspace=apps/web\" \"npm run dev --workspace=apps/api\" \"npm run dev --workspace=apps/auth-app\"",
+    "dev": "concurrently \"npm run dev --workspace=apps/web\" \"npm run dev --workspace=apps/api\"",
     "dev:web": "npm run dev --workspace=apps/web",
     "dev:api": "npm run dev --workspace=apps/api",
-    "dev:auth": "npm run dev --workspace=apps/auth-app",
     "build": "npm run build --workspaces --if-present",
-    "lint": "eslint apps/api/src apps/auth-app/src apps/web/src packages/shared/src",
+    "lint": "eslint apps/api/src apps/web/src packages/shared/src",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "npm run typecheck --workspaces --if-present",

@@ -1,7 +1,0 @@
-{
-  "watch": ["src", "../../packages/shared/src"],
-  "ext": "ts",
-  "ignore": ["src/**/*.spec.ts", "src/**/*.test.ts"],
-  "legacyWatch": true,
-  "exec": "dotenv -e ../../.env.local -e ../../.env ts-node src/index.ts"
-}

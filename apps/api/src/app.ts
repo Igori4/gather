@@ -4,15 +4,9 @@ import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import cookieParser from 'cookie-parser'
 import swaggerUi from 'swagger-ui-express'
-import { createProxyMiddleware } from 'http-proxy-middleware'
-// import { authRouter } from './routes/auth'
+import { authRouter } from './routes/auth'
 import { groupsRouter } from './routes/groups'
 import { swaggerSpec } from './lib/swagger'
-
-const AUTH_APP_URL = process.env.AUTH_APP_URL ?? 'http://localhost:4001'
-if (process.env.NODE_ENV === 'production' && !process.env.AUTH_APP_URL) {
-  console.error('[security] AUTH_APP_URL not set in production — auth proxy will target localhost:4001')
-}
 
 export const app = express()
 
@@ -20,7 +14,7 @@ export const app = express()
 app.use(helmet())
 
 // CORS — restrict to known frontend origins
-const allowedOrigins = ['http://localhost:5173', process.env.CORS_ORIGIN].filter(
+const allowedOrigins = ['http://localhost:5174', process.env.CORS_ORIGIN].filter(
   Boolean
 ) as string[]
 
@@ -36,23 +30,7 @@ app.use(
     credentials: true,
   })
 )
-
-// Proxy BEFORE body parsers — body stream must not be consumed before forwarding
-app.use(
-  createProxyMiddleware({
-    target: AUTH_APP_URL,
-    changeOrigin: true,
-    pathFilter: ['/auth', '/profile'],
-    on: {
-      error: (err, _req, res) => {
-        console.error('[proxy] Auth service error:', err)
-        ;(res as import('express').Response).status(502).json({ error: 'Auth service unavailable' })
-      },
-    },
-  })
-)
-
-// Body + cookie parsing (for all non-proxied routes)
+// Body + cookie parsing
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
@@ -80,7 +58,7 @@ app.get('/docs.json', (_req, res) => {
 })
 
 // Routes
-// app.use('/auth', authRouter)
+app.use('/auth', authRouter)
 app.use('/api/groups', groupsRouter)
 // app.use('/api/outings', outingsRouter) — Phase 3
 

@@ -12,7 +12,6 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U gather -d gather_dev']
       interval: 5s
@@ -42,14 +41,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      auth-app:
-        condition: service_started
     environment:
       NODE_ENV: development
       PORT: 4000
       # Override DATABASE_URL from .env — points to the local postgres container
       DATABASE_URL: postgresql://gather:gather_dev_password@postgres:5432/gather_dev
-      AUTH_APP_URL: http://auth-app:4001
       FRONTEND_URL: http://localhost:5173
     env_file:
       - .env # provides JWT secrets, RESEND_API_KEY, etc.
@@ -63,35 +59,6 @@ services:
     # (Docker already injects env vars — using dotenv would re-load .env and
     #  overwrite the DATABASE_URL above with the Supabase pooler URL)
     command: sh -c "npm install && npx prisma generate && npx prisma migrate deploy && npm run dev"
-
-  # ─── Auth App (Express) ──────────────────────────────────────────────────────
-  auth-app:
-    build:
-      context: .
-      dockerfile: apps/auth-app/Dockerfile.dev
-    container_name: gather_auth_app
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      NODE_ENV: development
-      PORT: 4001
-      AUTH_DATABASE_URL: postgresql://gather:gather_dev_password@postgres:5432/gather_auth
-      FRONTEND_URL: http://localhost:5173
-    env_file:
-      - .env
-    ports:
-      - '4001:4001'
-    volumes:
-      - ./apps/auth-app:/workspace/apps/auth-app
-      - ./packages/shared:/workspace/packages/shared
-      - workspace_modules:/workspace/node_modules
-    command: >
-      sh -c "npm install &&
-             npx prisma generate &&
-             npx prisma migrate deploy &&
-             npx nodemon --watch src --ext ts --exec 'ts-node src/index.ts'"
 
   # ─── Web (React / Vite) ──────────────────────────────────────────────────────
   web:

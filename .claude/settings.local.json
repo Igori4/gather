@@ -14,7 +14,11 @@
       "Bash(npm list:*)",
       "Bash(npm uninstall:*)",
       "Bash(xargs ls:*)",
-      "Bash(Get-ChildItem -Path \"E:\\\\Ihor\\\\Other\\\\Study\\\\gather\\\\packages\\\\shared\\\\src\\\\schemas\" -File)"
+      "Bash(Get-ChildItem -Path \"E:\\\\Ihor\\\\Other\\\\Study\\\\gather\\\\packages\\\\shared\\\\src\\\\schemas\" -File)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/login)",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__Claude_in_Chrome__navigate",
+      "PowerShell(Get-CimInstance *)"
     ]
   }
 }
