@@ -18,7 +18,21 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/login)",
       "mcp__Claude_Preview__preview_start",
       "mcp__Claude_in_Chrome__navigate",
-      "PowerShell(Get-CimInstance *)"
+      "PowerShell(Get-CimInstance *)",
+      "Bash(docker exec gather_postgres *)",
+      "Bash(PGPASSWORD=gather_dev_password psql *)",
+      "Bash(DATABASE_URL=\"postgresql://gather:gather_dev_password@localhost:5432/gather_dev\" npx prisma migrate dev --name add_experiment_flags --schema=prisma/schema.prisma)",
+      "Bash(node -e ' *)",
+      "Bash(node *)",
+      "Bash(netstat -ano)",
+      "Bash(tasklist *)",
+      "PowerShell(Get-Process *)",
+      "Bash(docker compose *)",
+      "Bash(git stash *)",
+      "Bash(curl -s -c /tmp/c.txt -b /tmp/c.txt http://localhost:4000/api/experiments/register-cta/variant)",
+      "Bash(curl -s http://localhost:4000/api/experiments/unknown-experiment/variant -o /dev/null -w \"%{http_code}\\\\n\")",
+      "Bash(curl -s -X POST http://localhost:4000/api/events -H 'Content-Type: application/json' -d '{\"type\":\"experiment_exposed\",\"experimentName\":\"register-cta\",\"variant\":\"a\"}' -i)",
+      "Bash(pkill -f \"nodemon\\\\|ts-node-dev\\\\|tsx watch\")"
     ]
   }
 }

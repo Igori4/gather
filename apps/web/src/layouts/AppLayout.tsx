@@ -1,4 +1,5 @@
 import { Navigate, Outlet, NavLink } from 'react-router-dom'
+import { Users } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -9,6 +10,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { api } from '@/lib/axios'
+import { useFeatureFlag } from '@/lib/flags'
+import { FEATURE_FLAGS } from '@gather/shared'
 
 function initials(name: string) {
   return name
@@ -23,6 +26,7 @@ export function AppLayout() {
   const user = useAuthStore(s => s.user)
   const isInitialized = useAuthStore(s => s.isInitialized)
   const logout = useAuthStore(s => s.logout)
+  const compactNav = useFeatureFlag(FEATURE_FLAGS.COMPACT_NAV)
 
   if (!isInitialized) return null
   if (!user) return <Navigate to="/login" replace />
@@ -35,16 +39,20 @@ export function AppLayout() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b bg-background sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div
+          className={`max-w-5xl mx-auto px-4 flex items-center justify-between ${compactNav ? 'h-12' : 'h-14'}`}
+        >
           <nav className="flex items-center gap-6">
-            <span className="font-bold text-lg">Gather</span>
+            <span className="font-bold text-lg">{compactNav ? 'G' : 'Gather'}</span>
             <NavLink
               to="/groups"
+              title="Groups"
               className={({ isActive }) =>
-                `text-sm font-medium transition-colors hover:text-primary ${isActive ? 'text-foreground' : 'text-muted-foreground'}`
+                `flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${isActive ? 'text-foreground' : 'text-muted-foreground'}`
               }
             >
-              Groups
+              <Users className="h-4 w-4" />
+              {!compactNav && 'Groups'}
             </NavLink>
           </nav>
 

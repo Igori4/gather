@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser'
 import swaggerUi from 'swagger-ui-express'
 import { authRouter } from './routes/auth'
 import { groupsRouter } from './routes/groups'
+import { flagsRouter } from './routes/flags'
 import { swaggerSpec } from './lib/swagger'
 
 export const app = express()
@@ -14,7 +15,7 @@ export const app = express()
 app.use(helmet())
 
 // CORS — restrict to known frontend origins
-const allowedOrigins = ['http://localhost:5174', process.env.CORS_ORIGIN].filter(
+const allowedOrigins = ['http://localhost:5173', process.env.CORS_ORIGIN].filter(
   Boolean
 ) as string[]
 
@@ -60,6 +61,7 @@ app.get('/docs.json', (_req, res) => {
 // Routes
 app.use('/auth', authRouter)
 app.use('/api/groups', groupsRouter)
+app.use('/api', flagsRouter)
 // app.use('/api/outings', outingsRouter) — Phase 3
 
 // 404

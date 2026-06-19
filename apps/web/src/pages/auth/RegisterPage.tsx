@@ -1,13 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
-import { RegisterSchema, type RegisterInput } from '@gather/shared'
+import { RegisterSchema, type RegisterInput, EXPERIMENTS } from '@gather/shared'
 import axios from 'axios'
 import { Eye, EyeOff } from 'lucide-react'
 import { register } from '@/api/auth'
 import { useAuthStore } from '@/stores/authStore'
+import { useABVariant } from '@/lib/flags'
+import { trackExposure, trackConversion } from '@/lib/analytics'
 import RegisterHero from '@/assets/auth/Register-hero.webp'
 import { Button } from '@/components/ui/button'
 import {
@@ -35,6 +37,26 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [agreed, setAgreed] = useState(false)
 
+  const { variant: ctaVariant } = useABVariant(EXPERIMENTS.REGISTER_CTA)
+  const ctaLabel = ctaVariant === 'b' ? 'Get Started Free' : 'Create Account'
+  const ctaButtonRef = useRef<HTMLButtonElement>(null)
+
+  // Track exposure only once the variant has resolved AND the button has
+  // actually entered the viewport — not blindly on mount.
+  useEffect(() => {
+    if (!ctaVariant || !ctaButtonRef.current) return
+    const exposed = { current: false }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !exposed.current) {
+        exposed.current = true
+        trackExposure(EXPERIMENTS.REGISTER_CTA, ctaVariant)
+        observer.disconnect()
+      }
+    })
+    observer.observe(ctaButtonRef.current)
+    return () => observer.disconnect()
+  }, [ctaVariant])
+
   const form = useForm<RegisterInput>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: { name: '', email: '', password: '' },
@@ -47,6 +69,7 @@ export default function RegisterPage() {
       const result = await mutation.mutateAsync(data)
       setUser(result.user)
       setAccessToken(result.accessToken)
+      if (ctaVariant) trackConversion(EXPERIMENTS.REGISTER_CTA, ctaVariant)
       navigate('/')
     } catch {
       // error displayed via mutation.error below
@@ -173,11 +196,12 @@ export default function RegisterPage() {
 
             <CardFooter className="flex flex-col gap-4">
               <Button
+                ref={ctaButtonRef}
                 type="submit"
                 className="w-full"
                 disabled={mutation.isPending || !agreed}
               >
-                {mutation.isPending ? 'Creating account…' : 'Create Account'}
+                {mutation.isPending ? 'Creating account…' : ctaLabel}
               </Button>
 
               <div className="flex w-full items-center gap-3">

@@ -233,3 +233,30 @@ model Invitation {
 
   @@map("invitations")
 }
+
+model ExperimentAssignment {
+  id             String   @id @default(cuid())
+  experimentName String   @map("experiment_name")
+  userId         String?  @map("user_id")
+  anonymousId    String?  @map("anonymous_id")
+  variant        String
+  assignedAt     DateTime @default(now()) @map("assigned_at")
+
+  @@unique([experimentName, userId])
+  @@unique([experimentName, anonymousId])
+  @@map("experiment_assignments")
+}
+
+model Event {
+  id             String   @id @default(cuid())
+  type           String
+  experimentName String?  @map("experiment_name")
+  variant        String?
+  userId         String?  @map("user_id")
+  anonymousId    String?  @map("anonymous_id")
+  payload        Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([experimentName, variant, type])
+  @@map("events")
+}
