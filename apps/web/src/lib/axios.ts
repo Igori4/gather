@@ -1,9 +1,19 @@
 import axios from 'axios'
+import { useAuthStore } from '@/stores/authStore'
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? '',
   withCredentials: true,
 })
+
+api.interceptors.request.use((config) => {
+
+  const token = useAuthStore.getState().accessToken;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 // Silent refresh interceptor — retries once on 401
 api.interceptors.response.use(
