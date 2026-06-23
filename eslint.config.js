@@ -23,6 +23,7 @@ export default [
       'react-hooks': reactHooksPlugin,
     },
     rules: {
+      'no-undef': 'off',
       ...tsPlugin.configs.recommended.rules,
       ...reactPlugin.configs.recommended.rules,
       ...reactHooksPlugin.configs.recommended.rules,
@@ -36,6 +37,12 @@ export default [
   },
   prettierConfig,
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/.husky/**'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/.husky/**',
+      '**/src/generated/**',
+    ],
   },
 ]
