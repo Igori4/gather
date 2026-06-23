@@ -31,7 +31,7 @@ export default function ResetPasswordPage() {
 
   const form = useForm<ResetPasswordInput>({
     resolver: zodResolver(ResetPasswordSchema),
-    defaultValues: { token, password: '' },
+    defaultValues: { token, password: '', confirmPassword: '' },
   })
 
   const mutation = useMutation({ mutationFn: resetPassword })
@@ -89,6 +89,20 @@ export default function ResetPasswordPage() {
                   <FormLabel>New password</FormLabel>
                   <FormControl>
                     <Input type="password" placeholder="Min. 8 characters" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="Re-enter password" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
