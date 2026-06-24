@@ -23,18 +23,20 @@ WORKDIR /workspace
 
 ENV NODE_ENV=production
 
-COPY .npmrc ./
-COPY package*.json ./
-COPY packages/shared/package.json ./packages/shared/
-COPY apps/api/package.json ./apps/api/
-
-RUN npm install --omit=dev
-
+COPY --from=build /workspace/node_modules ./node_modules
+COPY --from=build /workspace/package*.json ./
+COPY --from=build /workspace/packages/shared ./packages/shared
+COPY --from=build /workspace/apps/api/package.json ./apps/api/
+COPY --from=build /workspace/apps/api/node_modules ./apps/api/node_modules
 COPY --from=build /workspace/apps/api/dist ./apps/api/dist
 COPY --from=build /workspace/apps/api/prisma ./apps/api/prisma
-COPY --from=build /workspace/apps/api/node_modules/.prisma ./apps/api/node_modules/.prisma
-COPY packages/shared ./packages/shared
+
+# node_modules/@gather/shared is an npm-workspaces symlink to packages/shared,
+# whose package.json "main" points at TS source for ts-node to use in dev.
+# Plain `node` can't run that .ts file, so swap it for tsc's compiled copy.
+RUN rm -rf ./node_modules/@gather/shared
+COPY --from=build /workspace/apps/api/dist/packages/shared/src ./node_modules/@gather/shared
 
 WORKDIR /workspace/apps/api
 EXPOSE 4000
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/apps/api/src/index.js"]
