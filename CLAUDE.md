@@ -33,7 +33,7 @@ gather/                          ← npm workspaces root
 | AI         | Google Gemini (`@google/generative-ai`, gemini-1.5-flash)          |
 | Validation | Zod (shared schemas in `packages/shared`)                          |
 | Monitoring | Sentry (frontend + backend, separate DSNs)                         |
-| Deploy     | Frontend → Vercel, Backend → Railway (~€5/mo)                      |
+| Deploy     | Frontend → AWS S3+CloudFront, Backend → AWS EC2+CloudFront (free tier) |
 | Node       | >=20.0.0                                                           |
 
 ## Common Commands
@@ -137,7 +137,7 @@ npm run db:studio --workspace=apps/api
 
 - [ ] **PBI-10.1** Sentry — frontend DSN in Vite, backend DSN in Express error handler
 - [ ] **PBI-10.2** Lighthouse audit — fix perf/a11y issues, reach score ≥85
-- [ ] **PBI-10.3** Railway deploy — Dockerfile.prod, env vars, health check
+- [x] **PBI-10.3** AWS deploy — S3+CloudFront (frontend), EC2+CloudFront reverse proxy (backend) → see `docs/DEPLOY_AWS.md`
 - [ ] **PBI-10.4** README — one-command local setup, architecture diagram, feature walkthrough, cost table, badges
 
 ### Suggested implementation order
@@ -357,6 +357,73 @@ All models in `apps/api/prisma/schema.prisma`. IDs are cuid strings.
 | `Invitation`         | id, groupId, email, role, token (unique), expiresAt, acceptedAt?    |                                                              |
 | `RefreshToken`       | id, userId, tokenHash, expiresAt, revoked                           |                                                              |
 | `PasswordResetToken` | id, userId, tokenHash (unique), expiresAt, usedAt?                  |                                                              |
+
+---
+
+## Deployment (AWS, free tier)
+
+Full step-by-step guide: `docs/DEPLOY_AWS.md`. Replaces the original Vercel/Railway
+plan — chosen for $0/mo on AWS free tier (12 months from account creation).
+
+**Architecture:**
+```
+Browser ──HTTPS──> CloudFront (frontend) ──> S3 (private, OAC)   [static React build]
+Browser ──HTTPS/WSS──> CloudFront (backend proxy) ──> EC2:80 (Express + Socket.IO)
+EC2 ──> Supabase Postgres (unchanged)
+```
+No custom domain or ACM cert needed — both CloudFront distributions get free
+HTTPS on their own `*.cloudfront.net` domains, which is also what makes
+WebSocket (Socket.IO) work without extra config.
+
+**Live resources (AWS account 302290383528, region us-east-1):**
+
+| Resource | ID / Address |
+| --- | --- |
+| Frontend URL | `https://d27ahufp1d5dg9.cloudfront.net` |
+| Backend URL | `https://d2e4rup9a7fq2s.cloudfront.net` |
+| Frontend CloudFront distribution | `ECJ4NU6ZENKC0` |
+| Backend CloudFront distribution | `E7Y9AK78BI91K` |
+| S3 bucket (frontend) | `gather-web-302290383528` |
+| CloudFront OAC | `E3T9X6H9H01BL8` |
+| EC2 instance | `i-0eb4d1f1eb68ebe07` (54.82.100.254, t3.micro) |
+| EC2 security group | `sg-0edfbd5523ac8b091` (SSH from one IP, HTTP open) |
+| SSH key | `C:\Users\User\.ssh\gather-deploy-key.pem` |
+| IAM deploy user | `gather-deploy` (AdministratorAccess) |
+
+**Redeploy frontend:**
+```bash
+npm run build --workspace=apps/web
+aws s3 sync apps/web/dist s3://gather-web-302290383528 --delete
+aws cloudfront create-invalidation --distribution-id ECJ4NU6ZENKC0 --paths "/*"
+```
+`VITE_API_URL`/`VITE_SOCKET_URL` in `apps/web/.env.production` are baked in
+at build time — editing that file alone does nothing until rebuilt.
+
+**Redeploy backend:**
+```bash
+ssh -i ~/.ssh/gather-deploy-key.pem ubuntu@54.82.100.254 \
+  "cd gather && git pull && sudo docker compose -f docker-compose.prod.yml up -d --build"
+```
+Secrets live in `.env.production` on the EC2 box itself (never committed).
+`Dockerfile.prod` runs `prisma migrate deploy` on every container start.
+
+**Known gotchas (already fixed in current `Dockerfile.prod`/`tsconfig.json`,
+worth knowing if touching either):**
+- `apps/api/tsconfig.json` `rootDir` is `../..` (not `./src`) — needed so
+  `tsc` can compile `packages/shared` imports; compiled entrypoint lives at
+  `dist/apps/api/src/index.js`, not `dist/index.js`.
+- `node_modules/@gather/shared` is an npm-workspaces symlink whose
+  `package.json` `main` points at TS source (fine for `ts-node` in dev,
+  breaks plain `node` in prod) — the prod Docker image swaps it for the
+  compiled output.
+- `prisma.config.ts` lives next to `package.json`, not inside `prisma/` —
+  must be explicitly copied into the runtime image or `prisma migrate
+  deploy` fails with "datasource.url required".
+- Supabase free-tier projects auto-pause after ~1 week idle — looks like a
+  credentials error (`FATAL: tenant/user not found`) but is fixed by
+  clicking "Restore project" in the Supabase dashboard.
+- EC2 `t3.micro` only has 1GB RAM — `npm install` during the Docker build
+  gets OOM-killed without the 2GB swapfile already configured on the box.
 
 ---
 
