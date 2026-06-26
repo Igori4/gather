@@ -54,11 +54,13 @@ beforeEach(() => jest.clearAllMocks())
 
 // ─── register ─────────────────────────────────────────────────────────────────
 
+const VALID_PASSWORD = 'Password123!'
+
 describe('register', () => {
   it('409 when email already exists', async () => {
     repo.findByEmail.mockResolvedValue({ id: 'existing' } as any)
     const res = mockRes()
-    await register(mockReq({ body: { email: 'a@b.com', password: 'password1', name: 'A' } }), res)
+    await register(mockReq({ body: { email: 'a@b.com', password: VALID_PASSWORD, name: 'A' } }), res)
     expect((res.status as jest.Mock)).toHaveBeenCalledWith(409)
   })
 
@@ -75,14 +77,14 @@ describe('login', () => {
   it('401 when user not found', async () => {
     repo.findByEmail.mockResolvedValue(null)
     const res = mockRes()
-    await login(mockReq({ body: { email: 'x@x.com', password: 'pass1234' } }), res)
+    await login(mockReq({ body: { email: 'x@x.com', password: 'anypass' } }), res)
     expect((res.status as jest.Mock)).toHaveBeenCalledWith(401)
   })
 
   it('401 when user has no passwordHash (OAuth account)', async () => {
     repo.findByEmail.mockResolvedValue({ id: 'u1', passwordHash: null } as any)
     const res = mockRes()
-    await login(mockReq({ body: { email: 'x@x.com', password: 'pass1234' } }), res)
+    await login(mockReq({ body: { email: 'x@x.com', password: 'anypass' } }), res)
     expect((res.status as jest.Mock)).toHaveBeenCalledWith(401)
   })
 
@@ -91,7 +93,7 @@ describe('login', () => {
     const bcrypt = await import('bcrypt')
     ;(bcrypt.compare as jest.Mock).mockResolvedValueOnce(false)
     const res = mockRes()
-    await login(mockReq({ body: { email: 'x@x.com', password: 'wrongpass' } }), res)
+    await login(mockReq({ body: { email: 'x@x.com', password: 'anypass' } }), res)
     expect((res.status as jest.Mock)).toHaveBeenCalledWith(401)
   })
 })
@@ -123,11 +125,13 @@ describe('refresh', () => {
 
 // ─── resetPassword ───────────────────────────────────────────────────────────
 
+const VALID_RESET_BODY = { token: 'some-token', password: VALID_PASSWORD, confirmPassword: VALID_PASSWORD }
+
 describe('resetPassword', () => {
   it('400 when token not found', async () => {
     repo.findResetToken.mockResolvedValue(null)
     const res = mockRes()
-    await resetPassword(mockReq({ body: { token: 'bad', password: 'newpass99' } }), res)
+    await resetPassword(mockReq({ body: VALID_RESET_BODY }), res)
     expect((res.status as jest.Mock)).toHaveBeenCalledWith(400)
   })
 
@@ -136,7 +140,7 @@ describe('resetPassword', () => {
       id: 't1', userId: 'u1', usedAt: new Date(), expiresAt: new Date(Date.now() + 3600_000),
     } as any)
     const res = mockRes()
-    await resetPassword(mockReq({ body: { token: 'used', password: 'newpass99' } }), res)
+    await resetPassword(mockReq({ body: VALID_RESET_BODY }), res)
     expect((res.status as jest.Mock)).toHaveBeenCalledWith(400)
   })
 
@@ -145,7 +149,7 @@ describe('resetPassword', () => {
       id: 't2', userId: 'u1', usedAt: null, expiresAt: new Date(Date.now() - 1000),
     } as any)
     const res = mockRes()
-    await resetPassword(mockReq({ body: { token: 'expired', password: 'newpass99' } }), res)
+    await resetPassword(mockReq({ body: VALID_RESET_BODY }), res)
     expect((res.status as jest.Mock)).toHaveBeenCalledWith(400)
   })
 })

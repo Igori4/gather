@@ -11,7 +11,7 @@ async function createTestUser(label: string) {
   const e = email(label)
   const res = await request(app)
     .post('/auth/register')
-    .send({ email: e, password: 'password123', name: `User ${label}` })
+    .send({ email: e, password: 'Password123!', name: `User ${label}` })
   return { userId: res.body.user.id, token: res.body.accessToken, email: e }
 }
 

@@ -24,7 +24,7 @@ describe('POST /auth/register', () => {
   it('201 — creates user, returns accessToken + user', async () => {
     const res = await request(app)
       .post('/auth/register')
-      .send({ email: email('reg'), password: 'password123', name: 'Test User' })
+      .send({ email: email('reg'), password: 'Password123!', name: 'Test User' })
 
     expect(res.status).toBe(201)
     expect(res.body.accessToken).toBeDefined()
@@ -35,8 +35,8 @@ describe('POST /auth/register', () => {
 
   it('409 — duplicate email', async () => {
     const e = email('dup')
-    await request(app).post('/auth/register').send({ email: e, password: 'password123', name: 'A' })
-    const res = await request(app).post('/auth/register').send({ email: e, password: 'password123', name: 'B' })
+    await request(app).post('/auth/register').send({ email: e, password: 'Password123!', name: 'A' })
+    const res = await request(app).post('/auth/register').send({ email: e, password: 'Password123!', name: 'B' })
     expect(res.status).toBe(409)
   })
 
@@ -57,7 +57,7 @@ describe('POST /auth/register', () => {
 
 describe('POST /auth/login', () => {
   const e = email('login')
-  const password = 'loginpassword'
+  const password = 'Password123!'
 
   beforeAll(async () => {
     await request(app).post('/auth/register').send({ email: e, password, name: 'Login User' })
@@ -87,7 +87,7 @@ describe('POST /auth/refresh', () => {
   it('200 — valid refresh cookie returns new accessToken', async () => {
     const registerRes = await request(app)
       .post('/auth/register')
-      .send({ email: email('refresh'), password: 'password123', name: 'Refresh User' })
+      .send({ email: email('refresh'), password: 'Password123!', name: 'Refresh User' })
 
     const cookie = registerRes.headers['set-cookie'] as unknown as string[]
 
@@ -115,7 +115,7 @@ describe('POST /auth/logout', () => {
   it('204 — clears cookie', async () => {
     const regRes = await request(app)
       .post('/auth/register')
-      .send({ email: email('logout'), password: 'password123', name: 'Logout User' })
+      .send({ email: email('logout'), password: 'Password123!', name: 'Logout User' })
 
     const res = await request(app)
       .post('/auth/logout')
@@ -137,7 +137,7 @@ describe('GET /auth/me', () => {
     const e = email('me')
     const regRes = await request(app)
       .post('/auth/register')
-      .send({ email: e, password: 'password123', name: 'Me User' })
+      .send({ email: e, password: 'Password123!', name: 'Me User' })
 
     const res = await request(app)
       .get('/auth/me')
@@ -164,7 +164,7 @@ describe('GET /auth/me', () => {
 describe('POST /auth/forgot-password', () => {
   it('200 — registered email (does not leak existence)', async () => {
     const e = email('forgot')
-    await request(app).post('/auth/register').send({ email: e, password: 'password123', name: 'F' })
+    await request(app).post('/auth/register').send({ email: e, password: 'Password123!', name: 'F' })
     const res = await request(app).post('/auth/forgot-password').send({ email: e })
     expect(res.status).toBe(200)
     expect(res.body.message).toBeDefined()
@@ -186,7 +186,7 @@ describe('POST /auth/forgot-password', () => {
 describe('POST /auth/reset-password', () => {
   it('200 — valid token resets password', async () => {
     const e = email('reset')
-    await request(app).post('/auth/register').send({ email: e, password: 'oldpass1', name: 'R' })
+    await request(app).post('/auth/register').send({ email: e, password: 'OldPass1!', name: 'R' })
     await request(app).post('/auth/forgot-password').send({ email: e })
 
     const user = await prisma.user.findUnique({ where: { email: e } })
@@ -204,26 +204,26 @@ describe('POST /auth/reset-password', () => {
 
     const res = await request(app).post('/auth/reset-password').send({
       token: rawToken,
-      password: 'newpassword99',
+      password: 'NewPassword99!', confirmPassword: 'NewPassword99!',
     })
     expect(res.status).toBe(200)
 
     // Can now login with new password
-    const loginRes = await request(app).post('/auth/login').send({ email: e, password: 'newpassword99' })
+    const loginRes = await request(app).post('/auth/login').send({ email: e, password: 'NewPassword99!' })
     expect(loginRes.status).toBe(200)
   })
 
   it('400 — invalid token', async () => {
     const res = await request(app).post('/auth/reset-password').send({
       token: 'nonexistent-token',
-      password: 'newpassword99',
+      password: 'NewPassword99!', confirmPassword: 'NewPassword99!',
     })
     expect(res.status).toBe(400)
   })
 
   it('400 — already used token', async () => {
     const e = email('reset-used')
-    await request(app).post('/auth/register').send({ email: e, password: 'oldpass1', name: 'RU' })
+    await request(app).post('/auth/register').send({ email: e, password: 'OldPass1!', name: 'RU' })
     const user = await prisma.user.findUnique({ where: { email: e } })
 
     const rawToken = 'used-token-' + uid()
@@ -238,14 +238,14 @@ describe('POST /auth/reset-password', () => {
 
     const res = await request(app).post('/auth/reset-password').send({
       token: rawToken,
-      password: 'newpassword99',
+      password: 'NewPassword99!', confirmPassword: 'NewPassword99!',
     })
     expect(res.status).toBe(400)
   })
 
   it('400 — expired token', async () => {
     const e = email('reset-exp')
-    await request(app).post('/auth/register').send({ email: e, password: 'oldpass1', name: 'RE' })
+    await request(app).post('/auth/register').send({ email: e, password: 'OldPass1!', name: 'RE' })
     const user = await prisma.user.findUnique({ where: { email: e } })
 
     const rawToken = 'expired-token-' + uid()
@@ -259,7 +259,7 @@ describe('POST /auth/reset-password', () => {
 
     const res = await request(app).post('/auth/reset-password').send({
       token: rawToken,
-      password: 'newpassword99',
+      password: 'NewPassword99!', confirmPassword: 'NewPassword99!',
     })
     expect(res.status).toBe(400)
   })
