@@ -9,6 +9,8 @@
     "typecheck": "tsc --noEmit",
     "docs:export": "ts-node --project tsconfig.json scripts/export-swagger.ts",
     "test": "jest --runInBand --passWithNoTests",
+    "test:unit": "jest --runInBand --testPathPattern='tests/(lib|middleware|controllers)'",
+    "test:integration": "jest --runInBand --testPathPattern='tests/routes'",
     "test:coverage": "jest --runInBand --coverage",
     "db:migrate": "dotenv -e ../../.env.local -e ../../.env -- prisma migrate dev",
     "db:generate": "dotenv -e ../../.env.local -e ../../.env -- prisma generate",
