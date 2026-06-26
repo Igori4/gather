@@ -1,10 +1,6 @@
 import { Router } from 'express'
-import { TrackEventSchema } from '@gather/shared'
-import { resolveIdentity, IdentityRequest } from '../middleware/identity'
-import { flagDefinitions, isExperimentName } from '../lib/flags'
-import { assignVariant } from '../lib/experimentAssignment'
-import { prisma } from '../lib/prisma'
-import { Prisma } from '../generated/prisma/client'
+import { resolveIdentity } from '../middleware/identity'
+import * as FlagsController from '../controllers/flags.controller'
 
 export const flagsRouter = Router()
 
@@ -18,12 +14,7 @@ export const flagsRouter = Router()
  *       200:
  *         description: Map of flag name to boolean
  */
-flagsRouter.get('/flags', resolveIdentity, (_req, res) => {
-  const flags = Object.fromEntries(
-    Object.values(flagDefinitions).map((flag) => [flag.name, flag.enabled])
-  )
-  res.json({ flags })
-})
+flagsRouter.get('/flags', resolveIdentity, FlagsController.getFlags)
 
 /**
  * @openapi
@@ -43,17 +34,7 @@ flagsRouter.get('/flags', resolveIdentity, (_req, res) => {
  *       404:
  *         description: Unknown experiment
  */
-flagsRouter.get('/experiments/:experimentName/variant', resolveIdentity, async (req, res) => {
-  const { experimentName } = req.params
-  if (!isExperimentName(experimentName)) {
-    res.status(404).json({ error: 'Unknown experiment' })
-    return
-  }
-
-  const { userId, anonymousId } = (req as IdentityRequest).identity
-  const variant = await assignVariant(experimentName, { userId, anonymousId })
-  res.json({ experimentName, variant })
-})
+flagsRouter.get('/experiments/:experimentName/variant', resolveIdentity, FlagsController.getExperimentVariant)
 
 /**
  * @openapi
@@ -65,25 +46,4 @@ flagsRouter.get('/experiments/:experimentName/variant', resolveIdentity, async (
  *       201:
  *         description: Event recorded
  */
-flagsRouter.post('/events', resolveIdentity, async (req, res) => {
-  const parsed = TrackEventSchema.safeParse(req.body)
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() })
-    return
-  }
-
-  const { type, experimentName, variant, payload } = parsed.data
-  const { userId, anonymousId } = (req as IdentityRequest).identity
-
-  await prisma.event.create({
-    data: {
-      type,
-      experimentName,
-      variant,
-      userId,
-      anonymousId,
-      payload: payload as Prisma.InputJsonValue | undefined,
-    },
-  })
-  res.status(201).json({ ok: true })
-})
+flagsRouter.post('/events', resolveIdentity, FlagsController.trackEvent)

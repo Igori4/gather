@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { ResetPasswordSchema, type ResetPasswordInput } from '@gather/shared'
+import { ArrowRight, ChevronLeft, KeyRound, ShieldCheck } from 'lucide-react'
 import { resetPassword } from '@/api/auth'
 import { Button } from '@/components/ui/button'
 import {
@@ -52,81 +53,107 @@ export default function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Invalid link</CardTitle>
-          <CardDescription>
-            This reset link is missing a token. Please request a new one.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter>
-          <Link
-            to="/forgot-password"
-            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-          >
-            Request new link
-          </Link>
-        </CardFooter>
-      </Card>
+      <div className="mx-auto flex max-w-md flex-col gap-6 px-4">
+        <Card className="p-8 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-secondary">
+            <KeyRound className="h-6 w-6 text-secondary-foreground" />
+          </div>
+          <CardHeader className="mb-6">
+            <CardTitle>Invalid link</CardTitle>
+            <CardDescription>
+              This reset link is missing a token. Please request a new one.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter className="flex-col">
+            <Link
+              to="/forgot-password"
+              className="flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Request new link
+            </Link>
+          </CardFooter>
+        </Card>
+      </div>
     )
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Set a new password</CardTitle>
-        <CardDescription>Must be at least 8 characters</CardDescription>
-      </CardHeader>
+    <div className="mx-auto flex max-w-md flex-col gap-6 px-4">
+      <Card className="p-8 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-secondary">
+          <KeyRound className="h-6 w-6 text-secondary-foreground" />
+        </div>
+        <CardHeader className="mb-6">
+          <CardTitle>Set a new password</CardTitle>
+          <CardDescription>Must be at least 8 characters</CardDescription>
+        </CardHeader>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>New password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="Min. 8 characters" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardContent className="space-y-4 text-left mb-6">
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>New password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="Min. 8 characters" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="Re-enter password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="Re-enter password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
-          </CardContent>
+              {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
+            </CardContent>
 
-          <CardFooter className="flex flex-col gap-3">
-            <Button type="submit" className="w-full" disabled={mutation.isPending}>
-              {mutation.isPending ? 'Saving…' : 'Set new password'}
-            </Button>
-            <p className="text-sm text-muted-foreground text-center">
+            <CardFooter className="flex flex-col gap-4">
+              <Button type="submit" className="w-full rounded-full" disabled={mutation.isPending}>
+                {mutation.isPending ? 'Saving…' : 'Set new password'}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+
+              <div className="h-px w-full bg-border" />
+
               <Link
                 to="/login"
-                className="font-medium text-primary underline-offset-4 hover:underline"
+                className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
               >
-                Back to sign in
+                <ChevronLeft className="h-4 w-4" />
+                Back to Login
               </Link>
-            </p>
-          </CardFooter>
-        </form>
-      </Form>
-    </Card>
+            </CardFooter>
+          </form>
+        </Form>
+      </Card>
+
+      <div className="flex items-start gap-3 rounded-lg bg-card p-4">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent">
+          <ShieldCheck className="h-4 w-4 text-accent-foreground" />
+        </div>
+        <div className="text-left">
+          <p className="text-sm font-medium">Secure Reset</p>
+          <p className="text-xs text-muted-foreground">
+            Your new password is encrypted and your session stays private.
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }

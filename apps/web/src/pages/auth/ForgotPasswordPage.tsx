@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-secondary">
               <MailCheck className="h-6 w-6 text-secondary-foreground" />
             </div>
-            <CardHeader>
+            <CardHeader className='mb-6'>
               <CardTitle>Check your email</CardTitle>
               <CardDescription>
                 If that address is registered, a secure reset link is on its way.
