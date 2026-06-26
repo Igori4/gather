@@ -7,6 +7,7 @@ import swaggerUi from 'swagger-ui-express'
 import { authRouter } from './routes/auth'
 import { groupsRouter } from './routes/groups'
 import { flagsRouter } from './routes/flags'
+import { outingsRouter } from './routes/outings'
 import { swaggerSpec } from './lib/swagger'
 
 export const app = express()
@@ -62,7 +63,7 @@ app.get('/docs.json', (_req, res) => {
 app.use('/auth', authRouter)
 app.use('/api/groups', groupsRouter)
 app.use('/api', flagsRouter)
-// app.use('/api/outings', outingsRouter) — Phase 3
+app.use('/api', outingsRouter)
 
 // 404
 app.use((_req, res) => {
