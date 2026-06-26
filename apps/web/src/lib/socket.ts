@@ -12,8 +12,10 @@ export function getSocket(): Socket {
   return socket
 }
 
-export function connectSocket(): void {
-  getSocket().connect()
+export function connectSocket(token: string): void {
+  const s = getSocket()
+  s.auth = { token }
+  if (!s.connected) s.connect()
 }
 
 export function disconnectSocket(): void {

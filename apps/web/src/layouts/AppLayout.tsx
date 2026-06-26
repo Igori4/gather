@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
 import { Navigate, Outlet, NavLink } from 'react-router-dom'
 import { Users } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
+import { connectSocket, disconnectSocket } from '@/lib/socket'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -26,7 +28,13 @@ export function AppLayout() {
   const user = useAuthStore(s => s.user)
   const isInitialized = useAuthStore(s => s.isInitialized)
   const logout = useAuthStore(s => s.logout)
+  const accessToken = useAuthStore(s => s.accessToken)
   const compactNav = useFeatureFlag(FEATURE_FLAGS.COMPACT_NAV)
+
+  useEffect(() => {
+    if (accessToken) connectSocket(accessToken)
+    return () => disconnectSocket()
+  }, [accessToken])
 
   if (!isInitialized) return null
   if (!user) return <Navigate to="/login" replace />
