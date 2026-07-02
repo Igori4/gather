@@ -70,7 +70,8 @@
       "Bash(cp -r apps/api/dist/packages/shared/src node_modules/@gather/shared)",
       "Bash(DATABASE_URL=\"postgresql://x:x@localhost:5432/x\" PORT=4000 NODE_ENV=production timeout 5 node apps/api/dist/apps/api/src/index.js)",
       "Bash(echo \"EXIT:$?\")",
-      "Bash(xargs rm -f)"
+      "Bash(xargs rm -f)",
+      "Bash(npm test *)"
     ]
   }
 }

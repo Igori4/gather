@@ -172,29 +172,41 @@ PBI-10.1 → PBI-10.2 → PBI-10.3 → PBI-10.4
 
 ```
 src/
-├── routes/        ← one file per domain: auth.ts, groups.ts, outings.ts, chat.ts, ai.ts, uploads.ts
-├── services/      ← business logic extracted from routes: groupService.ts, outingService.ts, aiService.ts
-├── middleware/    ← auth.ts (JWT verify), requireRole.ts, errorHandler.ts
+├── routes/        ← thin routers, one per domain: auth.ts, groups.ts, flags.ts, outings.ts, chat.ts, ai.ts, uploads.ts
+├── controllers/   ← request/response handlers: auth.controller.ts, groups.controller.ts, flags.controller.ts
+├── repositories/  ← DB queries (Prisma abstractions): user.repository.ts, group.repository.ts, event.repository.ts
+├── middleware/    ← auth.ts (JWT verify + requireAuth), identity.ts (anonymous identity)
 ├── socket/        ← index.ts (initSocket), chatHandler.ts, presenceHandler.ts, voteHandler.ts
 ├── jobs/          ← weeklyNudge.ts, reminderEmails.ts (node-cron)
-└── lib/           ← prisma.ts, jwt.ts, email.ts, gemini.ts, supabase.ts, swagger.ts
+├── lib/           ← prisma.ts, jwt.ts, email.ts, gemini.ts, supabase.ts, swagger.ts, flags.ts, hash.ts, experimentAssignment.ts, conversionRate.ts
+└── generated/     ← Prisma generated client (do not edit)
 ```
+
+**3-layer architecture:**
+
+```
+routes/ (OpenAPI docs + router) → controllers/ (req/res logic) → repositories/ (DB queries)
+```
+
+- Routes are thin — only route registration and OpenAPI JSDoc, no logic
+- Controllers handle request parsing, validation, response — call repositories, never Prisma directly
+- Repositories wrap Prisma — one file per domain model, named exports as object with methods
 
 **Rules:**
 
 - Singleton `prisma` from `src/lib/prisma.ts` — never instantiate PrismaClient directly
 - Register routes in `src/app.ts`: `app.use('/api/outings', outingsRouter)` etc.
-- Auth middleware: `authenticate` from `src/middleware/auth.ts` — attaches `req.user`
-- Role guard: `requireRole('admin')` middleware for admin-only endpoints
+- Auth middleware: `requireAuth` from `src/middleware/auth.ts` — attaches `req.user` as `AuthRequest`
 - Rate limiting already applied to `/auth` in production (10 req/min)
-- Add OpenAPI JSDoc comments to every route (Swagger at `/docs`)
-- Services layer: extract DB logic from route handlers into `src/services/` for testability
+- Add OpenAPI JSDoc comments in the route file (Swagger at `/docs`)
 
 **Adding a new route file:**
 
-1. Create `src/routes/<domain>.ts` with an Express Router
-2. Register in `src/app.ts`: `app.use('/api/<domain>', domainRouter)`
-3. Add API tests in `tests/<domain>.test.ts`
+1. Create `src/repositories/<domain>.repository.ts` — DB logic only
+2. Create `src/controllers/<domain>.controller.ts` — request handlers, import repository
+3. Create `src/routes/<domain>.ts` — thin router, import controller functions
+4. Register in `src/app.ts`: `app.use('/api/<domain>', domainRouter)`
+5. Add API tests in `tests/<domain>.test.ts`
 
 ### Frontend (`apps/web`)
 
@@ -461,7 +473,7 @@ See `.env.example` at root. **Never** hardcode secrets.
 
 ## API Route Patterns
 
-All protected routes use `authenticate` middleware. Role-restricted routes use `requireRole('admin')`.
+All protected routes use `requireAuth` middleware from `src/middleware/auth.ts`.
 
 ```
 POST   /auth/register
@@ -520,13 +532,25 @@ draft → voting → confirmed → done
 | --------------------------------------- | ----------------------------------------------- |
 | `apps/api/src/app.ts`                   | Express app, all middleware, route registration |
 | `apps/api/src/index.ts`                 | HTTP server entry, Socket.IO init               |
-| `apps/api/src/routes/auth.ts`           | Full auth API (436 lines, with OpenAPI docs)    |
-| `apps/api/src/routes/groups.ts`         | Groups API (312 lines)                          |
-| `apps/api/src/middleware/auth.ts`       | JWT `authenticate` middleware                   |
-| `apps/api/src/lib/prisma.ts`            | Prisma singleton                                |
-| `apps/api/src/lib/jwt.ts`               | Token sign/verify helpers                       |
-| `apps/api/src/lib/email.ts`             | Resend email helper                             |
-| `apps/api/src/socket/index.ts`          | Socket.IO init (skeleton — add handlers here)   |
+| `apps/api/src/routes/auth.ts`                    | Auth routes (thin, OpenAPI docs)                |
+| `apps/api/src/routes/groups.ts`                  | Groups routes (thin, OpenAPI docs)              |
+| `apps/api/src/routes/flags.ts`                   | Feature flags + experiments routes              |
+| `apps/api/src/controllers/auth.controller.ts`    | Auth request handlers                           |
+| `apps/api/src/controllers/groups.controller.ts`  | Groups request handlers                         |
+| `apps/api/src/controllers/flags.controller.ts`   | Flags/experiments request handlers              |
+| `apps/api/src/repositories/user.repository.ts`   | User + RefreshToken + PasswordResetToken DB ops |
+| `apps/api/src/repositories/group.repository.ts`  | Group + GroupMember + Invitation DB ops         |
+| `apps/api/src/repositories/event.repository.ts`  | Analytics event tracking DB ops                 |
+| `apps/api/src/middleware/auth.ts`                | `requireAuth` middleware — attaches `AuthRequest`|
+| `apps/api/src/middleware/identity.ts`            | Anonymous identity tracking middleware          |
+| `apps/api/src/lib/prisma.ts`                     | Prisma singleton                                |
+| `apps/api/src/lib/jwt.ts`                        | Token sign/verify helpers                       |
+| `apps/api/src/lib/email.ts`                      | Resend email helper                             |
+| `apps/api/src/lib/flags.ts`                      | Feature flag definitions + experiment names     |
+| `apps/api/src/lib/hash.ts`                       | Hash utilities                                  |
+| `apps/api/src/lib/experimentAssignment.ts`       | A/B variant assignment logic                    |
+| `apps/api/src/lib/conversionRate.ts`             | Conversion rate tracking helpers                |
+| `apps/api/src/socket/index.ts`                   | Socket.IO init (skeleton — add handlers here)   |
 | `apps/api/prisma/schema.prisma`         | Full DB schema (13 models)                      |
 | `apps/web/src/lib/axios.ts`             | Axios instance with silent refresh              |
 | `apps/web/src/lib/socket.ts`            | Socket.IO client helpers                        |
