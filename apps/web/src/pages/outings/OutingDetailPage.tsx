@@ -1,22 +1,26 @@
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { useOuting } from '@/hooks/useOutings'
-import { useAddPlace, useRemovePlace } from '@/hooks/useOutings'
+import { useOuting, useAddPlace, useRemovePlace } from '@/hooks/useOutings'
 import { ChatWindow } from '@/components/chat/ChatWindow'
 import { PlaceSearch } from '@/components/outings/PlaceSearch'
+import { OutingMap } from '@/components/outings/OutingMap'
 import { Button } from '@/components/ui/button'
 import type { AddPlaceInput } from '@gather/shared'
+import type { MapboxFeature } from '@/components/outings/PlaceSearch'
 
 export default function OutingDetailPage() {
   const { id = '' } = useParams()
   const { data: outing, isLoading } = useOuting(id)
   const addPlace = useAddPlace(id)
   const removePlace = useRemovePlace(id)
+  const [searchResults, setSearchResults] = useState<MapboxFeature[]>([])
 
   if (isLoading) return <p className="text-muted-foreground">Loading…</p>
   if (!outing) return <p className="text-destructive">Outing not found.</p>
 
   function handleAddPlace(data: AddPlaceInput) {
     addPlace.mutate(data)
+    setSearchResults([])
   }
 
   return (
@@ -32,13 +36,23 @@ export default function OutingDetailPage() {
       <section>
         <h2 className="text-lg font-semibold mb-2">Places</h2>
 
-        <PlaceSearch onSelect={handleAddPlace} disabled={addPlace.isPending} />
+        <PlaceSearch
+          onSelect={handleAddPlace}
+          onResults={setSearchResults}
+          disabled={addPlace.isPending}
+        />
 
         {addPlace.isError && (
           <p className="mt-1 text-sm text-destructive">
             {(addPlace.error as Error)?.message ?? 'Failed to add place'}
           </p>
         )}
+
+        <OutingMap
+          places={outing.places ?? []}
+          searchResults={searchResults}
+          onSelect={handleAddPlace}
+        />
 
         {outing.places && outing.places.length > 0 ? (
           <ul className="mt-3 space-y-2">

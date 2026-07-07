@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import type { AddPlaceInput } from '@gather/shared'
 
-interface MapboxFeature {
+export interface MapboxFeature {
   id: string
   place_name: string
   text: string
@@ -16,15 +16,21 @@ interface MapboxGeocodingResponse {
 
 interface PlaceSearchProps {
   onSelect: (place: AddPlaceInput) => void
+  onResults?: (results: MapboxFeature[]) => void
   disabled?: boolean
 }
 
-export function PlaceSearch({ onSelect, disabled }: PlaceSearchProps) {
+export function PlaceSearch({ onSelect, onResults, disabled }: PlaceSearchProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<MapboxFeature[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function pushResults(next: MapboxFeature[]) {
+    setResults(next)
+    onResults?.(next)
+  }
 
   function handleChange(value: string) {
     setQuery(value)
@@ -32,7 +38,7 @@ export function PlaceSearch({ onSelect, disabled }: PlaceSearchProps) {
 
     if (debounceRef.current) clearTimeout(debounceRef.current)
     if (!value.trim()) {
-      setResults([])
+      pushResults([])
       return
     }
 
@@ -48,10 +54,10 @@ export function PlaceSearch({ onSelect, disabled }: PlaceSearchProps) {
         const res = await fetch(url)
         if (!res.ok) throw new Error('Geocoding request failed')
         const data: MapboxGeocodingResponse = await res.json()
-        setResults(data.features)
+        pushResults(data.features)
       } catch {
         setError('Search failed. Try again.')
-        setResults([])
+        pushResults([])
       } finally {
         setLoading(false)
       }
@@ -73,7 +79,7 @@ export function PlaceSearch({ onSelect, disabled }: PlaceSearchProps) {
       mapboxUrl: `https://www.mapbox.com/maps/places/?query=${encodeURIComponent(feature.place_name)}`,
     })
     setQuery('')
-    setResults([])
+    pushResults([])
   }
 
   return (
