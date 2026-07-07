@@ -101,6 +101,15 @@ npm run db:studio --workspace=apps/api
 - [ ] **PBI-4.5** Live vote tallies — `vote:cast` + `slot:vote` events update UI without refetch
 - [ ] **PBI-4.6** Live RSVP + outing confirm — `rsvp:updated` + `outing:confirmed` push to all room members
 - [ ] **PBI-4.7** Presence indicators — `presence:join/leave`, avatar strip on outing page, unread badge on outing card
+- [ ] **PBI-4.8** Chat resilience & error handling — fix 6 known gaps discovered 2026-07-07:
+  1. **Re-join on reconnect** — `useChatRoom` must listen to `socket.on('connect')` and re-emit `outing:join` so user rejoins the room after any disconnect (currently misses all messages after reconnect)
+  2. **Connection-state UI** — listen to `socket.on('disconnect')` / `socket.on('connect')` → show a banner/toast ("Reconnecting…" / "Back online") inside `ChatWindow`
+  3. **Send error handling** — `Input.handleSubmit` has no `catch`; network/server errors are silently swallowed; add catch, show inline error, restore body text
+  4. **Message gap recovery** — on reconnect, invalidate `['messages', outingId]` to refetch latest page and fill gap from disconnect window
+  5. **Token refresh on socket auth failure** — intercept `connect_error` with reason "Invalid or expired token" → call refresh endpoint → `connectSocket(newToken)` (prevents silent socket death after 15-min JWT expiry)
+  6. **`chat:message:edited` frontend listener** — `useChatRoom` only handles `chat:message`; add handler for `chat:message:edited` to update cached message body in-place
+  
+  Files: `apps/web/src/hooks/useChatRoom.ts`, `apps/web/src/components/chat/ChatWindow.tsx`, `apps/web/src/lib/socket.ts`
 
 ### Epic 5 — AI Suggestions (Gemini)
 
@@ -145,7 +154,7 @@ npm run db:studio --workspace=apps/api
 ```
 PBI-1.4 → PBI-2.2 → PBI-2.3 →
 PBI-3.1 → PBI-3.2 → PBI-3.3 → PBI-3.4 → PBI-3.5 → PBI-3.6 → PBI-3.7 →
-PBI-4.1 → PBI-4.2 → PBI-4.3 → PBI-4.4 → PBI-4.5 → PBI-4.6 → PBI-4.7 →
+PBI-4.1 → PBI-4.2 → PBI-4.3 → PBI-4.8 → PBI-4.4 → PBI-4.5 → PBI-4.6 → PBI-4.7 →
 PBI-8.2 →
 PBI-5.1 → PBI-5.2 → PBI-5.3 → PBI-5.4 →
 PBI-6.1 → PBI-6.2 → PBI-6.3 → PBI-6.4 →

@@ -199,3 +199,124 @@ groupsRouter.get('/:id', GroupsController.getGroup)
  *               $ref: '#/components/schemas/Error'
  */
 groupsRouter.post('/:id/invite', GroupsController.inviteMember)
+
+/**
+ * @openapi
+ * /api/groups/{id}:
+ *   patch:
+ *     tags: [Groups]
+ *     summary: Update group name/description (admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:        { type: string }
+ *               description: { type: string, nullable: true }
+ *     responses:
+ *       200:
+ *         description: Updated group
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Group'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Only admins can edit this group
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+groupsRouter.patch('/:id', GroupsController.updateGroup)
+
+/**
+ * @openapi
+ * /api/groups/{id}/members/me:
+ *   delete:
+ *     tags: [Groups]
+ *     summary: Leave a group
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Left successfully
+ *       400:
+ *         description: Last admin guard — transfer admin role before leaving
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Not a member
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+// Must be declared before /:id/members/:userId to avoid "me" matching :userId
+groupsRouter.delete('/:id/members/me', GroupsController.leaveGroup)
+
+/**
+ * @openapi
+ * /api/groups/{id}/members/{userId}:
+ *   delete:
+ *     tags: [Groups]
+ *     summary: Remove a member (admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Member removed
+ *       400:
+ *         description: Cannot remove the last admin
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Only admins can remove members
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Member not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+groupsRouter.delete('/:id/members/:userId', GroupsController.removeMember)

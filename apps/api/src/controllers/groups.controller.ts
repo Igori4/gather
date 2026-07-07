@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import crypto from 'crypto'
-import { CreateGroupSchema, InviteMemberSchema } from '@gather/shared'
+import { CreateGroupSchema, InviteMemberSchema, UpdateGroupSchema } from '@gather/shared'
 import { AuthRequest } from '../middleware/auth'
 import { GroupRepository } from '../repositories/group.repository'
 
@@ -78,4 +78,67 @@ export async function inviteMember(req: Request, res: Response) {
   })
 
   return res.status(201).json({ token: invitation.token, email: invitation.email })
+}
+
+export async function updateGroup(req: Request, res: Response) {
+  const { userId } = req as AuthRequest
+  const { id } = req.params
+
+  const membership = await GroupRepository.findMembership(id, userId)
+  if (!membership || membership.role !== 'admin') {
+    return res.status(403).json({ error: 'Only admins can edit this group' })
+  }
+
+  const parsed = UpdateGroupSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.flatten() })
+  }
+
+  const group = await GroupRepository.update(id, parsed.data)
+  return res.json(group)
+}
+
+export async function removeMember(req: Request, res: Response) {
+  const { userId } = req as AuthRequest
+  const { id, userId: targetId } = req.params
+
+  const membership = await GroupRepository.findMembership(id, userId)
+  if (!membership || membership.role !== 'admin') {
+    return res.status(403).json({ error: 'Only admins can remove members' })
+  }
+
+  const targetMembership = await GroupRepository.findMembership(id, targetId)
+  if (!targetMembership) {
+    return res.status(404).json({ error: 'Member not found' })
+  }
+
+  if (targetMembership.role === 'admin') {
+    const adminCount = await GroupRepository.countAdmins(id)
+    if (adminCount <= 1) {
+      return res.status(400).json({ error: 'Cannot remove the last admin' })
+    }
+  }
+
+  await GroupRepository.removeMember(id, targetId)
+  return res.status(204).send()
+}
+
+export async function leaveGroup(req: Request, res: Response) {
+  const { userId } = req as AuthRequest
+  const { id } = req.params
+
+  const membership = await GroupRepository.findMembership(id, userId)
+  if (!membership) {
+    return res.status(404).json({ error: 'Not a member of this group' })
+  }
+
+  if (membership.role === 'admin') {
+    const adminCount = await GroupRepository.countAdmins(id)
+    if (adminCount <= 1) {
+      return res.status(400).json({ error: 'Transfer admin role before leaving' })
+    }
+  }
+
+  await GroupRepository.removeMember(id, userId)
+  return res.status(204).send()
 }

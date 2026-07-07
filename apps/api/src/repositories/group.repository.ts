@@ -1,3 +1,4 @@
+import { UpdateGroupInput } from '@gather/shared'
 import { prisma } from '../lib/prisma'
 
 export const GroupRepository = {
@@ -53,4 +54,13 @@ export const GroupRepository = {
     token: string
     expiresAt: Date
   }) => prisma.invitation.create({ data }),
+
+  update: (id: string, data: UpdateGroupInput) =>
+    prisma.group.update({ where: { id }, data }),
+
+  removeMember: (groupId: string, userId: string) =>
+    prisma.groupMember.delete({ where: { groupId_userId: { groupId, userId } } }),
+
+  countAdmins: (groupId: string) =>
+    prisma.groupMember.count({ where: { groupId, role: 'admin' } }),
 }
