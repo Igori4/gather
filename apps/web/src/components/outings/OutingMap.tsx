@@ -35,6 +35,16 @@ export function OutingMap({ places, searchResults, onSelect }: OutingMapProps) {
     map.addControl(new mapboxgl.NavigationControl(), 'top-right')
     mapRef.current = map
 
+    navigator.geolocation?.getCurrentPosition(
+      ({ coords }) => {
+        // only fly to user if no places/results have already moved the map
+        if (markersRef.current.length === 0) {
+          map.flyTo({ center: [coords.longitude, coords.latitude], zoom: 13, duration: 800 })
+        }
+      },
+      () => { /* permission denied — keep default */ }
+    )
+
     return () => {
       markersRef.current.forEach(m => m.remove())
       markersRef.current = []
