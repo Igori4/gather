@@ -2,11 +2,10 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
   MapPin, Calendar, ThumbsUp, ThumbsDown, Plus, Share2,
-  CheckCircle, ChevronRight, Sparkles, Sun, Users, MessageCircle,
-  ChevronDown, ChevronUp,
+  CheckCircle, ChevronRight, Sparkles, Sun, Users,
 } from 'lucide-react'
 import { useOuting, useAddPlace, useRemovePlace } from '@/hooks/useOutings'
-import { ChatWindow } from '@/components/chat/ChatWindow'
+import { ChatWidget } from '@/components/chat/ChatWidget'
 import { PlaceSearch } from '@/components/outings/PlaceSearch'
 import { OutingMap } from '@/components/outings/OutingMap'
 import { Button } from '@/components/ui/button'
@@ -187,7 +186,6 @@ export default function OutingDetailPage() {
   const addPlace = useAddPlace(id)
   const removePlace = useRemovePlace(id)
   const [searchResults, setSearchResults] = useState<MapboxFeature[]>([])
-  const [chatOpen, setChatOpen] = useState(false)
 
   if (isLoading) return <p className="text-muted-foreground py-8">Loading…</p>
   if (!outing) return <p className="text-destructive py-8">Outing not found.</p>
@@ -301,28 +299,7 @@ export default function OutingDetailPage() {
         </div>
       </div>
 
-      {/* Chat — collapsible */}
-      <div className="rounded-2xl border overflow-hidden">
-        <button
-          onClick={() => setChatOpen(o => !o)}
-          className="w-full flex items-center justify-between px-5 py-3 text-sm font-semibold hover:bg-muted/40 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <MessageCircle className="h-4 w-4 text-muted-foreground" />
-            Group Chat
-          </div>
-          {chatOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-        </button>
-
-        {chatOpen && (
-          <div className="h-80 border-t">
-            <ChatWindow outingId={id}>
-              <ChatWindow.MessageList />
-              <ChatWindow.Input />
-            </ChatWindow>
-          </div>
-        )}
-      </div>
+      <ChatWidget outingId={id} />
     </div>
   )
 }
