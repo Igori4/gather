@@ -15,6 +15,7 @@ export function OutingMap({ places, searchResults, onSelect }: OutingMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const markersRef = useRef<mapboxgl.Marker[]>([])
+  const clickMarkerRef = useRef<mapboxgl.Marker | null>(null)
   const onSelectRef = useRef(onSelect)
 
   useEffect(() => {
@@ -37,7 +38,6 @@ export function OutingMap({ places, searchResults, onSelect }: OutingMapProps) {
 
     navigator.geolocation?.getCurrentPosition(
       ({ coords }) => {
-        // only fly to user if no places/results have already moved the map
         if (markersRef.current.length === 0) {
           map.flyTo({ center: [coords.longitude, coords.latitude], zoom: 13, duration: 800 })
         }
@@ -45,9 +45,67 @@ export function OutingMap({ places, searchResults, onSelect }: OutingMapProps) {
       () => { /* permission denied — keep default */ }
     )
 
+    map.on('click', async (e) => {
+      clickMarkerRef.current?.remove()
+      clickMarkerRef.current = null
+
+      const { lng, lat } = e.lngLat
+      const geocodeToken = import.meta.env.VITE_MAPBOX_TOKEN
+      let name = `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+      let address = ''
+
+      try {
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${geocodeToken}&types=poi,address&limit=1`
+        const res = await fetch(url)
+        if (res.ok) {
+          const data = await res.json()
+          const feature = data.features?.[0]
+          if (feature) {
+            const parts: string[] = feature.place_name.split(', ')
+            name = parts[0]
+            address = parts.slice(1).join(', ')
+          }
+        }
+      } catch { /* use coordinate fallback */ }
+
+      const popupNode = document.createElement('div')
+      popupNode.innerHTML = `
+        <p class="font-medium text-sm">${name}</p>
+        ${address ? `<p class="text-xs text-gray-500 mb-1">${address}</p>` : ''}
+        <button id="map-add-btn" class="mt-1 text-xs font-semibold text-blue-600 hover:underline">+ Add this place</button>
+      `
+
+      const popup = new mapboxgl.Popup({ offset: 14, closeButton: true })
+        .setDOMContent(popupNode)
+
+      popup.on('open', () => {
+        document.getElementById('map-add-btn')?.addEventListener('click', () => {
+          onSelectRef.current({
+            placeId: `custom-${lng.toFixed(6)}-${lat.toFixed(6)}`,
+            name,
+            address: address || name,
+            lat,
+            lng,
+          })
+          clickMarkerRef.current?.remove()
+          clickMarkerRef.current = null
+        })
+      })
+
+      const el = createDot('#8b5cf6')
+      const marker = new mapboxgl.Marker({ element: el })
+        .setLngLat([lng, lat])
+        .setPopup(popup)
+        .addTo(map)
+      marker.togglePopup()
+      clickMarkerRef.current = marker
+    })
+
     return () => {
       markersRef.current.forEach(m => m.remove())
       markersRef.current = []
+      clickMarkerRef.current?.remove()
+      clickMarkerRef.current = null
       map.remove()
       mapRef.current = null
     }
