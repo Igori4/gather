@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import type { CreateOutingInput } from '@gather/shared'
-import { listOutings, createOuting, getOuting } from '@/api/outings'
+import type { CreateOutingInput, AddPlaceInput } from '@gather/shared'
+import { listOutings, createOuting, getOuting, addPlace, removePlace } from '@/api/outings'
 
 export function useOutings(groupId: string) {
   return useQuery({
@@ -21,5 +21,21 @@ export function useCreateOuting(groupId: string) {
   return useMutation({
     mutationFn: (data: CreateOutingInput) => createOuting(groupId, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['outings', groupId] }),
+  })
+}
+
+export function useAddPlace(outingId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: AddPlaceInput) => addPlace(outingId, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['outing', outingId] }),
+  })
+}
+
+export function useRemovePlace(outingId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (placeId: string) => removePlace(outingId, placeId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['outing', outingId] }),
   })
 }

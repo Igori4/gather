@@ -1,5 +1,18 @@
 import { api } from '@/lib/axios'
-import type { CreateOutingInput } from '@gather/shared'
+import type { CreateOutingInput, AddPlaceInput } from '@gather/shared'
+
+export interface OutingPlace {
+  id: string
+  outingId: string
+  placeId: string
+  name: string
+  address: string
+  lat: number
+  lng: number
+  mapboxUrl: string | null
+  addedBy: string
+  createdAt: string
+}
 
 export interface Outing {
   id: string
@@ -9,6 +22,7 @@ export interface Outing {
   status: string
   createdBy: string
   createdAt: string
+  places?: OutingPlace[]
 }
 
 export async function listOutings(groupId: string): Promise<Outing[]> {
@@ -24,4 +38,13 @@ export async function createOuting(groupId: string, data: CreateOutingInput): Pr
 export async function getOuting(outingId: string): Promise<Outing> {
   const res = await api.get<Outing>(`/api/outings/${outingId}`)
   return res.data
+}
+
+export async function addPlace(outingId: string, data: AddPlaceInput): Promise<OutingPlace> {
+  const res = await api.post<OutingPlace>(`/api/outings/${outingId}/places`, data)
+  return res.data
+}
+
+export async function removePlace(outingId: string, placeId: string): Promise<void> {
+  await api.delete(`/api/outings/${outingId}/places/${placeId}`)
 }

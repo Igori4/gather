@@ -80,3 +80,63 @@ outingsRouter.get('/groups/:groupId/outings', OutingsController.listOutings)
  *       404: { description: Outing not found }
  */
 outingsRouter.get('/outings/:id', OutingsController.getOuting)
+
+/**
+ * @openapi
+ * /api/outings/{id}/places:
+ *   post:
+ *     tags: [Outings]
+ *     summary: Add a place to an outing (members only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [placeId, name, address, lat, lng]
+ *             properties:
+ *               placeId: { type: string }
+ *               name: { type: string }
+ *               address: { type: string }
+ *               lat: { type: number }
+ *               lng: { type: number }
+ *               mapboxUrl: { type: string }
+ *     responses:
+ *       201: { description: Place added }
+ *       400: { description: Validation error }
+ *       403: { description: Not a group member }
+ *       404: { description: Outing not found }
+ *       409: { description: Place already added }
+ */
+outingsRouter.post('/outings/:id/places', OutingsController.addPlace)
+
+/**
+ * @openapi
+ * /api/outings/{id}/places/{placeId}:
+ *   delete:
+ *     tags: [Outings]
+ *     summary: Remove a place from an outing (members only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *       - in: path
+ *         name: placeId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       204: { description: Place removed }
+ *       403: { description: Not a group member }
+ *       404: { description: Outing or place not found }
+ */
+outingsRouter.delete('/outings/:id/places/:placeId', OutingsController.removePlace)
