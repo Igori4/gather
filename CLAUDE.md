@@ -79,13 +79,13 @@ npm run db:studio --workspace=apps/api
 ### Epic 2 — Groups
 
 - [x] **PBI-2.1** Groups API — create, list, get, invite by email, accept invitation → `apps/api/src/routes/groups.ts`
-- [ ] **PBI-2.2** Groups UI — GroupListPage (cards + create modal), GroupDetailPage (member list, roles) → `apps/web/src/pages/groups/`
-- [ ] **PBI-2.3** Group management — edit name/description/cover, remove member, leave group (admin-only guarded in API + UI)
+- [x] **PBI-2.2** Groups UI — GroupListPage (cards + create modal), GroupDetailPage (member list, roles) → `apps/web/src/pages/groups/`
+- [x] **PBI-2.3** Group management — edit name/description/cover, remove member, leave group (admin-only guarded in API + UI)
 
 ### Epic 3 — Outing Planning Flow ← **core domain, start here after groups UI**
 
-- [ ] **PBI-3.1** Outings API — create outing, list for group, get detail → `apps/api/src/routes/outings.ts`
-- [ ] **PBI-3.2** Place search — Mapbox place search, add/remove place to outing
+- [x] **PBI-3.1** Outings API — create outing, list for group, get detail → `apps/api/src/routes/outings.ts`
+- [x] **PBI-3.2** Place search — Mapbox geocoding search + click-on-map (reverse geocoding), add/remove place to outing; `OutingMap` with blue/orange/purple markers, geolocation; `PlaceSearch` debounced dropdown → `apps/web/src/components/outings/`, `apps/api/src/routes/outings.ts`
 - [ ] **PBI-3.3** Place voting API — cast vote (up/down), get tally per place
 - [ ] **PBI-3.4** Time slots API — propose slots, vote availability, get vote summary
 - [ ] **PBI-3.5** Outing confirmation + RSVP API — admin confirms (place + slot), members RSVP
@@ -96,7 +96,7 @@ npm run db:studio --workspace=apps/api
 
 - [ ] **PBI-4.1** Chat REST API — send (persists to DB), list messages (cursor pagination), edit/soft-delete own → `apps/api/src/routes/chat.ts`
 - [ ] **PBI-4.2** Socket.IO rooms — join/leave `outing:{id}` on mount/unmount, group membership auth guard → `apps/api/src/socket/`
-- [ ] **PBI-4.3** Live chat UI — `chat:message` + `chat:message:edited` events; ChatWindow + Message components; infinite scroll → `apps/web/src/components/chat/`
+- [x] **PBI-4.3** Live chat UI — `chat:message` + `chat:message:edited` events; ChatWindow + Message components; infinite scroll → `apps/web/src/components/chat/`; floating `ChatWidget` with unread counter → `apps/web/src/components/chat/ChatWidget.tsx`
 - [ ] **PBI-4.4** Typing indicators — `chat:typing` broadcast, auto-clear 3s, TypingIndicator component
 - [ ] **PBI-4.5** Live vote tallies — `vote:cast` + `slot:vote` events update UI without refetch
 - [ ] **PBI-4.6** Live RSVP + outing confirm — `rsvp:updated` + `outing:confirmed` push to all room members
