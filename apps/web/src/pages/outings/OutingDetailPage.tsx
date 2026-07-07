@@ -13,6 +13,19 @@ import type { AddPlaceInput } from '@gather/shared'
 import type { MapboxFeature } from '@/components/outings/PlaceSearch'
 import type { OutingPlace } from '@/api/outings'
 
+// ── Under-development overlay ─────────────────────────────────────
+
+function UnderDevelopment({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative">
+      {children}
+      <div className="absolute inset-0 rounded-2xl bg-background/60 backdrop-blur-[2px] flex flex-col items-center justify-center gap-1.5 pointer-events-none">
+        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/80">Under Development</span>
+      </div>
+    </div>
+  )
+}
+
 // ── Placeholder data ──────────────────────────────────────────────
 
 const PLACEHOLDER_DAYS = [
@@ -294,8 +307,8 @@ export default function OutingDetailPage() {
 
         {/* RIGHT — Availability + Gemini */}
         <div className="space-y-4">
-          <AvailabilitySection />
-          <GeminiInsightsSection />
+          <UnderDevelopment><AvailabilitySection /></UnderDevelopment>
+          <UnderDevelopment><GeminiInsightsSection /></UnderDevelopment>
         </div>
       </div>
 
