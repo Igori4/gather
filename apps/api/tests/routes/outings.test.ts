@@ -329,3 +329,231 @@ describe('POST /api/outings/:id/places/:placeId/vote', () => {
     expect(res.status).toBe(404)
   })
 })
+
+// ─── Slot helpers ────────────────────────────────────────────────────────────
+
+const FUTURE_START = new Date(Date.now() + 86400000).toISOString()  // tomorrow
+const FUTURE_END   = new Date(Date.now() + 90000000).toISOString()  // tomorrow + 1h
+
+async function createOutingForSlots(token: string) {
+  const groupId = await createTestGroup(token)
+  const res = await request(app)
+    .post(`/api/groups/${groupId}/outings`)
+    .set('Authorization', `Bearer ${token}`)
+    .send({ title: 'Slot Outing' })
+  return { outingId: res.body.id as string }
+}
+
+// ─── POST /api/outings/:id/slots ─────────────────────────────────────────────
+
+describe('POST /api/outings/:id/slots', () => {
+  it('201 — proposes slot', async () => {
+    const { token } = await createTestUser('slot-create')
+    const { outingId } = await createOutingForSlots(token)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/slots`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ startsAt: FUTURE_START, endsAt: FUTURE_END })
+
+    expect(res.status).toBe(201)
+    expect(res.body.outingId).toBe(outingId)
+    expect(res.body.id).toBeDefined()
+  })
+
+  it('400 — endsAt before startsAt', async () => {
+    const { token } = await createTestUser('slot-bad-time')
+    const { outingId } = await createOutingForSlots(token)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/slots`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ startsAt: FUTURE_END, endsAt: FUTURE_START })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('400 — missing startsAt', async () => {
+    const { token } = await createTestUser('slot-missing')
+    const { outingId } = await createOutingForSlots(token)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/slots`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ endsAt: FUTURE_END })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('401 — no auth', async () => {
+    const res = await request(app)
+      .post('/api/outings/fake/slots')
+      .send({ startsAt: FUTURE_START, endsAt: FUTURE_END })
+    expect(res.status).toBe(401)
+  })
+
+  it('403 — non-member cannot propose', async () => {
+    const { token } = await createTestUser('slot-403-owner')
+    const { token: other } = await createTestUser('slot-403-other')
+    const { outingId } = await createOutingForSlots(token)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/slots`)
+      .set('Authorization', `Bearer ${other}`)
+      .send({ startsAt: FUTURE_START, endsAt: FUTURE_END })
+
+    expect(res.status).toBe(403)
+  })
+
+  it('404 — outing not found', async () => {
+    const { token } = await createTestUser('slot-404')
+    const res = await request(app)
+      .post('/api/outings/nonexistent/slots')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ startsAt: FUTURE_START, endsAt: FUTURE_END })
+    expect(res.status).toBe(404)
+  })
+})
+
+// ─── POST /api/outings/:id/slots/:slotId/vote ────────────────────────────────
+
+describe('POST /api/outings/:id/slots/:slotId/vote', () => {
+  async function createSlot(token: string) {
+    const { outingId } = await createOutingForSlots(token)
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/slots`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ startsAt: FUTURE_START, endsAt: FUTURE_END })
+    return { outingId, slotId: res.body.id as string }
+  }
+
+  it('200 — vote available=true returns tally', async () => {
+    const { token } = await createTestUser('svote-true')
+    const { outingId, slotId } = await createSlot(token)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/slots/${slotId}/vote`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ available: true })
+
+    expect(res.status).toBe(200)
+    expect(res.body.available).toBe(1)
+    expect(res.body.userVote).toBe(true)
+  })
+
+  it('200 — vote available=false', async () => {
+    const { token } = await createTestUser('svote-false')
+    const { outingId, slotId } = await createSlot(token)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/slots/${slotId}/vote`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ available: false })
+
+    expect(res.status).toBe(200)
+    expect(res.body.unavailable).toBe(1)
+    expect(res.body.userVote).toBe(false)
+  })
+
+  it('200 — revoting updates tally', async () => {
+    const { token } = await createTestUser('svote-switch')
+    const { outingId, slotId } = await createSlot(token)
+
+    await request(app)
+      .post(`/api/outings/${outingId}/slots/${slotId}/vote`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ available: true })
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/slots/${slotId}/vote`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ available: false })
+
+    expect(res.status).toBe(200)
+    expect(res.body.available).toBe(0)
+    expect(res.body.unavailable).toBe(1)
+  })
+
+  it('400 — available not boolean', async () => {
+    const { token } = await createTestUser('svote-bad')
+    const { outingId, slotId } = await createSlot(token)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/slots/${slotId}/vote`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ available: 'yes' })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('401 — no auth', async () => {
+    const res = await request(app)
+      .post('/api/outings/fake/slots/fake/vote')
+      .send({ available: true })
+    expect(res.status).toBe(401)
+  })
+
+  it('404 — slot not found', async () => {
+    const { token } = await createTestUser('svote-404')
+    const { outingId } = await createOutingForSlots(token)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/slots/nonexistent/vote`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ available: true })
+
+    expect(res.status).toBe(404)
+  })
+})
+
+// ─── DELETE /api/outings/:id/slots/:slotId ───────────────────────────────────
+
+describe('DELETE /api/outings/:id/slots/:slotId', () => {
+  async function createSlot(token: string) {
+    const { outingId } = await createOutingForSlots(token)
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/slots`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ startsAt: FUTURE_START, endsAt: FUTURE_END })
+    return { outingId, slotId: res.body.id as string }
+  }
+
+  it('204 — deletes slot', async () => {
+    const { token } = await createTestUser('sdel-ok')
+    const { outingId, slotId } = await createSlot(token)
+
+    const res = await request(app)
+      .delete(`/api/outings/${outingId}/slots/${slotId}`)
+      .set('Authorization', `Bearer ${token}`)
+
+    expect(res.status).toBe(204)
+  })
+
+  it('401 — no auth', async () => {
+    const res = await request(app).delete('/api/outings/fake/slots/fake')
+    expect(res.status).toBe(401)
+  })
+
+  it('403 — non-member cannot delete', async () => {
+    const { token } = await createTestUser('sdel-403-owner')
+    const { token: other } = await createTestUser('sdel-403-other')
+    const { outingId, slotId } = await createSlot(token)
+
+    const res = await request(app)
+      .delete(`/api/outings/${outingId}/slots/${slotId}`)
+      .set('Authorization', `Bearer ${other}`)
+
+    expect(res.status).toBe(403)
+  })
+
+  it('404 — slot not found', async () => {
+    const { token } = await createTestUser('sdel-404')
+    const { outingId } = await createOutingForSlots(token)
+
+    const res = await request(app)
+      .delete(`/api/outings/${outingId}/slots/nonexistent`)
+      .set('Authorization', `Bearer ${token}`)
+
+    expect(res.status).toBe(404)
+  })
+})

@@ -23,6 +23,10 @@ export const OutingRepository = {
           orderBy: { id: 'asc' },
           include: { votes: { select: { userId: true, vote: true } } },
         },
+        timeSlots: {
+          orderBy: { startsAt: 'asc' },
+          include: { votes: { select: { userId: true, available: true } } },
+        },
       },
     }),
 
@@ -37,6 +41,36 @@ export const OutingRepository = {
 
   findPlacesForOuting: (outingId: string) =>
     prisma.outingPlace.findMany({ where: { outingId }, orderBy: { id: 'asc' } }),
+
+  proposeSlot: (data: { outingId: string; proposedBy: string; startsAt: Date; endsAt: Date }) =>
+    prisma.timeSlot.create({ data }),
+
+  findSlot: (slotId: string) =>
+    prisma.timeSlot.findUnique({ where: { id: slotId } }),
+
+  findSlotsForOuting: (outingId: string) =>
+    prisma.timeSlot.findMany({
+      where: { outingId },
+      orderBy: { startsAt: 'asc' },
+      include: { votes: { select: { userId: true, available: true } } },
+    }),
+
+  deleteSlot: (slotId: string) =>
+    prisma.timeSlot.delete({ where: { id: slotId } }),
+
+  voteSlot: async (slotId: string, userId: string, available: boolean) => {
+    await prisma.timeSlotVote.upsert({
+      where: { slotId_userId: { slotId, userId } },
+      create: { slotId, userId, available },
+      update: { available },
+    })
+    const votes = await prisma.timeSlotVote.findMany({ where: { slotId } })
+    return {
+      available: votes.filter(v => v.available).length,
+      unavailable: votes.filter(v => !v.available).length,
+      userVote: votes.find(v => v.userId === userId)?.available ?? null,
+    }
+  },
 
   findVote: (outingId: string, placeId: string, userId: string) =>
     prisma.placeVote.findUnique({

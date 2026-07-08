@@ -26,6 +26,26 @@ export interface OutingPlace {
   votes: PlaceVote[]
 }
 
+export interface SlotVote {
+  userId: string
+  available: boolean
+}
+
+export interface SlotTally {
+  available: number
+  unavailable: number
+  userVote: boolean | null
+}
+
+export interface TimeSlot {
+  id: string
+  outingId: string
+  proposedBy: string
+  startsAt: string
+  endsAt: string
+  votes: SlotVote[]
+}
+
 export interface Outing {
   id: string
   groupId: string
@@ -35,6 +55,7 @@ export interface Outing {
   createdBy: string
   createdAt: string
   places?: OutingPlace[]
+  slots?: TimeSlot[]
 }
 
 export async function listOutings(groupId: string): Promise<Outing[]> {
@@ -64,4 +85,18 @@ export async function removePlace(outingId: string, placeId: string): Promise<vo
 export async function castVote(outingId: string, placeId: string, vote: 'up' | 'down'): Promise<VoteTally> {
   const res = await api.post<VoteTally>(`/api/outings/${outingId}/places/${placeId}/vote`, { vote })
   return res.data
+}
+
+export async function proposeSlot(outingId: string, startsAt: string, endsAt: string): Promise<TimeSlot> {
+  const res = await api.post<TimeSlot>(`/api/outings/${outingId}/slots`, { startsAt, endsAt })
+  return res.data
+}
+
+export async function voteSlot(outingId: string, slotId: string, available: boolean): Promise<SlotTally> {
+  const res = await api.post<SlotTally>(`/api/outings/${outingId}/slots/${slotId}/vote`, { available })
+  return res.data
+}
+
+export async function deleteSlot(outingId: string, slotId: string): Promise<void> {
+  await api.delete(`/api/outings/${outingId}/slots/${slotId}`)
 }

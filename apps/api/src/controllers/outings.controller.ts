@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { CreateOutingSchema, AddPlaceSchema, CastVoteSchema } from '@gather/shared'
+import { CreateOutingSchema, AddPlaceSchema, CastVoteSchema, ProposeSlotSchema } from '@gather/shared'
 import { AuthRequest } from '../middleware/auth'
 import { OutingRepository } from '../repositories/outing.repository'
 import { GroupRepository } from '../repositories/group.repository'
@@ -82,6 +82,68 @@ export async function castVote(req: Request, res: Response) {
 
   const tally = await OutingRepository.castVote(outingId, placeId, userId, parsed.data.vote)
   return res.json(tally)
+}
+
+export async function proposeSlot(req: Request, res: Response) {
+  const { userId } = req as AuthRequest
+
+  const outing = await OutingRepository.findByIdWithGroup(req.params.id)
+  if (!outing) return res.status(404).json({ error: 'Outing not found' })
+
+  const isMember = outing.group.members.some(m => m.userId === userId)
+  if (!isMember) return res.status(403).json({ error: 'Forbidden' })
+
+  const parsed = ProposeSlotSchema.safeParse(req.body)
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() })
+
+  const startsAt = new Date(parsed.data.startsAt)
+  const endsAt = new Date(parsed.data.endsAt)
+  if (endsAt <= startsAt) return res.status(400).json({ error: 'endsAt must be after startsAt' })
+
+  const slot = await OutingRepository.proposeSlot({
+    outingId: req.params.id,
+    proposedBy: userId,
+    startsAt,
+    endsAt,
+  })
+  return res.status(201).json(slot)
+}
+
+export async function voteSlot(req: Request, res: Response) {
+  const { userId } = req as AuthRequest
+  const { id: outingId, slotId } = req.params
+
+  const outing = await OutingRepository.findByIdWithGroup(outingId)
+  if (!outing) return res.status(404).json({ error: 'Outing not found' })
+
+  const isMember = outing.group.members.some(m => m.userId === userId)
+  if (!isMember) return res.status(403).json({ error: 'Forbidden' })
+
+  const slot = await OutingRepository.findSlot(slotId)
+  if (!slot || slot.outingId !== outingId) return res.status(404).json({ error: 'Slot not found' })
+
+  const { available } = req.body
+  if (typeof available !== 'boolean') return res.status(400).json({ error: 'available must be boolean' })
+
+  const tally = await OutingRepository.voteSlot(slotId, userId, available)
+  return res.json(tally)
+}
+
+export async function deleteSlot(req: Request, res: Response) {
+  const { userId } = req as AuthRequest
+  const { id: outingId, slotId } = req.params
+
+  const outing = await OutingRepository.findByIdWithGroup(outingId)
+  if (!outing) return res.status(404).json({ error: 'Outing not found' })
+
+  const isMember = outing.group.members.some(m => m.userId === userId)
+  if (!isMember) return res.status(403).json({ error: 'Forbidden' })
+
+  const slot = await OutingRepository.findSlot(slotId)
+  if (!slot || slot.outingId !== outingId) return res.status(404).json({ error: 'Slot not found' })
+
+  await OutingRepository.deleteSlot(slotId)
+  return res.status(204).send()
 }
 
 export async function removePlace(req: Request, res: Response) {

@@ -1,18 +1,20 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { format } from 'date-fns'
 import {
   MapPin, Calendar, ThumbsUp, ThumbsDown, Plus, Share2,
-  CheckCircle, ChevronRight, Sparkles, Sun, Users,
+  CheckCircle, ChevronRight, Sparkles, Sun, Users, Trash2,
 } from 'lucide-react'
-import { useOuting, useAddPlace, useRemovePlace, useCastVote } from '@/hooks/useOutings'
+import { useOuting, useAddPlace, useRemovePlace, useCastVote, useProposeSlot, useVoteSlot, useDeleteSlot } from '@/hooks/useOutings'
 import { useAuthStore } from '@/stores/authStore'
 import { ChatWidget } from '@/components/chat/ChatWidget'
 import { PlaceSearch } from '@/components/outings/PlaceSearch'
 import { OutingMap } from '@/components/outings/OutingMap'
+import { ProposeSlotForm } from '@/components/outings/ProposeSlotForm'
 import { Button } from '@/components/ui/button'
 import type { AddPlaceInput } from '@gather/shared'
 import type { MapboxFeature } from '@/components/outings/PlaceSearch'
-import type { OutingPlace } from '@/api/outings'
+import type { OutingPlace, TimeSlot } from '@/api/outings'
 
 // ── Under-development overlay ─────────────────────────────────────
 
@@ -28,21 +30,6 @@ function UnderDevelopment({ children }: { children: React.ReactNode }) {
 }
 
 // ── Placeholder data ──────────────────────────────────────────────
-
-const PLACEHOLDER_DAYS = [
-  { label: 'M', date: 18 },
-  { label: 'T', date: 19 },
-  { label: 'W', date: 20 },
-  { label: 'T', date: 21 },
-  { label: 'F', date: 22 },
-  { label: 'S', date: 23, dot: true },
-  { label: 'S', date: 24, picked: true },
-]
-
-const PLACEHOLDER_SLOTS = [
-  { time: '10:00 AM', note: '2 can attend', voted: false },
-  { time: '11:30 AM', note: 'Everyone free!', voted: true },
-]
 
 const PLACEHOLDER_INSIGHTS = [
   {
@@ -122,65 +109,101 @@ function PlaceCard({ place, currentUserId, onVote, votePending, onRemove }: Plac
   )
 }
 
-function AvailabilitySection() {
+interface AvailabilitySectionProps {
+  slots: TimeSlot[]
+  currentUserId: string
+  onVote: (slotId: string, available: boolean) => void
+  onDelete: (slotId: string) => void
+  onPropose: (startsAt: string, endsAt: string) => void
+  proposePending: boolean
+  votePending: boolean
+}
+
+function AvailabilitySection({ slots, currentUserId, onVote, onDelete, onPropose, proposePending, votePending }: AvailabilitySectionProps) {
+  const allAvailable = slots.length > 0
+    ? Math.max(...slots.map(s => s.votes.filter(v => v.available).length))
+    : 0
+
   return (
-    <div className="rounded-2xl border bg-card p-5">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-2xl border bg-card p-5 space-y-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <h2 className="font-semibold text-base">Availability</h2>
         </div>
-        <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
-          Most people free
-        </span>
+        {allAvailable > 0 && (
+          <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+            {allAvailable} can attend
+          </span>
+        )}
       </div>
 
-      {/* Week strip */}
-      <div className="grid grid-cols-7 gap-1 mb-4">
-        {PLACEHOLDER_DAYS.map(day => (
-          <div key={day.date} className="flex flex-col items-center gap-1">
-            <span className="text-xs text-muted-foreground">{day.label}</span>
-            <div
-              className={`w-9 h-9 rounded-lg flex flex-col items-center justify-center text-sm font-medium
-                ${day.picked
-                  ? 'bg-primary text-primary-foreground'
-                  : day.dot
-                    ? 'border-2 border-primary/40 text-foreground'
-                    : 'text-muted-foreground'
-                }`}
-            >
-              {day.date}
-              {day.picked && <span className="text-[9px] font-semibold mt-0.5 leading-none">PICKED</span>}
-              {day.dot && <span className="h-1 w-1 rounded-full bg-primary mt-0.5" />}
-            </div>
-          </div>
-        ))}
-      </div>
+      {slots.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No time slots proposed yet.</p>
+      ) : (
+        <div className="space-y-2">
+          {slots.map(slot => {
+            const availCount = slot.votes.filter(v => v.available).length
+            const unavailCount = slot.votes.filter(v => !v.available).length
+            const userVote = slot.votes.find(v => v.userId === currentUserId)
+            const isMax = availCount === allAvailable && allAvailable > 0
 
-      {/* Time slots */}
-      <div className="space-y-2">
-        {PLACEHOLDER_SLOTS.map(slot => (
-          <div
-            key={slot.time}
-            className="flex items-center justify-between rounded-xl border px-4 py-3"
-          >
-            <div className="flex items-center gap-3">
-              <span className="font-semibold text-sm">{slot.time}</span>
-              <span className="text-sm text-muted-foreground">{slot.note}</span>
-            </div>
-            {slot.voted ? (
-              <span className="flex items-center gap-1 text-xs font-semibold text-white bg-emerald-500 px-3 py-1.5 rounded-lg">
-                <CheckCircle className="h-3.5 w-3.5" /> Voted
-              </span>
-            ) : (
-              <Button size="sm" variant="outline" className="h-7 text-xs" disabled>
-                Vote
-              </Button>
-            )}
-          </div>
-        ))}
-      </div>
+            return (
+              <div
+                key={slot.id}
+                className={`rounded-xl border px-4 py-3 flex items-center justify-between gap-2
+                  ${isMax ? 'border-emerald-200 bg-emerald-50/50' : ''}`}
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">
+                    {format(new Date(slot.startsAt), 'EEE, MMM d · h:mm a')}
+                    {' – '}
+                    {format(new Date(slot.endsAt), 'h:mm a')}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {availCount > 0 && `✓ ${availCount} available`}
+                    {unavailCount > 0 && `  ✗ ${unavailCount} unavailable`}
+                    {slot.votes.length === 0 && 'No votes yet'}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={() => onVote(slot.id, true)}
+                    disabled={votePending}
+                    className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors
+                      ${userVote?.available === true
+                        ? 'bg-emerald-500 text-white font-semibold'
+                        : 'border hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'}`}
+                  >
+                    <CheckCircle className="h-3.5 w-3.5" /> Can
+                  </button>
+                  <button
+                    onClick={() => onVote(slot.id, false)}
+                    disabled={votePending}
+                    className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors
+                      ${userVote?.available === false
+                        ? 'bg-destructive text-white font-semibold'
+                        : 'border hover:bg-red-50 hover:text-red-600 hover:border-red-300'}`}
+                  >
+                    Can't
+                  </button>
+                  <button
+                    onClick={() => onDelete(slot.id)}
+                    disabled={votePending}
+                    className="text-muted-foreground hover:text-destructive transition-colors p-1"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      <ProposeSlotForm onPropose={onPropose} isPending={proposePending} />
     </div>
   )
 }
@@ -225,6 +248,9 @@ export default function OutingDetailPage() {
   const addPlace = useAddPlace(id)
   const removePlace = useRemovePlace(id)
   const castVote = useCastVote(id)
+  const proposeSlot = useProposeSlot(id)
+  const voteSlot = useVoteSlot(id)
+  const deleteSlot = useDeleteSlot(id)
   const [searchResults, setSearchResults] = useState<MapboxFeature[]>([])
   const currentUserId = useAuthStore(s => s.user?.id ?? '')
 
@@ -338,7 +364,15 @@ export default function OutingDetailPage() {
 
         {/* RIGHT — Availability + Gemini */}
         <div className="space-y-4">
-          <UnderDevelopment><AvailabilitySection /></UnderDevelopment>
+          <AvailabilitySection
+            slots={outing.slots ?? []}
+            currentUserId={currentUserId}
+            onVote={(slotId, available) => voteSlot.mutate({ slotId, available })}
+            onDelete={(slotId) => deleteSlot.mutate(slotId)}
+            onPropose={(startsAt, endsAt) => proposeSlot.mutate({ startsAt, endsAt })}
+            proposePending={proposeSlot.isPending}
+            votePending={voteSlot.isPending}
+          />
           <UnderDevelopment><GeminiInsightsSection /></UnderDevelopment>
         </div>
       </div>

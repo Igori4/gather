@@ -174,3 +174,92 @@ outingsRouter.delete('/outings/:id/places/:placeId', OutingsController.removePla
  *       404: { description: Outing or place not found }
  */
 outingsRouter.post('/outings/:id/places/:placeId/vote', OutingsController.castVote)
+
+/**
+ * @openapi
+ * /api/outings/{id}/slots:
+ *   post:
+ *     tags: [Outings]
+ *     summary: Propose a time slot (members only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [startsAt, endsAt]
+ *             properties:
+ *               startsAt: { type: string, format: date-time }
+ *               endsAt: { type: string, format: date-time }
+ *     responses:
+ *       201: { description: Slot created }
+ *       400: { description: Validation error or endsAt <= startsAt }
+ *       403: { description: Not a group member }
+ *       404: { description: Outing not found }
+ */
+outingsRouter.post('/outings/:id/slots', OutingsController.proposeSlot)
+
+/**
+ * @openapi
+ * /api/outings/{id}/slots/{slotId}/vote:
+ *   post:
+ *     tags: [Outings]
+ *     summary: Vote availability for a time slot (members only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *       - in: path
+ *         name: slotId
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [available]
+ *             properties:
+ *               available: { type: boolean }
+ *     responses:
+ *       200: { description: "Tally: { available, unavailable, userVote }" }
+ *       400: { description: available must be boolean }
+ *       403: { description: Not a group member }
+ *       404: { description: Outing or slot not found }
+ */
+outingsRouter.post('/outings/:id/slots/:slotId/vote', OutingsController.voteSlot)
+
+/**
+ * @openapi
+ * /api/outings/{id}/slots/{slotId}:
+ *   delete:
+ *     tags: [Outings]
+ *     summary: Delete a time slot (any member)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *       - in: path
+ *         name: slotId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       204: { description: Slot deleted }
+ *       403: { description: Not a group member }
+ *       404: { description: Outing or slot not found }
+ */
+outingsRouter.delete('/outings/:id/slots/:slotId', OutingsController.deleteSlot)
