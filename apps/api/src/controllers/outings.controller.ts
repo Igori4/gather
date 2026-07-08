@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { CreateOutingSchema, AddPlaceSchema } from '@gather/shared'
+import { CreateOutingSchema, AddPlaceSchema, CastVoteSchema } from '@gather/shared'
 import { AuthRequest } from '../middleware/auth'
 import { OutingRepository } from '../repositories/outing.repository'
 import { GroupRepository } from '../repositories/group.repository'
@@ -62,6 +62,26 @@ export async function addPlace(req: Request, res: Response) {
     ...parsed.data,
   })
   return res.status(201).json(place)
+}
+
+export async function castVote(req: Request, res: Response) {
+  const { userId } = req as AuthRequest
+  const { id: outingId, placeId } = req.params
+
+  const outing = await OutingRepository.findByIdWithGroup(outingId)
+  if (!outing) return res.status(404).json({ error: 'Outing not found' })
+
+  const isMember = outing.group.members.some(m => m.userId === userId)
+  if (!isMember) return res.status(403).json({ error: 'Forbidden' })
+
+  const place = await OutingRepository.findPlace(outingId, placeId)
+  if (!place) return res.status(404).json({ error: 'Place not found' })
+
+  const parsed = CastVoteSchema.safeParse(req.body)
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() })
+
+  const tally = await OutingRepository.castVote(outingId, placeId, userId, parsed.data.vote)
+  return res.json(tally)
 }
 
 export async function removePlace(req: Request, res: Response) {

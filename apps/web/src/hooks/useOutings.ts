@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { CreateOutingInput, AddPlaceInput } from '@gather/shared'
-import { listOutings, createOuting, getOuting, addPlace, removePlace } from '@/api/outings'
+import { listOutings, createOuting, getOuting, addPlace, removePlace, castVote } from '@/api/outings'
 
 export function useOutings(groupId: string) {
   return useQuery({
@@ -36,6 +36,15 @@ export function useRemovePlace(outingId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (placeId: string) => removePlace(outingId, placeId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['outing', outingId] }),
+  })
+}
+
+export function useCastVote(outingId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ placeId, vote }: { placeId: string; vote: 'up' | 'down' }) =>
+      castVote(outingId, placeId, vote),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['outing', outingId] }),
   })
 }

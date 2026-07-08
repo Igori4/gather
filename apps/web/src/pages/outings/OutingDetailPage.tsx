@@ -4,7 +4,8 @@ import {
   MapPin, Calendar, ThumbsUp, ThumbsDown, Plus, Share2,
   CheckCircle, ChevronRight, Sparkles, Sun, Users,
 } from 'lucide-react'
-import { useOuting, useAddPlace, useRemovePlace } from '@/hooks/useOutings'
+import { useOuting, useAddPlace, useRemovePlace, useCastVote } from '@/hooks/useOutings'
+import { useAuthStore } from '@/stores/authStore'
 import { ChatWidget } from '@/components/chat/ChatWidget'
 import { PlaceSearch } from '@/components/outings/PlaceSearch'
 import { OutingMap } from '@/components/outings/OutingMap'
@@ -58,10 +59,21 @@ const PLACEHOLDER_INSIGHTS = [
 
 // ── Sub-components ────────────────────────────────────────────────
 
-function PlaceCard({ place, onRemove }: { place: OutingPlace; onRemove: () => void }) {
+interface PlaceCardProps {
+  place: OutingPlace
+  currentUserId: string
+  onVote: (placeId: string, vote: 'up' | 'down') => void
+  votePending: boolean
+  onRemove: () => void
+}
+
+function PlaceCard({ place, currentUserId, onVote, votePending, onRemove }: PlaceCardProps) {
+  const upCount = place.votes.filter(v => v.vote === 'up').length
+  const downCount = place.votes.filter(v => v.vote === 'down').length
+  const userVote = place.votes.find(v => v.userId === currentUserId)?.vote ?? null
+
   return (
     <div className="rounded-xl border bg-card overflow-hidden">
-      {/* image placeholder */}
       <div className="relative h-36 bg-muted">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
         <span className="absolute top-2 right-2 flex items-center gap-0.5 bg-black/60 text-white text-xs font-semibold px-1.5 py-0.5 rounded-md">
@@ -75,14 +87,28 @@ function PlaceCard({ place, onRemove }: { place: OutingPlace; onRemove: () => vo
 
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-1">
-            {/* placeholder vote buttons — PBI-3.3 */}
-            <button className="flex items-center gap-0.5 text-xs text-muted-foreground hover:text-primary transition-colors px-1.5 py-1 rounded-md hover:bg-muted">
+            <button
+              onClick={() => onVote(place.placeId, 'up')}
+              disabled={votePending}
+              className={`flex items-center gap-1 text-xs px-1.5 py-1 rounded-md transition-colors
+                ${userVote === 'up'
+                  ? 'text-primary bg-primary/10 font-semibold'
+                  : 'text-muted-foreground hover:text-primary hover:bg-muted'}`}
+            >
               <ThumbsUp className="h-3.5 w-3.5" />
+              {upCount > 0 && <span>{upCount}</span>}
             </button>
-            <button className="flex items-center gap-0.5 text-xs text-muted-foreground hover:text-destructive transition-colors px-1.5 py-1 rounded-md hover:bg-muted">
+            <button
+              onClick={() => onVote(place.placeId, 'down')}
+              disabled={votePending}
+              className={`flex items-center gap-1 text-xs px-1.5 py-1 rounded-md transition-colors
+                ${userVote === 'down'
+                  ? 'text-destructive bg-destructive/10 font-semibold'
+                  : 'text-muted-foreground hover:text-destructive hover:bg-muted'}`}
+            >
               <ThumbsDown className="h-3.5 w-3.5" />
+              {downCount > 0 && <span>{downCount}</span>}
             </button>
-            <span className="text-xs text-muted-foreground ml-1">0 votes</span>
           </div>
           <button
             onClick={onRemove}
@@ -198,7 +224,9 @@ export default function OutingDetailPage() {
   const { data: outing, isLoading } = useOuting(id)
   const addPlace = useAddPlace(id)
   const removePlace = useRemovePlace(id)
+  const castVote = useCastVote(id)
   const [searchResults, setSearchResults] = useState<MapboxFeature[]>([])
+  const currentUserId = useAuthStore(s => s.user?.id ?? '')
 
   if (isLoading) return <p className="text-muted-foreground py-8">Loading…</p>
   if (!outing) return <p className="text-destructive py-8">Outing not found.</p>
@@ -273,6 +301,9 @@ export default function OutingDetailPage() {
               <PlaceCard
                 key={place.id}
                 place={place}
+                currentUserId={currentUserId}
+                onVote={(placeId, vote) => castVote.mutate({ placeId, vote })}
+                votePending={castVote.isPending}
                 onRemove={() => removePlace.mutate(place.placeId)}
               />
             ))

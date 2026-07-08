@@ -1,6 +1,17 @@
 import { api } from '@/lib/axios'
 import type { CreateOutingInput, AddPlaceInput } from '@gather/shared'
 
+export interface PlaceVote {
+  userId: string
+  vote: 'up' | 'down'
+}
+
+export interface VoteTally {
+  up: number
+  down: number
+  userVote: 'up' | 'down' | null
+}
+
 export interface OutingPlace {
   id: string
   outingId: string
@@ -12,6 +23,7 @@ export interface OutingPlace {
   mapboxUrl: string | null
   addedBy: string
   createdAt: string
+  votes: PlaceVote[]
 }
 
 export interface Outing {
@@ -47,4 +59,9 @@ export async function addPlace(outingId: string, data: AddPlaceInput): Promise<O
 
 export async function removePlace(outingId: string, placeId: string): Promise<void> {
   await api.delete(`/api/outings/${outingId}/places/${placeId}`)
+}
+
+export async function castVote(outingId: string, placeId: string, vote: 'up' | 'down'): Promise<VoteTally> {
+  const res = await api.post<VoteTally>(`/api/outings/${outingId}/places/${placeId}/vote`, { vote })
+  return res.data
 }

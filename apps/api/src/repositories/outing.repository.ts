@@ -19,7 +19,10 @@ export const OutingRepository = {
       where: { id },
       include: {
         group: { include: { members: { select: { userId: true } } } },
-        places: { orderBy: { id: 'asc' } },
+        places: {
+          orderBy: { id: 'asc' },
+          include: { votes: { select: { userId: true, vote: true } } },
+        },
       },
     }),
 
@@ -34,4 +37,34 @@ export const OutingRepository = {
 
   findPlacesForOuting: (outingId: string) =>
     prisma.outingPlace.findMany({ where: { outingId }, orderBy: { id: 'asc' } }),
+
+  findVote: (outingId: string, placeId: string, userId: string) =>
+    prisma.placeVote.findUnique({
+      where: { outingId_placeId_userId: { outingId, placeId, userId } },
+    }),
+
+  castVote: async (outingId: string, placeId: string, userId: string, vote: 'up' | 'down') => {
+    const existing = await prisma.placeVote.findUnique({
+      where: { outingId_placeId_userId: { outingId, placeId, userId } },
+    })
+
+    if (existing?.vote === vote) {
+      await prisma.placeVote.delete({
+        where: { outingId_placeId_userId: { outingId, placeId, userId } },
+      })
+    } else {
+      await prisma.placeVote.upsert({
+        where: { outingId_placeId_userId: { outingId, placeId, userId } },
+        create: { outingId, placeId, userId, vote },
+        update: { vote },
+      })
+    }
+
+    const votes = await prisma.placeVote.findMany({ where: { outingId, placeId } })
+    return {
+      up: votes.filter(v => v.vote === 'up').length,
+      down: votes.filter(v => v.vote === 'down').length,
+      userVote: votes.find(v => v.userId === userId)?.vote ?? null,
+    }
+  },
 }
