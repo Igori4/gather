@@ -263,3 +263,64 @@ outingsRouter.post('/outings/:id/slots/:slotId/vote', OutingsController.voteSlot
  *       404: { description: Outing or slot not found }
  */
 outingsRouter.delete('/outings/:id/slots/:slotId', OutingsController.deleteSlot)
+
+/**
+ * @openapi
+ * /api/outings/{id}/confirm:
+ *   post:
+ *     tags: [Outings]
+ *     summary: Confirm an outing — sets place, slot, status=confirmed (admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [placeId, slotId]
+ *             properties:
+ *               placeId: { type: string }
+ *               slotId:  { type: string }
+ *     responses:
+ *       200: { description: Outing confirmed }
+ *       403: { description: Admin only }
+ *       404: { description: Outing / place / slot not found }
+ *       409: { description: Already confirmed }
+ */
+outingsRouter.post('/outings/:id/confirm', OutingsController.confirmOuting)
+
+/**
+ * @openapi
+ * /api/outings/{id}/rsvp:
+ *   post:
+ *     tags: [Outings]
+ *     summary: Set or update RSVP status (members only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status: { type: string, enum: [going, maybe, not_going] }
+ *     responses:
+ *       200: { description: RSVP upserted }
+ *       400: { description: Invalid status }
+ *       403: { description: Not a group member }
+ *       404: { description: Outing not found }
+ */
+outingsRouter.post('/outings/:id/rsvp', OutingsController.rsvp)

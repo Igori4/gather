@@ -5,7 +5,7 @@ import {
   MapPin, Calendar, ThumbsUp, ThumbsDown, Plus, Share2,
   CheckCircle, ChevronRight, Sparkles, Sun, Users, Trash2,
 } from 'lucide-react'
-import { useOuting, useAddPlace, useRemovePlace, useCastVote, useProposeSlot, useVoteSlot, useDeleteSlot } from '@/hooks/useOutings'
+import { useOuting, useAddPlace, useRemovePlace, useCastVote, useProposeSlot, useVoteSlot, useDeleteSlot, useConfirmOuting, useRSVP } from '@/hooks/useOutings'
 import { useAuthStore } from '@/stores/authStore'
 import { ChatWidget } from '@/components/chat/ChatWidget'
 import { PlaceSearch } from '@/components/outings/PlaceSearch'
@@ -14,7 +14,7 @@ import { ProposeSlotForm } from '@/components/outings/ProposeSlotForm'
 import { Button } from '@/components/ui/button'
 import type { AddPlaceInput } from '@gather/shared'
 import type { MapboxFeature } from '@/components/outings/PlaceSearch'
-import type { OutingPlace, TimeSlot } from '@/api/outings'
+import type { OutingPlace, TimeSlot, RSVPEntry } from '@/api/outings'
 
 // ── Under-development overlay ─────────────────────────────────────
 
@@ -240,32 +240,178 @@ function GeminiInsightsSection() {
   )
 }
 
+// ── RSVPBar ───────────────────────────────────────────────────────
+
+interface RSVPBarProps {
+  rsvps: RSVPEntry[]
+  currentUserId: string
+  onRSVP: (status: 'going' | 'maybe' | 'not_going') => void
+  isPending: boolean
+}
+
+function RSVPBar({ rsvps, currentUserId, onRSVP, isPending }: RSVPBarProps) {
+  const going    = rsvps.filter(r => r.status === 'going').length
+  const maybe    = rsvps.filter(r => r.status === 'maybe').length
+  const notGoing = rsvps.filter(r => r.status === 'not_going').length
+  const userStatus = rsvps.find(r => r.userId === currentUserId)?.status ?? null
+
+  const btn = (
+    status: 'going' | 'maybe' | 'not_going',
+    label: string,
+    count: number,
+    activeClass: string,
+  ) => (
+    <button
+      onClick={() => onRSVP(status)}
+      disabled={isPending}
+      className={`flex-1 flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl text-sm font-medium transition-colors border
+        ${userStatus === status
+          ? activeClass
+          : 'border-transparent hover:bg-muted text-muted-foreground'
+        }`}
+    >
+      <span className="text-base font-bold">{count}</span>
+      <span className="text-xs">{label}</span>
+    </button>
+  )
+
+  return (
+    <div className="rounded-2xl border bg-card p-5">
+      <div className="flex items-center gap-2 mb-3">
+        <Users className="h-4 w-4 text-muted-foreground" />
+        <h2 className="font-semibold text-base">RSVP</h2>
+      </div>
+      <div className="flex gap-2">
+        {btn('going',     'Going',   going,    'border-emerald-300 bg-emerald-50 text-emerald-700')}
+        {btn('maybe',     'Maybe',   maybe,    'border-amber-300 bg-amber-50 text-amber-700')}
+        {btn('not_going', "Can't",   notGoing, 'border-destructive/30 bg-destructive/5 text-destructive')}
+      </div>
+    </div>
+  )
+}
+
+// ── ConfirmModal ──────────────────────────────────────────────────
+
+interface ConfirmModalProps {
+  places: OutingPlace[]
+  slots: TimeSlot[]
+  onConfirm: (placeId: string, slotId: string) => void
+  onClose: () => void
+  isPending: boolean
+}
+
+function ConfirmModal({ places, slots, onConfirm, onClose, isPending }: ConfirmModalProps) {
+  const [selPlace, setSelPlace] = useState('')
+  const [selSlot, setSelSlot] = useState('')
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="bg-card rounded-2xl border shadow-xl p-6 w-full max-w-md mx-4 space-y-4">
+        <h2 className="text-lg font-semibold">Confirm Outing</h2>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Place</label>
+          <select
+            value={selPlace}
+            onChange={e => setSelPlace(e.target.value)}
+            className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
+          >
+            <option value="">Pick a place…</option>
+            {places.map(p => (
+              <option key={p.placeId} value={p.placeId}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Time Slot</label>
+          <select
+            value={selSlot}
+            onChange={e => setSelSlot(e.target.value)}
+            className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
+          >
+            <option value="">Pick a slot…</option>
+            {slots.map(s => (
+              <option key={s.id} value={s.id}>
+                {format(new Date(s.startsAt), 'EEE, MMM d · h:mm a')} – {format(new Date(s.endsAt), 'h:mm a')}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex gap-2 pt-2">
+          <Button variant="outline" className="flex-1" onClick={onClose} disabled={isPending}>
+            Cancel
+          </Button>
+          <Button
+            className="flex-1"
+            disabled={!selPlace || !selSlot || isPending}
+            onClick={() => onConfirm(selPlace, selSlot)}
+          >
+            {isPending ? 'Confirming…' : 'Confirm'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main page ─────────────────────────────────────────────────────
 
 export default function OutingDetailPage() {
   const { id = '' } = useParams()
   const { data: outing, isLoading } = useOuting(id)
-  const addPlace = useAddPlace(id)
+  const addPlace    = useAddPlace(id)
   const removePlace = useRemovePlace(id)
-  const castVote = useCastVote(id)
+  const castVote    = useCastVote(id)
   const proposeSlot = useProposeSlot(id)
-  const voteSlot = useVoteSlot(id)
-  const deleteSlot = useDeleteSlot(id)
+  const voteSlot    = useVoteSlot(id)
+  const deleteSlot  = useDeleteSlot(id)
+  const confirmOuting = useConfirmOuting(id)
+  const rsvpMutation  = useRSVP(id)
   const [searchResults, setSearchResults] = useState<MapboxFeature[]>([])
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
   const currentUserId = useAuthStore(s => s.user?.id ?? '')
 
   if (isLoading) return <p className="text-muted-foreground py-8">Loading…</p>
   if (!outing) return <p className="text-destructive py-8">Outing not found.</p>
 
   const places = outing.places ?? []
+  const slots  = outing.slots ?? []
+  const rsvps  = outing.rsvps ?? []
+  const isAdmin = outing.group?.members.find(m => m.userId === currentUserId)?.role === 'admin'
+  const isConfirmed = outing.status === 'confirmed'
+
+  const confirmedPlace = isConfirmed && outing.confirmedPlaceId
+    ? places.find(p => p.placeId === outing.confirmedPlaceId) ?? null
+    : null
+  const confirmedSlot = isConfirmed && outing.confirmedSlotId
+    ? slots.find(s => s.id === outing.confirmedSlotId) ?? null
+    : null
 
   function handleAddPlace(data: AddPlaceInput) {
     addPlace.mutate(data)
     setSearchResults([])
   }
 
+  function handleConfirm(placeId: string, slotId: string) {
+    confirmOuting.mutate({ placeId, slotId }, {
+      onSuccess: () => setShowConfirmModal(false),
+    })
+  }
+
   return (
     <div className="space-y-6">
+      {showConfirmModal && (
+        <ConfirmModal
+          places={places}
+          slots={slots}
+          onConfirm={handleConfirm}
+          onClose={() => setShowConfirmModal(false)}
+          isPending={confirmOuting.isPending}
+        />
+      )}
+
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1 text-sm text-muted-foreground">
         <Link to="/groups" className="hover:text-foreground transition-colors">Outings</Link>
@@ -283,7 +429,7 @@ export default function OutingDetailPage() {
             <p className="text-emerald-600 mt-1 text-sm font-medium">{outing.description}</p>
           )}
           <span className={`mt-2 inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full capitalize
-            ${outing.status === 'confirmed'
+            ${isConfirmed
               ? 'bg-emerald-100 text-emerald-700'
               : outing.status === 'voting'
                 ? 'bg-amber-100 text-amber-700'
@@ -295,16 +441,42 @@ export default function OutingDetailPage() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {/* placeholder — PBI-1.4 invite flow */}
           <Button variant="outline" size="sm" className="gap-1.5" disabled>
             <Share2 className="h-3.5 w-3.5" /> Invite
           </Button>
-          {/* placeholder — PBI-3.5 confirm */}
-          <Button size="sm" className="gap-1.5 bg-primary/90 hover:bg-primary" disabled>
-            <CheckCircle className="h-3.5 w-3.5" /> Confirm Outing
-          </Button>
+          {isAdmin && !isConfirmed && (
+            <Button
+              size="sm"
+              className="gap-1.5"
+              disabled={places.length === 0 || slots.length === 0}
+              onClick={() => setShowConfirmModal(true)}
+            >
+              <CheckCircle className="h-3.5 w-3.5" /> Confirm Outing
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* Confirmed banner */}
+      {isConfirmed && confirmedPlace && confirmedSlot && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-center gap-2 text-emerald-700">
+            <CheckCircle className="h-5 w-5 shrink-0" />
+            <span className="font-semibold text-sm">Outing Confirmed!</span>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-emerald-800 ml-0 sm:ml-2">
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5" /> {confirmedPlace.name}
+            </span>
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3.5 w-3.5" />
+              {format(new Date(confirmedSlot.startsAt), 'EEE, MMM d · h:mm a')}
+              {' – '}
+              {format(new Date(confirmedSlot.endsAt), 'h:mm a')}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-6 items-start">
@@ -321,7 +493,6 @@ export default function OutingDetailPage() {
             </span>
           </div>
 
-          {/* Real place cards */}
           {places.length > 0 ? (
             places.map(place => (
               <PlaceCard
@@ -337,7 +508,6 @@ export default function OutingDetailPage() {
             <p className="text-sm text-muted-foreground">No places yet — search or click the map.</p>
           )}
 
-          {/* Propose / Search */}
           <div className="rounded-xl border border-dashed p-3 space-y-2">
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-medium mb-1">
               <Plus className="h-4 w-4" /> Propose New Place
@@ -354,7 +524,6 @@ export default function OutingDetailPage() {
             )}
           </div>
 
-          {/* Map */}
           <OutingMap
             places={places}
             searchResults={searchResults}
@@ -362,10 +531,16 @@ export default function OutingDetailPage() {
           />
         </div>
 
-        {/* RIGHT — Availability + Gemini */}
+        {/* RIGHT — RSVP + Availability + Gemini */}
         <div className="space-y-4">
+          <RSVPBar
+            rsvps={rsvps}
+            currentUserId={currentUserId}
+            onRSVP={status => rsvpMutation.mutate(status)}
+            isPending={rsvpMutation.isPending}
+          />
           <AvailabilitySection
-            slots={outing.slots ?? []}
+            slots={slots}
             currentUserId={currentUserId}
             onVote={(slotId, available) => voteSlot.mutate({ slotId, available })}
             onDelete={(slotId) => deleteSlot.mutate(slotId)}

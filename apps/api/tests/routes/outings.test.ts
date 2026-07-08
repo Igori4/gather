@@ -557,3 +557,215 @@ describe('DELETE /api/outings/:id/slots/:slotId', () => {
     expect(res.status).toBe(404)
   })
 })
+
+// ─── Confirm + RSVP helpers ──────────────────────────────────────────────────
+
+async function createFullOuting(token: string) {
+  const groupId = await createTestGroup(token)
+  const outingRes = await request(app)
+    .post(`/api/groups/${groupId}/outings`)
+    .set('Authorization', `Bearer ${token}`)
+    .send({ title: 'Full Outing' })
+  const outingId = outingRes.body.id as string
+
+  const placeRes = await request(app)
+    .post(`/api/outings/${outingId}/places`)
+    .set('Authorization', `Bearer ${token}`)
+    .send({ placeId: `place-${uid()}`, name: 'Test Venue', address: '1 Main St', lat: 50.4, lng: 30.5 })
+  const placeId = placeRes.body.placeId as string
+
+  const slotRes = await request(app)
+    .post(`/api/outings/${outingId}/slots`)
+    .set('Authorization', `Bearer ${token}`)
+    .send({ startsAt: FUTURE_START, endsAt: FUTURE_END })
+  const slotId = slotRes.body.id as string
+
+  return { groupId, outingId, placeId, slotId }
+}
+
+// ─── POST /api/outings/:id/confirm ──────────────────────────────────────────
+
+describe('POST /api/outings/:id/confirm', () => {
+  it('200 — admin confirms with valid place + slot', async () => {
+    const { token } = await createTestUser('confirm-ok')
+    const { outingId, placeId, slotId } = await createFullOuting(token)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/confirm`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ placeId, slotId })
+
+    expect(res.status).toBe(200)
+    expect(res.body.status).toBe('confirmed')
+    expect(res.body.confirmedPlaceId).toBe(placeId)
+    expect(res.body.confirmedSlotId).toBe(slotId)
+  })
+
+  it('409 — already confirmed', async () => {
+    const { token } = await createTestUser('confirm-409')
+    const { outingId, placeId, slotId } = await createFullOuting(token)
+
+    await request(app)
+      .post(`/api/outings/${outingId}/confirm`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ placeId, slotId })
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/confirm`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ placeId, slotId })
+
+    expect(res.status).toBe(409)
+  })
+
+  it('400 — missing placeId', async () => {
+    const { token } = await createTestUser('confirm-400')
+    const { outingId, slotId } = await createFullOuting(token)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/confirm`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ slotId })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('401 — no auth', async () => {
+    const res = await request(app)
+      .post('/api/outings/fake/confirm')
+      .send({ placeId: 'p', slotId: 's' })
+    expect(res.status).toBe(401)
+  })
+
+  it('403 — non-admin member cannot confirm', async () => {
+    const { token: adminToken } = await createTestUser('confirm-403-admin')
+    const { token: memberToken, userId: memberId } = await createTestUser('confirm-403-member')
+    const { outingId, placeId, slotId, groupId } = await createFullOuting(adminToken)
+
+    // invite member (default role = member)
+    await request(app)
+      .post(`/api/groups/${groupId}/invite`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ email: `test-outings-confirm-403-member-${memberId}${DOMAIN}` })
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/confirm`)
+      .set('Authorization', `Bearer ${memberToken}`)
+      .send({ placeId, slotId })
+
+    expect(res.status).toBe(403)
+  })
+
+  it('403 — non-member cannot confirm', async () => {
+    const { token: admin } = await createTestUser('confirm-403b-admin')
+    const { token: other } = await createTestUser('confirm-403b-other')
+    const { outingId, placeId, slotId } = await createFullOuting(admin)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/confirm`)
+      .set('Authorization', `Bearer ${other}`)
+      .send({ placeId, slotId })
+
+    expect(res.status).toBe(403)
+  })
+
+  it('404 — place not in outing', async () => {
+    const { token } = await createTestUser('confirm-404-place')
+    const { outingId, slotId } = await createFullOuting(token)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/confirm`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ placeId: 'nonexistent', slotId })
+
+    expect(res.status).toBe(404)
+  })
+
+  it('404 — slot not in outing', async () => {
+    const { token } = await createTestUser('confirm-404-slot')
+    const { outingId, placeId } = await createFullOuting(token)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/confirm`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ placeId, slotId: 'nonexistent' })
+
+    expect(res.status).toBe(404)
+  })
+})
+
+// ─── POST /api/outings/:id/rsvp ─────────────────────────────────────────────
+
+describe('POST /api/outings/:id/rsvp', () => {
+  it('200 — member RSVPs going', async () => {
+    const { token } = await createTestUser('rsvp-going')
+    const { outingId } = await createFullOuting(token)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/rsvp`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ status: 'going' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.status).toBe('going')
+  })
+
+  it('200 — re-RSVP updates status', async () => {
+    const { token } = await createTestUser('rsvp-update')
+    const { outingId } = await createFullOuting(token)
+
+    await request(app)
+      .post(`/api/outings/${outingId}/rsvp`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ status: 'going' })
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/rsvp`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ status: 'maybe' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.status).toBe('maybe')
+  })
+
+  it('400 — invalid status', async () => {
+    const { token } = await createTestUser('rsvp-bad')
+    const { outingId } = await createFullOuting(token)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/rsvp`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ status: 'yes' })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('401 — no auth', async () => {
+    const res = await request(app)
+      .post('/api/outings/fake/rsvp')
+      .send({ status: 'going' })
+    expect(res.status).toBe(401)
+  })
+
+  it('403 — non-member cannot RSVP', async () => {
+    const { token: owner } = await createTestUser('rsvp-403-owner')
+    const { token: other } = await createTestUser('rsvp-403-other')
+    const { outingId } = await createFullOuting(owner)
+
+    const res = await request(app)
+      .post(`/api/outings/${outingId}/rsvp`)
+      .set('Authorization', `Bearer ${other}`)
+      .send({ status: 'going' })
+
+    expect(res.status).toBe(403)
+  })
+
+  it('404 — outing not found', async () => {
+    const { token } = await createTestUser('rsvp-404')
+    const res = await request(app)
+      .post('/api/outings/nonexistent/rsvp')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ status: 'going' })
+    expect(res.status).toBe(404)
+  })
+})

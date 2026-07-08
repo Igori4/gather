@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { CreateOutingInput, AddPlaceInput } from '@gather/shared'
-import { listOutings, createOuting, getOuting, addPlace, removePlace, castVote, proposeSlot, voteSlot, deleteSlot } from '@/api/outings'
+import { listOutings, createOuting, getOuting, addPlace, removePlace, castVote, proposeSlot, voteSlot, deleteSlot, confirmOuting, rsvp } from '@/api/outings'
 
 export function useOutings(groupId: string) {
   return useQuery({
@@ -71,6 +71,23 @@ export function useDeleteSlot(outingId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (slotId: string) => deleteSlot(outingId, slotId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['outing', outingId] }),
+  })
+}
+
+export function useConfirmOuting(outingId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ placeId, slotId }: { placeId: string; slotId: string }) =>
+      confirmOuting(outingId, placeId, slotId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['outing', outingId] }),
+  })
+}
+
+export function useRSVP(outingId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (status: 'going' | 'maybe' | 'not_going') => rsvp(outingId, status),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['outing', outingId] }),
   })
 }

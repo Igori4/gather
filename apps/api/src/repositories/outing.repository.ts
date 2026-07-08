@@ -18,7 +18,7 @@ export const OutingRepository = {
     prisma.outing.findUnique({
       where: { id },
       include: {
-        group: { include: { members: { select: { userId: true } } } },
+        group: { include: { members: { select: { userId: true, role: true } } } },
         places: {
           orderBy: { id: 'asc' },
           include: { votes: { select: { userId: true, vote: true } } },
@@ -27,6 +27,7 @@ export const OutingRepository = {
           orderBy: { startsAt: 'asc' },
           include: { votes: { select: { userId: true, available: true } } },
         },
+        rsvps: { select: { userId: true, status: true } },
       },
     }),
 
@@ -71,6 +72,24 @@ export const OutingRepository = {
       userVote: votes.find(v => v.userId === userId)?.available ?? null,
     }
   },
+
+  confirmOuting: (outingId: string, placeId: string, slotId: string) =>
+    prisma.outing.update({
+      where: { id: outingId },
+      data: {
+        status: 'confirmed',
+        confirmedAt: new Date(),
+        confirmedPlaceId: placeId,
+        confirmedSlotId: slotId,
+      },
+    }),
+
+  upsertRSVP: (outingId: string, userId: string, status: string) =>
+    prisma.rSVP.upsert({
+      where: { outingId_userId: { outingId, userId } },
+      create: { outingId, userId, status },
+      update: { status },
+    }),
 
   findVote: (outingId: string, placeId: string, userId: string) =>
     prisma.placeVote.findUnique({

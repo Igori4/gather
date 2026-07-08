@@ -27,8 +27,14 @@ export const ProposeSlotSchema = z.object({
   endsAt: z.string().datetime(),
 })
 
+export const ConfirmOutingSchema = z.object({
+  placeId: z.string().min(1),
+  slotId: z.string().min(1),
+})
+
 export type CreateOutingInput = z.infer<typeof CreateOutingSchema>
 export type AddPlaceInput = z.infer<typeof AddPlaceSchema>
 export type CastVoteInput = z.infer<typeof CastVoteSchema>
 export type RSVPInput = z.infer<typeof RSVPSchema>
 export type ProposeSlotInput = z.infer<typeof ProposeSlotSchema>
+export type ConfirmOutingInput = z.infer<typeof ConfirmOutingSchema>

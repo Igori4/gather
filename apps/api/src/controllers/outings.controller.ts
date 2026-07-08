@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { CreateOutingSchema, AddPlaceSchema, CastVoteSchema, ProposeSlotSchema } from '@gather/shared'
+import { CreateOutingSchema, AddPlaceSchema, CastVoteSchema, ProposeSlotSchema, ConfirmOutingSchema, RSVPSchema } from '@gather/shared'
 import { AuthRequest } from '../middleware/auth'
 import { OutingRepository } from '../repositories/outing.repository'
 import { GroupRepository } from '../repositories/group.repository'
@@ -144,6 +144,46 @@ export async function deleteSlot(req: Request, res: Response) {
 
   await OutingRepository.deleteSlot(slotId)
   return res.status(204).send()
+}
+
+export async function confirmOuting(req: Request, res: Response) {
+  const { userId } = req as AuthRequest
+
+  const outing = await OutingRepository.findByIdWithGroup(req.params.id)
+  if (!outing) return res.status(404).json({ error: 'Outing not found' })
+
+  const membership = await GroupRepository.findMembership(outing.groupId, userId)
+  if (!membership || membership.role !== 'admin') return res.status(403).json({ error: 'Admin only' })
+
+  if (outing.status === 'confirmed') return res.status(409).json({ error: 'Already confirmed' })
+
+  const parsed = ConfirmOutingSchema.safeParse(req.body)
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() })
+
+  const place = await OutingRepository.findPlace(req.params.id, parsed.data.placeId)
+  if (!place) return res.status(404).json({ error: 'Place not found in this outing' })
+
+  const slot = await OutingRepository.findSlot(parsed.data.slotId)
+  if (!slot || slot.outingId !== req.params.id) return res.status(404).json({ error: 'Slot not found in this outing' })
+
+  const updated = await OutingRepository.confirmOuting(req.params.id, parsed.data.placeId, parsed.data.slotId)
+  return res.json(updated)
+}
+
+export async function rsvp(req: Request, res: Response) {
+  const { userId } = req as AuthRequest
+
+  const outing = await OutingRepository.findByIdWithGroup(req.params.id)
+  if (!outing) return res.status(404).json({ error: 'Outing not found' })
+
+  const isMember = outing.group.members.some(m => m.userId === userId)
+  if (!isMember) return res.status(403).json({ error: 'Forbidden' })
+
+  const parsed = RSVPSchema.safeParse(req.body)
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() })
+
+  const entry = await OutingRepository.upsertRSVP(req.params.id, userId, parsed.data.status)
+  return res.json(entry)
 }
 
 export async function removePlace(req: Request, res: Response) {

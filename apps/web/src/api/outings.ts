@@ -46,6 +46,16 @@ export interface TimeSlot {
   votes: SlotVote[]
 }
 
+export interface RSVPEntry {
+  userId: string
+  status: 'going' | 'maybe' | 'not_going'
+}
+
+export interface GroupMemberRef {
+  userId: string
+  role: string
+}
+
 export interface Outing {
   id: string
   groupId: string
@@ -54,8 +64,13 @@ export interface Outing {
   status: string
   createdBy: string
   createdAt: string
+  confirmedAt?: string | null
+  confirmedPlaceId?: string | null
+  confirmedSlotId?: string | null
   places?: OutingPlace[]
   slots?: TimeSlot[]
+  rsvps?: RSVPEntry[]
+  group?: { members: GroupMemberRef[] }
 }
 
 export async function listOutings(groupId: string): Promise<Outing[]> {
@@ -99,4 +114,14 @@ export async function voteSlot(outingId: string, slotId: string, available: bool
 
 export async function deleteSlot(outingId: string, slotId: string): Promise<void> {
   await api.delete(`/api/outings/${outingId}/slots/${slotId}`)
+}
+
+export async function confirmOuting(outingId: string, placeId: string, slotId: string): Promise<Outing> {
+  const res = await api.post<Outing>(`/api/outings/${outingId}/confirm`, { placeId, slotId })
+  return res.data
+}
+
+export async function rsvp(outingId: string, status: 'going' | 'maybe' | 'not_going'): Promise<RSVPEntry> {
+  const res = await api.post<RSVPEntry>(`/api/outings/${outingId}/rsvp`, { status })
+  return res.data
 }
