@@ -9,6 +9,7 @@ import { groupsRouter } from './routes/groups'
 import { flagsRouter } from './routes/flags'
 import { outingsRouter } from './routes/outings'
 import { chatRouter } from './routes/chat'
+import { aiRouter } from './routes/ai'
 import { swaggerSpec } from './lib/swagger'
 
 export const app = express()
@@ -65,6 +66,7 @@ app.use('/auth', authRouter)
 app.use('/api/groups', groupsRouter)
 app.use('/api', flagsRouter)
 app.use('/api', outingsRouter)
+app.use('/api', aiRouter)
 app.use('/api', chatRouter)
 
 // 404

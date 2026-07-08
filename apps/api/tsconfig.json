@@ -15,7 +15,8 @@
     "sourceMap": true,
     "types": ["node"],
     "paths": {
-      "@gather/shared": ["../../packages/shared/src"]
+      "@gather/shared": ["../../packages/shared/src"],
+      "@gather/mcp": ["../../packages/mcp/src"]
     }
   },
   "include": ["src", "prisma"],

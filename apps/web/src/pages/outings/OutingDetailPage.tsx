@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import {
   MapPin, Calendar, ThumbsUp, ThumbsDown, Plus, Share2,
-  CheckCircle, ChevronRight, Sparkles, Sun, Users, Trash2,
+  CheckCircle, ChevronRight, Users, Trash2,
 } from 'lucide-react'
 import { useOuting, useAddPlace, useRemovePlace, useCastVote, useProposeSlot, useVoteSlot, useDeleteSlot, useConfirmOuting, useRSVP } from '@/hooks/useOutings'
 import { useAuthStore } from '@/stores/authStore'
@@ -11,38 +11,11 @@ import { ChatWidget } from '@/components/chat/ChatWidget'
 import { PlaceSearch } from '@/components/outings/PlaceSearch'
 import { OutingMap } from '@/components/outings/OutingMap'
 import { ProposeSlotForm } from '@/components/outings/ProposeSlotForm'
+import { AiSuggestions } from '@/components/outings/AiSuggestions'
 import { Button } from '@/components/ui/button'
 import type { AddPlaceInput } from '@gather/shared'
 import type { MapboxFeature } from '@/components/outings/PlaceSearch'
 import type { OutingPlace, TimeSlot, RSVPEntry } from '@/api/outings'
-
-// ── Under-development overlay ─────────────────────────────────────
-
-function UnderDevelopment({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="relative">
-      {children}
-      <div className="absolute inset-0 rounded-2xl bg-background/60 backdrop-blur-[2px] flex flex-col items-center justify-center gap-1.5 pointer-events-none">
-        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/80">Under Development</span>
-      </div>
-    </div>
-  )
-}
-
-// ── Placeholder data ──────────────────────────────────────────────
-
-const PLACEHOLDER_INSIGHTS = [
-  {
-    icon: Sun,
-    title: 'Weather Alert',
-    body: 'Sunday is forecasted to be rainy. Consider venues with indoor seating.',
-  },
-  {
-    icon: Users,
-    title: 'Capacity Check',
-    body: 'Based on your crew size, some venues may require a reservation for groups.',
-  },
-]
 
 // ── Sub-components ────────────────────────────────────────────────
 
@@ -204,38 +177,6 @@ function AvailabilitySection({ slots, currentUserId, onVote, onDelete, onPropose
       )}
 
       <ProposeSlotForm onPropose={onPropose} isPending={proposePending} />
-    </div>
-  )
-}
-
-function GeminiInsightsSection() {
-  return (
-    <div className="rounded-2xl border bg-card p-5">
-      <div className="flex items-center gap-2 mb-1">
-        <span className="h-7 w-7 rounded-lg bg-primary flex items-center justify-center">
-          <Sparkles className="h-4 w-4 text-primary-foreground" />
-        </span>
-        <div>
-          <h2 className="font-semibold text-base leading-tight">Gemini Insights</h2>
-          <p className="text-xs text-muted-foreground">AI-powered outing optimization</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 mt-4">
-        {PLACEHOLDER_INSIGHTS.map(({ icon: Icon, title, body }) => (
-          <div key={title} className="rounded-xl bg-muted/50 p-3">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-xs font-semibold">{title}</span>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">{body}</p>
-          </div>
-        ))}
-      </div>
-
-      <p className="mt-4 text-xs text-muted-foreground italic border-t pt-3">
-        ✦ Gemini suggestions will appear here once your outing has places and time slots.
-      </p>
     </div>
   )
 }
@@ -548,7 +489,7 @@ export default function OutingDetailPage() {
             proposePending={proposeSlot.isPending}
             votePending={voteSlot.isPending}
           />
-          <UnderDevelopment><GeminiInsightsSection /></UnderDevelopment>
+          <AiSuggestions groupId={outing.groupId} outingId={id} />
         </div>
       </div>
 
