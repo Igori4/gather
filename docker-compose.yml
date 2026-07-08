@@ -54,6 +54,7 @@ services:
     volumes:
       - ./apps/api:/workspace/apps/api # hot-reload source
       - ./packages/shared:/workspace/packages/shared # hot-reload shared schemas
+      - ./packages/mcp:/workspace/packages/mcp # hot-reload MCP tools
       - workspace_modules:/workspace/node_modules # preserve container's node_modules
     # Run migrations first, then start the dev server WITHOUT dotenv-cli
     # (Docker already injects env vars — using dotenv would re-load .env and

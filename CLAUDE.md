@@ -86,9 +86,9 @@ npm run db:studio --workspace=apps/api
 
 - [x] **PBI-3.1** Outings API — create outing, list for group, get detail → `apps/api/src/routes/outings.ts`
 - [x] **PBI-3.2** Place search — Mapbox geocoding search + click-on-map (reverse geocoding), add/remove place to outing; `OutingMap` with blue/orange/purple markers, geolocation; `PlaceSearch` debounced dropdown → `apps/web/src/components/outings/`, `apps/api/src/routes/outings.ts`
-- [ ] **PBI-3.3** Place voting API — cast vote (up/down), get tally per place
-- [ ] **PBI-3.4** Time slots API — propose slots, vote availability, get vote summary
-- [ ] **PBI-3.5** Outing confirmation + RSVP API — admin confirms (place + slot), members RSVP
+- [x] **PBI-3.3** Place voting API — cast vote (up/down), toggle logic, get tally per place; `PlaceCard` vote buttons in `OutingDetailPage`
+- [x] **PBI-3.4** Time slots API — propose slots, vote availability (upsert), delete slot; `ProposeSlotForm` (react-day-picker v10 + time inputs), live `AvailabilitySection` in `OutingDetailPage`; 124 tests passing
+- [x] **PBI-3.5** Outing confirmation + RSVP API — admin confirms (place + slot), members RSVP; confirmed banner + RSVPBar + ConfirmModal in UI; 138 tests passing
 - [ ] **PBI-3.6** Outing detail UI — OutingDetailPage: place list + vote buttons, Mapbox map pins, time slot picker, RSVP bar, status indicator → `apps/web/src/pages/outings/OutingDetailPage.tsx`
 - [ ] **PBI-3.7** Outings list UI — OutingCard grid on GroupDetailPage, create outing modal
 
@@ -111,12 +111,28 @@ npm run db:studio --workspace=apps/api
   
   Files: `apps/web/src/hooks/useChatRoom.ts`, `apps/web/src/components/chat/ChatWindow.tsx`, `apps/web/src/lib/socket.ts`
 
-### Epic 5 — AI Suggestions (Gemini)
+### Epic 5 — AI Suggestions (Gemini + Custom MCP)
 
-- [ ] **PBI-5.1** Gemini service — client, prompt builder, Zod-validated JSON response, static fallback → `apps/api/src/lib/gemini.ts`
-- [ ] **PBI-5.2** AI suggestions API — `POST /api/groups/:id/ai-suggestions` (on-demand, 5/day limit), store in DB, dismiss endpoint → `apps/api/src/routes/ai.ts`
-- [ ] **PBI-5.3** AI suggestions UI — "Get ideas" button, spinner, 3 suggestion cards (name, category, why, cost, maps link)
-- [ ] **PBI-5.4** Weekly nudge cron — node-cron every Monday, inactive groups (14+ days), send Resend email with 2 suggestions → `apps/api/src/jobs/weeklyNudge.ts`
+Architecture: custom MCP server exposes Gather data as tools → Gemini agent calls them via function calling → multi-turn context instead of one-shot prompt stuffing.
+
+**MCP server** lives at `packages/mcp/` — standalone Node process, speaks MCP protocol, connects to same Prisma DB.
+
+**Tools exposed by MCP:**
+| Tool | Description |
+|------|-------------|
+| `get_group_context(groupId)` | members count, name, past outings count |
+| `get_outing_places(outingId)` | existing places (avoid duplicates in suggestions) |
+| `get_past_outings(groupId, limit)` | categories/places visited — inform variety |
+| `search_mapbox_places(query, proximity)` | Mapbox geocoding as a tool |
+
+**Gemini uses function calling** (not MCP protocol natively) — MCP server exposes an HTTP adapter that translates tool calls to Gemini `functionDeclarations` format.
+
+- [x] **PBI-5.1** MCP server scaffold — `packages/mcp/src/index.ts`, tool registry, types → `packages/mcp/`
+- [x] **PBI-5.2** MCP tools implementation — `get_group_context`, `get_outing_places`, `get_past_outings`, `search_mapbox_places` with Zod-validated inputs/outputs
+- [x] **PBI-5.3** Gemini agent service — 4-turn function calling loop, tool dispatch, Zod-validated final response, static fallback → `apps/api/src/lib/gemini.ts`
+- [x] **PBI-5.4** AI suggestions API — `POST/GET /api/groups/:id/ai-suggestions` (5/day limit), store in DB, dismiss endpoint → `apps/api/src/routes/ai.ts`
+- [x] **PBI-5.5** AI suggestions UI — "Get ideas" button, spinner, 3 suggestion cards (category, name, whyItFits, cost, Maps link, dismiss) → `apps/web/src/components/outings/AiSuggestions.tsx`
+- [ ] **PBI-5.6** Weekly nudge cron — node-cron every Monday, inactive groups (14+ days), calls Gemini agent → sends Resend email with 2 suggestions → `apps/api/src/jobs/weeklyNudge.ts`
 
 ### Epic 6 — File Uploads (Supabase Storage)
 
@@ -156,7 +172,7 @@ PBI-1.4 → PBI-2.2 → PBI-2.3 →
 PBI-3.1 → PBI-3.2 → PBI-3.3 → PBI-3.4 → PBI-3.5 → PBI-3.6 → PBI-3.7 →
 PBI-4.1 → PBI-4.2 → PBI-4.3 → PBI-4.8 → PBI-4.4 → PBI-4.5 → PBI-4.6 → PBI-4.7 →
 PBI-8.2 →
-PBI-5.1 → PBI-5.2 → PBI-5.3 → PBI-5.4 →
+PBI-5.1 → PBI-5.2 → PBI-5.3 → PBI-5.4 → PBI-5.5 → PBI-5.6 →
 PBI-6.1 → PBI-6.2 → PBI-6.3 → PBI-6.4 →
 PBI-7.1 → PBI-7.2 →
 PBI-9.2 → PBI-9.3 → PBI-9.4 →

@@ -5,11 +5,13 @@ WORKDIR /workspace
 COPY .npmrc ./
 COPY package*.json ./
 COPY packages/shared/package.json ./packages/shared/
+COPY packages/mcp/package.json ./packages/mcp/
 COPY apps/api/package.json ./apps/api/
 
 RUN npm install
 
 COPY packages/shared ./packages/shared
+COPY packages/mcp ./packages/mcp
 COPY apps/api ./apps/api
 
 WORKDIR /workspace/apps/api
@@ -26,16 +28,19 @@ ENV NODE_ENV=production
 COPY --from=build /workspace/node_modules ./node_modules
 COPY --from=build /workspace/package*.json ./
 COPY --from=build /workspace/packages/shared ./packages/shared
+COPY --from=build /workspace/packages/mcp ./packages/mcp
 COPY --from=build /workspace/apps/api/package.json ./apps/api/
 COPY --from=build /workspace/apps/api/prisma.config.ts ./apps/api/prisma.config.ts
 COPY --from=build /workspace/apps/api/dist ./apps/api/dist
 COPY --from=build /workspace/apps/api/prisma ./apps/api/prisma
 
-# node_modules/@gather/shared is an npm-workspaces symlink to packages/shared,
-# whose package.json "main" points at TS source for ts-node to use in dev.
-# Plain `node` can't run that .ts file, so swap it for tsc's compiled copy.
+# node_modules/@gather/shared and @gather/mcp are npm-workspaces symlinks whose
+# package.json "main" points at TS source (fine for ts-node dev, breaks plain node).
+# Swap both for tsc's compiled output so the runtime image works without ts-node.
 RUN rm -rf ./node_modules/@gather/shared
 COPY --from=build /workspace/apps/api/dist/packages/shared/src ./node_modules/@gather/shared
+RUN rm -rf ./node_modules/@gather/mcp
+COPY --from=build /workspace/apps/api/dist/packages/mcp/src ./node_modules/@gather/mcp
 
 WORKDIR /workspace/apps/api
 EXPOSE 4000
