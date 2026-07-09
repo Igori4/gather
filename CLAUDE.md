@@ -89,13 +89,13 @@ npm run db:studio --workspace=apps/api
 - [x] **PBI-3.3** Place voting API — cast vote (up/down), toggle logic, get tally per place; `PlaceCard` vote buttons in `OutingDetailPage`
 - [x] **PBI-3.4** Time slots API — propose slots, vote availability (upsert), delete slot; `ProposeSlotForm` (react-day-picker v10 + time inputs), live `AvailabilitySection` in `OutingDetailPage`; 124 tests passing
 - [x] **PBI-3.5** Outing confirmation + RSVP API — admin confirms (place + slot), members RSVP; confirmed banner + RSVPBar + ConfirmModal in UI; 138 tests passing
-- [ ] **PBI-3.6** Outing detail UI — OutingDetailPage: place list + vote buttons, Mapbox map pins, time slot picker, RSVP bar, status indicator → `apps/web/src/pages/outings/OutingDetailPage.tsx`
-- [ ] **PBI-3.7** Outings list UI — OutingCard grid on GroupDetailPage, create outing modal
+- [x] **PBI-3.6** Outing detail UI — OutingDetailPage: place list + vote buttons, Mapbox map pins, time slot picker, RSVP bar, status indicator → `apps/web/src/pages/outings/OutingDetailPage.tsx`
+- [x] **PBI-3.7** Outings list UI — OutingCard grid on GroupDetailPage, create outing modal
 
 ### Epic 4 — Real-Time (Socket.IO)
 
-- [ ] **PBI-4.1** Chat REST API — send (persists to DB), list messages (cursor pagination), edit/soft-delete own → `apps/api/src/routes/chat.ts`
-- [ ] **PBI-4.2** Socket.IO rooms — join/leave `outing:{id}` on mount/unmount, group membership auth guard → `apps/api/src/socket/`
+- [x] **PBI-4.1** Chat REST API — send (persists to DB), list messages (cursor pagination), edit/soft-delete own → `apps/api/src/routes/chat.ts`
+- [x] **PBI-4.2** Socket.IO rooms — join/leave `outing:{id}` on mount/unmount, group membership auth guard → `apps/api/src/socket/`
 - [x] **PBI-4.3** Live chat UI — `chat:message` + `chat:message:edited` events; ChatWindow + Message components; infinite scroll → `apps/web/src/components/chat/`; floating `ChatWidget` with unread counter → `apps/web/src/components/chat/ChatWidget.tsx`
 - [ ] **PBI-4.4** Typing indicators — `chat:typing` broadcast, auto-clear 3s, TypingIndicator component
 - [ ] **PBI-4.5** Live vote tallies — `vote:cast` + `slot:vote` events update UI without refetch
