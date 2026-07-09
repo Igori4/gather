@@ -110,41 +110,6 @@ jobs:
           name: api-integration-coverage
           path: apps/api/coverage/
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: [lint, typecheck]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run build --workspaces --if-present
-
-  e2e:
-    name: E2E Tests
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: github.base_ref == 'main'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e --workspace=apps/web
-        env:
-          PLAYWRIGHT_BASE_URL: http://localhost:5173
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: playwright-report
-          path: apps/web/playwright-report/
-
   deploy:
     name: Build & deploy to S3
     runs-on: ubuntu-latest

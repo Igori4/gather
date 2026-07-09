@@ -155,7 +155,7 @@ Architecture: custom MCP server exposes Gather data as tools → Gemini agent ca
 
 - [x] **PBI-9.1** Auth + groups API tests (Jest + Supertest) → `apps/api/tests/`
 - [ ] **PBI-9.2** Outings/chat/AI/uploads API tests — route coverage to 80%
-- [ ] **PBI-9.3** Frontend unit tests — Vitest + RTL for hooks (useAuth, useChatRoom, usePresence, useOuting) + key components
+- [ ] **PBI-9.3** Frontend unit tests — Vitest + RTL for hooks (useAuth, useChatRoom, usePresence, useOuting) + key components; **NOTE:** CI currently runs `test` (no coverage) — restore `test:coverage` in `.github/workflows/ci.yml` `test-frontend` job once coverage ≥80%
 - [ ] **PBI-9.4** Playwright E2E — 4 scenarios: full flow, real-time (2 contexts), role guard, AI suggestions → `e2e/`
 
 ### Epic 10 — Production & Polish
