@@ -34,6 +34,9 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
+      - run: npm run db:generate --workspace=apps/api
+        env:
+          DATABASE_URL: postgresql://placeholder/placeholder
       - run: npm run typecheck --workspaces --if-present
 
   test-frontend:
@@ -46,11 +49,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npm run test:coverage --workspace=apps/web
-      - uses: actions/upload-artifact@v4
-        with:
-          name: web-coverage
-          path: apps/web/coverage/
+      - run: npm run test --workspace=apps/web
 
   # Unit tests — no DB, fast, runs on every push
   test-backend-unit:
