@@ -1,6 +1,8 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import Anthropic from '@anthropic-ai/sdk'
+import { Client } from '@modelcontextprotocol/sdk/client'
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory'
+import { createGatherMCPServer } from '@gather/mcp'
 import { AiSuggestionSchema } from '@gather/shared'
-import { toolDefinitions, toGeminiFunctionDeclarations, executeToolCall } from '@gather/mcp'
 import { prisma } from './prisma'
 import type { z } from 'zod'
 
@@ -55,9 +57,9 @@ export async function generateAISuggestions(
   groupId: string,
   outingId?: string
 ): Promise<Suggestions> {
-  const apiKey = process.env.GEMINI_API_KEY
+  const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
-    console.error('GEMINI_API_KEY not set — returning static fallback')
+    console.error('ANTHROPIC_API_KEY not set — returning static fallback')
     return STATIC_FALLBACK
   }
 
@@ -65,45 +67,74 @@ export async function generateAISuggestions(
   const ctx = { db: prisma, mapboxToken }
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const functionDeclarations = toGeminiFunctionDeclarations(toolDefinitions)
+    const mcpServer = createGatherMCPServer(ctx)
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    await mcpServer.connect(serverTransport)
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const mcpClient = new Client({ name: 'gather-api', version: '1.0.0' })
+    await mcpClient.connect(clientTransport)
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const chat = model.startChat({ tools: [{ functionDeclarations }] as any })
+    const { tools: mcpTools } = await mcpClient.listTools()
+    const claudeTools: Anthropic.Tool[] = mcpTools.map(t => ({
+      name: t.name,
+      description: t.description ?? '',
+      input_schema: t.inputSchema as Anthropic.Tool['input_schema'],
+    }))
 
-    const prompt = buildSystemPrompt(groupId, outingId)
-    let result = await chat.sendMessage(prompt)
+    const anthropic = new Anthropic({ apiKey })
+    const messages: Anthropic.MessageParam[] = [
+      { role: 'user', content: buildSystemPrompt(groupId, outingId) },
+    ]
 
-    for (let turn = 0; turn < 4; turn++) {
-      const calls = result.response.functionCalls()
-      if (!calls || calls.length === 0) break
+    let lastResponse: Anthropic.Message | null = null
 
-      const responses = await Promise.all(
-        calls.map(async call => {
-          const response = await executeToolCall(
-            call.name,
-            call.args as Record<string, unknown>,
-            ctx
-          )
-          return { functionResponse: { name: call.name, response: response as object } }
+    for (let turn = 0; turn < 5; turn++) {
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1024,
+        tools: claudeTools,
+        messages,
+      })
+      lastResponse = response
+
+      if (response.stop_reason === 'end_turn') break
+
+      const toolUses = response.content.filter(
+        (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use'
+      )
+      if (toolUses.length === 0) break
+
+      const toolResults = await Promise.all(
+        toolUses.map(async tu => {
+          const result = await mcpClient.callTool({
+            name: tu.name,
+            arguments: tu.input as Record<string, unknown>,
+          })
+          return {
+            type: 'tool_result' as const,
+            tool_use_id: tu.id,
+            content: JSON.stringify(result.content),
+          }
         })
       )
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      result = await chat.sendMessage(responses as any)
+      messages.push({ role: 'assistant', content: response.content })
+      messages.push({ role: 'user', content: toolResults })
     }
 
-    const text = result.response.text().trim()
+    await mcpClient.close()
+
+    const textBlock = lastResponse?.content.find(
+      (b): b is Anthropic.TextBlock => b.type === 'text'
+    )
+    const text = textBlock?.text?.trim() ?? ''
     const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) throw new Error('No JSON found in Gemini response')
+    if (!jsonMatch) throw new Error('No JSON found in Claude response')
 
     const parsed = JSON.parse(jsonMatch[0])
     return AiSuggestionSchema.parse(parsed)
   } catch (err) {
-    console.error('Gemini agent failed:', err)
+    console.error('Claude agent failed:', err)
     return STATIC_FALLBACK
   }
 }

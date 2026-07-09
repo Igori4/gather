@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { AuthRequest } from '../middleware/auth'
 import { GroupRepository } from '../repositories/group.repository'
 import { AiRepository } from '../repositories/ai.repository'
-import { generateAISuggestions } from '../lib/gemini'
+import { generateAISuggestions } from '../lib/claude'
 
 export async function getAISuggestions(req: Request, res: Response) {
   const { userId } = req as AuthRequest
