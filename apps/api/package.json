@@ -18,9 +18,10 @@
     "db:studio": "dotenv -e ../../.env.local -e ../../.env -- prisma studio"
   },
   "dependencies": {
-    "@gather/shared": "*",
+    "@anthropic-ai/sdk": "^0.110.0",
     "@gather/mcp": "*",
-    "@google/generative-ai": "^0.11.0",
+    "@gather/shared": "*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@prisma/adapter-pg": "7.8.0",
     "@prisma/client": "7.8.0",
     "@supabase/supabase-js": "^2.41.0",
