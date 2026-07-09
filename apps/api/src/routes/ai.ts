@@ -2,7 +2,7 @@
  * @openapi
  * tags:
  *   name: AI
- *   description: Gemini-powered venue suggestions via MCP tool calling
+ *   description: Claude-powered venue suggestions via real MCP server (InMemoryTransport)
  */
 import { Router } from 'express'
 import { requireAuth } from '../middleware/auth'
