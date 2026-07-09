@@ -74,7 +74,7 @@ function MessageList() {
       )}
 
       {messages.map(msg => (
-        <Message key={msg.id} message={msg} />
+        <Message key={msg.id} message={msg} outingId={outingId} />
       ))}
 
       <div ref={bottomRef} />
@@ -86,6 +86,7 @@ function Input() {
   const { outingId } = useChatWindowContext()
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
+  const [error, setError] = useState('')
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -94,9 +95,17 @@ function Input() {
     try {
       await sendMessage(outingId, { body: body.trim() })
       setBody('')
+      setError('')
+    } catch (err: unknown) {
+      setError('Failed to send. Try again.')
     } finally {
       setSending(false)
     }
+  }
+
+  function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setBody(e.target.value)
+    setError('')
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -107,15 +116,18 @@ function Input() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border-t p-3 flex gap-2 items-end">
-      <Textarea
-        value={body}
-        onChange={e => setBody(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="Message… (Enter to send, Shift+Enter for new line)"
-        className="resize-none min-h-[40px] max-h-[120px]"
-        rows={1}
-      />
+    <form onSubmit={handleSubmit} className="border-t p-3 flex gap-2 ">
+      <div className="flex flex-col w-full gap-2">
+        <Textarea
+          value={body}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Please Add Message"
+          className="resize-none min-h-[40px] max-h-[120px]"
+          rows={1}
+        />
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+      </div>
       <Button type="submit" size="icon" disabled={!body.trim() || sending}>
         <SendHorizonal className="h-4 w-4" />
       </Button>

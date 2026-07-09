@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { Client } from '@modelcontextprotocol/sdk/client'
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory'
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { createGatherMCPServer } from '@gather/mcp'
 import { AiSuggestionSchema } from '@gather/shared'
 import { prisma } from './prisma'

@@ -1,8 +1,7 @@
-import { useEffect } from 'react'
 import { Navigate, Outlet, NavLink, Link } from 'react-router-dom'
 import { Bell } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
-import { connectSocket, disconnectSocket } from '@/lib/socket'
+import { useSocketAuth } from '@/hooks/useSocketAuth'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -16,7 +15,12 @@ import { useFeatureFlag } from '@/lib/flags'
 import { FEATURE_FLAGS } from '@gather/shared'
 
 function initials(name: string) {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
 }
 
 const navLinks = [
@@ -30,13 +34,9 @@ export function AppLayout() {
   const user = useAuthStore(s => s.user)
   const isInitialized = useAuthStore(s => s.isInitialized)
   const logout = useAuthStore(s => s.logout)
-  const accessToken = useAuthStore(s => s.accessToken)
   const compactNav = useFeatureFlag(FEATURE_FLAGS.COMPACT_NAV)
 
-  useEffect(() => {
-    if (accessToken) connectSocket(accessToken)
-    return () => disconnectSocket()
-  }, [accessToken])
+  useSocketAuth()
 
   if (!isInitialized) return null
   if (!user) return <Navigate to="/login" replace />
@@ -63,9 +63,10 @@ export function AppLayout() {
                     to={to}
                     className={({ isActive }) =>
                       `px-3 py-1.5 text-sm font-medium rounded-sm transition-colors relative
-                      ${isActive
-                        ? 'text-foreground after:absolute after:bottom-[-17px] after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full'
-                        : 'text-muted-foreground hover:text-foreground'
+                      ${
+                        isActive
+                          ? 'text-foreground after:absolute after:bottom-[-17px] after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full'
+                          : 'text-muted-foreground hover:text-foreground'
                       }`
                     }
                   >
@@ -96,7 +97,10 @@ export function AppLayout() {
                   <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="cursor-pointer text-destructive"
+                >
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -113,12 +117,22 @@ export function AppLayout() {
         <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-xl font-bold text-primary">Gather</span>
           <nav className="flex items-center gap-6 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-foreground transition-colors">Help Center</a>
-            <a href="#" className="hover:text-foreground transition-colors">Contact Us</a>
+            <a href="#" className="hover:text-foreground transition-colors">
+              Privacy Policy
+            </a>
+            <a href="#" className="hover:text-foreground transition-colors">
+              Terms of Service
+            </a>
+            <a href="#" className="hover:text-foreground transition-colors">
+              Help Center
+            </a>
+            <a href="#" className="hover:text-foreground transition-colors">
+              Contact Us
+            </a>
           </nav>
-          <p className="text-xs text-muted-foreground">© 2024 Gather Coordination. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground">
+            © 2024 Gather Coordination. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>

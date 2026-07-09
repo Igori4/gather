@@ -3,7 +3,7 @@ import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
   type CallToolRequest,
-} from '@modelcontextprotocol/sdk/types'
+} from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
 import type { MCPTool, ToolContext } from './types'
 import { getGroupContextTool } from './tools/getGroupContext'

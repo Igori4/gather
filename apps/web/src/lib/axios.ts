@@ -27,7 +27,8 @@ api.interceptors.response.use(
     ) {
       originalRequest._retry = true
       try {
-        await api.post('/auth/refresh')
+        const response = await api.post('/auth/refresh')
+        useAuthStore.setState({ accessToken: response.data.accessToken ?? null })
         return api(originalRequest)
       } catch {
         // Refresh failed — redirect to login (strip query params to avoid loop)
