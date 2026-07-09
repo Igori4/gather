@@ -2,10 +2,28 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import {
-  MapPin, Calendar, ThumbsUp, ThumbsDown, Plus, Share2,
-  CheckCircle, ChevronRight, Users, Trash2,
+  MapPin,
+  Calendar,
+  ThumbsUp,
+  ThumbsDown,
+  Plus,
+  Share2,
+  CheckCircle,
+  ChevronRight,
+  Users,
+  Trash2,
 } from 'lucide-react'
-import { useOuting, useAddPlace, useRemovePlace, useCastVote, useProposeSlot, useVoteSlot, useDeleteSlot, useConfirmOuting, useRSVP } from '@/hooks/useOutings'
+import {
+  useOuting,
+  useAddPlace,
+  useRemovePlace,
+  useCastVote,
+  useProposeSlot,
+  useVoteSlot,
+  useDeleteSlot,
+  useConfirmOuting,
+  useRSVP,
+} from '@/hooks/useOutings'
 import { useAuthStore } from '@/stores/authStore'
 import { ChatWidget } from '@/components/chat/ChatWidget'
 import { PlaceSearch } from '@/components/outings/PlaceSearch'
@@ -51,9 +69,11 @@ function PlaceCard({ place, currentUserId, onVote, votePending, onRemove }: Plac
               onClick={() => onVote(place.placeId, 'up')}
               disabled={votePending}
               className={`flex items-center gap-1 text-xs px-1.5 py-1 rounded-md transition-colors
-                ${userVote === 'up'
-                  ? 'text-primary bg-primary/10 font-semibold'
-                  : 'text-muted-foreground hover:text-primary hover:bg-muted'}`}
+                ${
+                  userVote === 'up'
+                    ? 'text-primary bg-primary/10 font-semibold'
+                    : 'text-muted-foreground hover:text-primary hover:bg-muted'
+                }`}
             >
               <ThumbsUp className="h-3.5 w-3.5" />
               {upCount > 0 && <span>{upCount}</span>}
@@ -62,9 +82,11 @@ function PlaceCard({ place, currentUserId, onVote, votePending, onRemove }: Plac
               onClick={() => onVote(place.placeId, 'down')}
               disabled={votePending}
               className={`flex items-center gap-1 text-xs px-1.5 py-1 rounded-md transition-colors
-                ${userVote === 'down'
-                  ? 'text-destructive bg-destructive/10 font-semibold'
-                  : 'text-muted-foreground hover:text-destructive hover:bg-muted'}`}
+                ${
+                  userVote === 'down'
+                    ? 'text-destructive bg-destructive/10 font-semibold'
+                    : 'text-muted-foreground hover:text-destructive hover:bg-muted'
+                }`}
             >
               <ThumbsDown className="h-3.5 w-3.5" />
               {downCount > 0 && <span>{downCount}</span>}
@@ -92,10 +114,17 @@ interface AvailabilitySectionProps {
   votePending: boolean
 }
 
-function AvailabilitySection({ slots, currentUserId, onVote, onDelete, onPropose, proposePending, votePending }: AvailabilitySectionProps) {
-  const allAvailable = slots.length > 0
-    ? Math.max(...slots.map(s => s.votes.filter(v => v.available).length))
-    : 0
+function AvailabilitySection({
+  slots,
+  currentUserId,
+  onVote,
+  onDelete,
+  onPropose,
+  proposePending,
+  votePending,
+}: AvailabilitySectionProps) {
+  const allAvailable =
+    slots.length > 0 ? Math.max(...slots.map(s => s.votes.filter(v => v.available).length)) : 0
 
   return (
     <div className="rounded-2xl border bg-card p-5 space-y-4">
@@ -146,9 +175,11 @@ function AvailabilitySection({ slots, currentUserId, onVote, onDelete, onPropose
                     onClick={() => onVote(slot.id, true)}
                     disabled={votePending}
                     className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors
-                      ${userVote?.available === true
-                        ? 'bg-emerald-500 text-white font-semibold'
-                        : 'border hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'}`}
+                      ${
+                        userVote?.available === true
+                          ? 'bg-emerald-500 text-white font-semibold'
+                          : 'border hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300'
+                      }`}
                   >
                     <CheckCircle className="h-3.5 w-3.5" /> Can
                   </button>
@@ -156,9 +187,11 @@ function AvailabilitySection({ slots, currentUserId, onVote, onDelete, onPropose
                     onClick={() => onVote(slot.id, false)}
                     disabled={votePending}
                     className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors
-                      ${userVote?.available === false
-                        ? 'bg-destructive text-white font-semibold'
-                        : 'border hover:bg-red-50 hover:text-red-600 hover:border-red-300'}`}
+                      ${
+                        userVote?.available === false
+                          ? 'bg-destructive text-white font-semibold'
+                          : 'border hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+                      }`}
                   >
                     Can't
                   </button>
@@ -191,8 +224,8 @@ interface RSVPBarProps {
 }
 
 function RSVPBar({ rsvps, currentUserId, onRSVP, isPending }: RSVPBarProps) {
-  const going    = rsvps.filter(r => r.status === 'going').length
-  const maybe    = rsvps.filter(r => r.status === 'maybe').length
+  const going = rsvps.filter(r => r.status === 'going').length
+  const maybe = rsvps.filter(r => r.status === 'maybe').length
   const notGoing = rsvps.filter(r => r.status === 'not_going').length
   const userStatus = rsvps.find(r => r.userId === currentUserId)?.status ?? null
 
@@ -200,15 +233,16 @@ function RSVPBar({ rsvps, currentUserId, onRSVP, isPending }: RSVPBarProps) {
     status: 'going' | 'maybe' | 'not_going',
     label: string,
     count: number,
-    activeClass: string,
+    activeClass: string
   ) => (
     <button
       onClick={() => onRSVP(status)}
       disabled={isPending}
       className={`flex-1 flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl text-sm font-medium transition-colors border
-        ${userStatus === status
-          ? activeClass
-          : 'border-transparent hover:bg-muted text-muted-foreground'
+        ${
+          userStatus === status
+            ? activeClass
+            : 'border-transparent hover:bg-muted text-muted-foreground'
         }`}
     >
       <span className="text-base font-bold">{count}</span>
@@ -223,9 +257,14 @@ function RSVPBar({ rsvps, currentUserId, onRSVP, isPending }: RSVPBarProps) {
         <h2 className="font-semibold text-base">RSVP</h2>
       </div>
       <div className="flex gap-2">
-        {btn('going',     'Going',   going,    'border-emerald-300 bg-emerald-50 text-emerald-700')}
-        {btn('maybe',     'Maybe',   maybe,    'border-amber-300 bg-amber-50 text-amber-700')}
-        {btn('not_going', "Can't",   notGoing, 'border-destructive/30 bg-destructive/5 text-destructive')}
+        {btn('going', 'Going', going, 'border-emerald-300 bg-emerald-50 text-emerald-700')}
+        {btn('maybe', 'Maybe', maybe, 'border-amber-300 bg-amber-50 text-amber-700')}
+        {btn(
+          'not_going',
+          "Can't",
+          notGoing,
+          'border-destructive/30 bg-destructive/5 text-destructive'
+        )}
       </div>
     </div>
   )
@@ -259,7 +298,9 @@ function ConfirmModal({ places, slots, onConfirm, onClose, isPending }: ConfirmM
           >
             <option value="">Pick a place…</option>
             {places.map(p => (
-              <option key={p.placeId} value={p.placeId}>{p.name}</option>
+              <option key={p.placeId} value={p.placeId}>
+                {p.name}
+              </option>
             ))}
           </select>
         </div>
@@ -274,7 +315,8 @@ function ConfirmModal({ places, slots, onConfirm, onClose, isPending }: ConfirmM
             <option value="">Pick a slot…</option>
             {slots.map(s => (
               <option key={s.id} value={s.id}>
-                {format(new Date(s.startsAt), 'EEE, MMM d · h:mm a')} – {format(new Date(s.endsAt), 'h:mm a')}
+                {format(new Date(s.startsAt), 'EEE, MMM d · h:mm a')} –{' '}
+                {format(new Date(s.endsAt), 'h:mm a')}
               </option>
             ))}
           </select>
@@ -302,14 +344,14 @@ function ConfirmModal({ places, slots, onConfirm, onClose, isPending }: ConfirmM
 export default function OutingDetailPage() {
   const { id = '' } = useParams()
   const { data: outing, isLoading } = useOuting(id)
-  const addPlace    = useAddPlace(id)
+  const addPlace = useAddPlace(id)
   const removePlace = useRemovePlace(id)
-  const castVote    = useCastVote(id)
+  const castVote = useCastVote(id)
   const proposeSlot = useProposeSlot(id)
-  const voteSlot    = useVoteSlot(id)
-  const deleteSlot  = useDeleteSlot(id)
+  const voteSlot = useVoteSlot(id)
+  const deleteSlot = useDeleteSlot(id)
   const confirmOuting = useConfirmOuting(id)
-  const rsvpMutation  = useRSVP(id)
+  const rsvpMutation = useRSVP(id)
   const [searchResults, setSearchResults] = useState<MapboxFeature[]>([])
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const currentUserId = useAuthStore(s => s.user?.id ?? '')
@@ -318,17 +360,19 @@ export default function OutingDetailPage() {
   if (!outing) return <p className="text-destructive py-8">Outing not found.</p>
 
   const places = outing.places ?? []
-  const slots  = outing.slots ?? []
-  const rsvps  = outing.rsvps ?? []
+  const slots = outing.slots ?? []
+  const rsvps = outing.rsvps ?? []
   const isAdmin = outing.group?.members.find(m => m.userId === currentUserId)?.role === 'admin'
   const isConfirmed = outing.status === 'confirmed'
 
-  const confirmedPlace = isConfirmed && outing.confirmedPlaceId
-    ? places.find(p => p.placeId === outing.confirmedPlaceId) ?? null
-    : null
-  const confirmedSlot = isConfirmed && outing.confirmedSlotId
-    ? slots.find(s => s.id === outing.confirmedSlotId) ?? null
-    : null
+  const confirmedPlace =
+    isConfirmed && outing.confirmedPlaceId
+      ? (places.find(p => p.placeId === outing.confirmedPlaceId) ?? null)
+      : null
+  const confirmedSlot =
+    isConfirmed && outing.confirmedSlotId
+      ? (slots.find(s => s.id === outing.confirmedSlotId) ?? null)
+      : null
 
   function handleAddPlace(data: AddPlaceInput) {
     addPlace.mutate(data)
@@ -336,9 +380,12 @@ export default function OutingDetailPage() {
   }
 
   function handleConfirm(placeId: string, slotId: string) {
-    confirmOuting.mutate({ placeId, slotId }, {
-      onSuccess: () => setShowConfirmModal(false),
-    })
+    confirmOuting.mutate(
+      { placeId, slotId },
+      {
+        onSuccess: () => setShowConfirmModal(false),
+      }
+    )
   }
 
   return (
@@ -355,11 +402,11 @@ export default function OutingDetailPage() {
 
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1 text-sm text-muted-foreground">
-        <Link to="/groups" className="hover:text-foreground transition-colors">Outings</Link>
+        <Link to="/groups" className="hover:text-foreground transition-colors">
+          Outings
+        </Link>
         <ChevronRight className="h-3.5 w-3.5" />
-        <span className="text-foreground font-medium truncate max-w-[200px]">
-          {outing.title}
-        </span>
+        <span className="text-foreground font-medium truncate max-w-[200px]">{outing.title}</span>
       </nav>
 
       {/* Page header */}
@@ -369,12 +416,14 @@ export default function OutingDetailPage() {
           {outing.description && (
             <p className="text-emerald-600 mt-1 text-sm font-medium">{outing.description}</p>
           )}
-          <span className={`mt-2 inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full capitalize
-            ${isConfirmed
-              ? 'bg-emerald-100 text-emerald-700'
-              : outing.status === 'voting'
-                ? 'bg-amber-100 text-amber-700'
-                : 'bg-muted text-muted-foreground'
+          <span
+            className={`mt-2 inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full capitalize
+            ${
+              isConfirmed
+                ? 'bg-emerald-100 text-emerald-700'
+                : outing.status === 'voting'
+                  ? 'bg-amber-100 text-amber-700'
+                  : 'bg-muted text-muted-foreground'
             }`}
           >
             {outing.status}
@@ -421,7 +470,6 @@ export default function OutingDetailPage() {
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-6 items-start">
-
         {/* LEFT — Place Voting */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -446,7 +494,9 @@ export default function OutingDetailPage() {
               />
             ))
           ) : (
-            <p className="text-sm text-muted-foreground">No places yet — search or click the map.</p>
+            <p className="text-sm text-muted-foreground">
+              No places yet — search or click the map.
+            </p>
           )}
 
           <div className="rounded-xl border border-dashed p-3 space-y-2">
@@ -465,11 +515,7 @@ export default function OutingDetailPage() {
             )}
           </div>
 
-          <OutingMap
-            places={places}
-            searchResults={searchResults}
-            onSelect={handleAddPlace}
-          />
+          <OutingMap places={places} searchResults={searchResults} onSelect={handleAddPlace} />
         </div>
 
         {/* RIGHT — RSVP + Availability + Gemini */}
@@ -484,7 +530,7 @@ export default function OutingDetailPage() {
             slots={slots}
             currentUserId={currentUserId}
             onVote={(slotId, available) => voteSlot.mutate({ slotId, available })}
-            onDelete={(slotId) => deleteSlot.mutate(slotId)}
+            onDelete={slotId => deleteSlot.mutate(slotId)}
             onPropose={(startsAt, endsAt) => proposeSlot.mutate({ startsAt, endsAt })}
             proposePending={proposeSlot.isPending}
             votePending={voteSlot.isPending}

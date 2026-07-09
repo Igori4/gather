@@ -14,15 +14,15 @@ Two new models:
 
 ### Backend
 
-| File | Purpose |
-|---|---|
-| `packages/shared/src/flagNames.ts` | Canonical flag/experiment name constants (`FEATURE_FLAGS`, `EXPERIMENTS`) shared by both apps — no magic strings on either side. |
-| `apps/api/src/lib/flags.ts` | Backend-owned registry of flag *values* (enabled state) and experiment *definitions* (variant list, description). Single source of truth. |
-| `apps/api/src/lib/hash.ts` | `hashToVariant(key, variants)` — deterministic SHA-256 bucketing. |
-| `apps/api/src/lib/experimentAssignment.ts` | `assignVariant(experimentName, subject)` — looks up or creates the persisted `ExperimentAssignment` row. |
-| `apps/api/src/lib/conversionRate.ts` | Example Prisma `groupBy` query computing converted/exposed per variant. |
-| `apps/api/src/middleware/identity.ts` | Resolves `userId` from JWT if present, otherwise reads/creates an `httpOnly`, `SameSite=Strict` `gather_aid` cookie holding an anonymous id. Never 401s. |
-| `apps/api/src/routes/flags.ts` | `GET /api/flags`, `GET /api/experiments/:experimentName/variant`, `POST /api/events`. |
+| File                                       | Purpose                                                                                                                                                  |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/shared/src/flagNames.ts`         | Canonical flag/experiment name constants (`FEATURE_FLAGS`, `EXPERIMENTS`) shared by both apps — no magic strings on either side.                         |
+| `apps/api/src/lib/flags.ts`                | Backend-owned registry of flag _values_ (enabled state) and experiment _definitions_ (variant list, description). Single source of truth.                |
+| `apps/api/src/lib/hash.ts`                 | `hashToVariant(key, variants)` — deterministic SHA-256 bucketing.                                                                                        |
+| `apps/api/src/lib/experimentAssignment.ts` | `assignVariant(experimentName, subject)` — looks up or creates the persisted `ExperimentAssignment` row.                                                 |
+| `apps/api/src/lib/conversionRate.ts`       | Example Prisma `groupBy` query computing converted/exposed per variant.                                                                                  |
+| `apps/api/src/middleware/identity.ts`      | Resolves `userId` from JWT if present, otherwise reads/creates an `httpOnly`, `SameSite=Strict` `gather_aid` cookie holding an anonymous id. Never 401s. |
+| `apps/api/src/routes/flags.ts`             | `GET /api/flags`, `GET /api/experiments/:experimentName/variant`, `POST /api/events`.                                                                    |
 
 **Why hashing instead of random assignment:** a cryptographic hash of `${experimentName}:${subjectId}` gives even bucket distribution without numeric ids and without any shared/coordinated state — the same subject always lands in the same bucket, computed independently on any request. The DB row exists purely to make that assignment durable (e.g. if the variant list or bucketing logic changes later, existing users keep their original variant).
 
@@ -30,11 +30,11 @@ Two new models:
 
 ### Frontend (`apps/web`)
 
-| File | Purpose |
-|---|---|
-| `apps/web/src/lib/flags.tsx` | `FeatureFlagProvider` (React Context, fetches `/api/flags` once via TanStack Query), `useFeatureFlag(name): boolean`, `useABVariant(name): { variant, isLoading }`. |
-| `apps/web/src/lib/analytics.ts` | `trackExposure(experimentName, variant)`, `trackConversion(experimentName, variant, payload?)` — POST to `/api/events`, fire-and-forget. |
-| `apps/web/src/main.tsx` | Prefetches the flags query into the `QueryClient` in parallel with the existing auth-refresh call (which already blocks first render) — so flags are always already cached by the time the app tree mounts. |
+| File                            | Purpose                                                                                                                                                                                                     |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src/lib/flags.tsx`    | `FeatureFlagProvider` (React Context, fetches `/api/flags` once via TanStack Query), `useFeatureFlag(name): boolean`, `useABVariant(name): { variant, isLoading }`.                                         |
+| `apps/web/src/lib/analytics.ts` | `trackExposure(experimentName, variant)`, `trackConversion(experimentName, variant, payload?)` — POST to `/api/events`, fire-and-forget.                                                                    |
+| `apps/web/src/main.tsx`         | Prefetches the flags query into the `QueryClient` in parallel with the existing auth-refresh call (which already blocks first render) — so flags are always already cached by the time the app tree mounts. |
 
 **Flicker decision:** this app is pure CSR (no SSR), so there's no server-rendered "correct" first paint to fall back to. Two options exist: (a) block first render until flags resolve, or (b) render immediately with a default/skeleton and swap when data arrives. Chose (a), piggy-backed onto the auth-refresh call that already blocks first paint — this adds effectively zero extra latency (parallel request) and means flag consumers never need a loading branch. Per-experiment variants (`useABVariant`) deliberately do **not** use this approach, since the set of experiments in use isn't known ahead of time; those get a local, scoped loading state instead.
 

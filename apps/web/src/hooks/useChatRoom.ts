@@ -21,7 +21,11 @@ export function useChatRoom(outingId: string) {
       addToCache(message)
     }
 
-    function onEdited({ messageId, newBody, editedAt }: {
+    function onEdited({
+      messageId,
+      newBody,
+      editedAt,
+    }: {
       messageId: string
       newBody: string
       editedAt: string
@@ -41,7 +45,7 @@ export function useChatRoom(outingId: string) {
       socket.off('connect', join)
       socket.emit('outing:leave', { outingId })
     }
-    
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [outingId, addToCache, updateCache])
 }

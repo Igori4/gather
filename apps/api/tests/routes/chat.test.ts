@@ -61,9 +61,7 @@ describe('POST /api/outings/:id/messages', () => {
   })
 
   it('401 — no auth', async () => {
-    const res = await request(app)
-      .post('/api/outings/fake/messages')
-      .send({ body: 'x' })
+    const res = await request(app).post('/api/outings/fake/messages').send({ body: 'x' })
     expect(res.status).toBe(401)
   })
 

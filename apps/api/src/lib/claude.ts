@@ -38,10 +38,14 @@ function buildSystemPrompt(groupId: string, outingId?: string): string {
   return [
     'You are a social outing assistant for Gather, an app that helps friend groups plan outings.',
     `You are generating venue suggestions for group ID: ${groupId}.`,
-    outingId ? `The outing ID is: ${outingId}. Avoid suggesting places already added to this outing.` : '',
+    outingId
+      ? `The outing ID is: ${outingId}. Avoid suggesting places already added to this outing.`
+      : '',
     '',
     'STEP 1: Call get_group_context to understand the group.',
-    outingId ? 'STEP 2: Call get_outing_places to see what venues are already added — avoid duplicates.' : '',
+    outingId
+      ? 'STEP 2: Call get_outing_places to see what venues are already added — avoid duplicates.'
+      : '',
     'STEP 3: Call get_past_outings to see where they have been before — aim for variety.',
     'STEP 4: Call search_mapbox_places 1-2 times with specific queries to find real local venues.',
     '',
@@ -124,9 +128,7 @@ export async function generateAISuggestions(
 
     await mcpClient.close()
 
-    const textBlock = lastResponse?.content.find(
-      (b): b is Anthropic.TextBlock => b.type === 'text'
-    )
+    const textBlock = lastResponse?.content.find((b): b is Anthropic.TextBlock => b.type === 'text')
     const text = textBlock?.text?.trim() ?? ''
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) throw new Error('No JSON found in Claude response')

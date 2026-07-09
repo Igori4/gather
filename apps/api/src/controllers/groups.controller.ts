@@ -38,7 +38,12 @@ export async function acceptInvite(req: Request, res: Response) {
     return res.status(409).json({ error: 'Already a member of this group' })
   }
 
-  await GroupRepository.joinViaInvitation(invitation.id, invitation.groupId, userId, invitation.role)
+  await GroupRepository.joinViaInvitation(
+    invitation.id,
+    invitation.groupId,
+    userId,
+    invitation.role
+  )
 
   const group = await GroupRepository.findById(invitation.groupId)
   return res.json(group)

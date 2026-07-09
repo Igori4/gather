@@ -30,7 +30,7 @@ async function issueTokens(userId: string, res: Response) {
   await UserRepository.createRefreshToken(
     userId,
     hashToken(refreshToken),
-    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
   )
 
   setRefreshCookie(res, refreshToken)
@@ -141,14 +141,12 @@ export async function forgotPassword(req: Request, res: Response) {
     const tokenHash = hashToken(rawToken)
 
     await UserRepository.deleteActiveResetTokens(user.id)
-    await UserRepository.createResetToken(
-      user.id,
-      tokenHash,
-      new Date(Date.now() + 60 * 60 * 1000),
-    )
+    await UserRepository.createResetToken(user.id, tokenHash, new Date(Date.now() + 60 * 60 * 1000))
 
     if (process.env.NODE_ENV === 'production' && !process.env.FRONTEND_URL) {
-      console.error('[security] FRONTEND_URL not set in production — reset links will point to localhost')
+      console.error(
+        '[security] FRONTEND_URL not set in production — reset links will point to localhost'
+      )
     }
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173'
     const resetUrl = `${frontendUrl}/reset-password?token=${rawToken}`

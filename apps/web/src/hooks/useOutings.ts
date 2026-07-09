@@ -1,6 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { CreateOutingInput, AddPlaceInput } from '@gather/shared'
-import { listOutings, createOuting, getOuting, addPlace, removePlace, castVote, proposeSlot, voteSlot, deleteSlot, confirmOuting, rsvp } from '@/api/outings'
+import {
+  listOutings,
+  createOuting,
+  getOuting,
+  addPlace,
+  removePlace,
+  castVote,
+  proposeSlot,
+  voteSlot,
+  deleteSlot,
+  confirmOuting,
+  rsvp,
+} from '@/api/outings'
 
 export function useOutings(groupId: string) {
   return useQuery({

@@ -59,12 +59,13 @@ export function Message({ message, outingId }: { message: ChatMessage; outingId:
         <div className={cn('flex items-baseline gap-2', isOwn && 'flex-row-reverse')}>
           <span className="text-xs font-medium">{message.user.name}</span>
           <span className="text-xs text-muted-foreground">{formatTime(message.createdAt)}</span>
-          {message.editedAt && (
-            <span className="text-xs text-muted-foreground">(edited)</span>
-          )}
+          {message.editedAt && <span className="text-xs text-muted-foreground">(edited)</span>}
           {isOwn && !isEditing && (
             <button
-              onClick={() => { setEditBody(message.body); setIsEditing(true) }}
+              onClick={() => {
+                setEditBody(message.body)
+                setIsEditing(true)
+              }}
               className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:text-foreground"
             >
               Edit
@@ -87,7 +88,13 @@ export function Message({ message, outingId }: { message: ChatMessage; outingId:
               <Button size="sm" className="h-6 text-xs px-2" onClick={handleSave} disabled={saving}>
                 {saving ? 'Saving…' : 'Save'}
               </Button>
-              <Button size="sm" variant="ghost" className="h-6 text-xs px-2" onClick={handleCancel} disabled={saving}>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 text-xs px-2"
+                onClick={handleCancel}
+                disabled={saving}
+              >
                 Cancel
               </Button>
             </div>

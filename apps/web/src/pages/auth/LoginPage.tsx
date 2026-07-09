@@ -79,8 +79,7 @@ export default function LoginPage() {
             className="w-full h-full object-cover rounded-lg"
           />
           <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-full bg-background/90 px-3 py-1.5 text-sm font-medium shadow">
-            <Users className="h-4 w-4 text-primary" />
-            5 friends attending dinner
+            <Users className="h-4 w-4 text-primary" />5 friends attending dinner
           </div>
         </div>
       </div>

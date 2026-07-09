@@ -8,7 +8,7 @@ import { Prisma } from '../generated/prisma/client'
 
 export function getFlags(_req: Request, res: Response) {
   const flags = Object.fromEntries(
-    Object.values(flagDefinitions).map((flag) => [flag.name, flag.enabled])
+    Object.values(flagDefinitions).map(flag => [flag.name, flag.enabled])
   )
   res.json({ flags })
 }

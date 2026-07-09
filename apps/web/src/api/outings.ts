@@ -97,18 +97,32 @@ export async function removePlace(outingId: string, placeId: string): Promise<vo
   await api.delete(`/api/outings/${outingId}/places/${placeId}`)
 }
 
-export async function castVote(outingId: string, placeId: string, vote: 'up' | 'down'): Promise<VoteTally> {
+export async function castVote(
+  outingId: string,
+  placeId: string,
+  vote: 'up' | 'down'
+): Promise<VoteTally> {
   const res = await api.post<VoteTally>(`/api/outings/${outingId}/places/${placeId}/vote`, { vote })
   return res.data
 }
 
-export async function proposeSlot(outingId: string, startsAt: string, endsAt: string): Promise<TimeSlot> {
+export async function proposeSlot(
+  outingId: string,
+  startsAt: string,
+  endsAt: string
+): Promise<TimeSlot> {
   const res = await api.post<TimeSlot>(`/api/outings/${outingId}/slots`, { startsAt, endsAt })
   return res.data
 }
 
-export async function voteSlot(outingId: string, slotId: string, available: boolean): Promise<SlotTally> {
-  const res = await api.post<SlotTally>(`/api/outings/${outingId}/slots/${slotId}/vote`, { available })
+export async function voteSlot(
+  outingId: string,
+  slotId: string,
+  available: boolean
+): Promise<SlotTally> {
+  const res = await api.post<SlotTally>(`/api/outings/${outingId}/slots/${slotId}/vote`, {
+    available,
+  })
   return res.data
 }
 
@@ -116,12 +130,19 @@ export async function deleteSlot(outingId: string, slotId: string): Promise<void
   await api.delete(`/api/outings/${outingId}/slots/${slotId}`)
 }
 
-export async function confirmOuting(outingId: string, placeId: string, slotId: string): Promise<Outing> {
+export async function confirmOuting(
+  outingId: string,
+  placeId: string,
+  slotId: string
+): Promise<Outing> {
   const res = await api.post<Outing>(`/api/outings/${outingId}/confirm`, { placeId, slotId })
   return res.data
 }
 
-export async function rsvp(outingId: string, status: 'going' | 'maybe' | 'not_going'): Promise<RSVPEntry> {
+export async function rsvp(
+  outingId: string,
+  status: 'going' | 'maybe' | 'not_going'
+): Promise<RSVPEntry> {
   const res = await api.post<RSVPEntry>(`/api/outings/${outingId}/rsvp`, { status })
   return res.data
 }

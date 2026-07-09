@@ -14,6 +14,7 @@
 **Type:** non-TDD — package installation
 
 **Files:**
+
 - Modify: `packages/mcp/package.json`
 - Modify: `apps/api/package.json`
 
@@ -56,6 +57,7 @@ git commit -m "chore(deps): add @modelcontextprotocol/sdk + @anthropic-ai/sdk, r
 **Type:** non-TDD — type cleanup, no behavior change
 
 **Files:**
+
 - Modify: `packages/mcp/src/types.ts`
 
 **Step 1: Replace file content**
@@ -100,6 +102,7 @@ git commit -m "refactor(mcp): remove Gemini-specific types from types.ts"
 ## Task 3: Add getMemberAvailability tool (TDD)
 
 **Files:**
+
 - Create: `packages/mcp/src/tools/getMemberAvailability.ts`
 - Create: `packages/mcp/tests/tools/getMemberAvailability.test.ts`
 
@@ -143,10 +146,9 @@ describe('getMemberAvailabilityTool', () => {
     mockDb.outing.findUnique.mockResolvedValue({ groupId: 'g1' })
     mockDb.groupMember.count.mockResolvedValue(3)
 
-    const result = await getMemberAvailabilityTool.execute(
-      { outingId: 'o1' },
-      ctx
-    ) as { slots: Array<{ slotId: string; availableCount: number; totalMembers: number }> }
+    const result = (await getMemberAvailabilityTool.execute({ outingId: 'o1' }, ctx)) as {
+      slots: Array<{ slotId: string; availableCount: number; totalMembers: number }>
+    }
 
     expect(result.slots).toHaveLength(1)
     expect(result.slots[0].slotId).toBe('slot1')
@@ -159,10 +161,9 @@ describe('getMemberAvailabilityTool', () => {
     mockDb.outing.findUnique.mockResolvedValue({ groupId: 'g1' })
     mockDb.groupMember.count.mockResolvedValue(2)
 
-    const result = await getMemberAvailabilityTool.execute(
-      { outingId: 'o1' },
-      ctx
-    ) as { slots: unknown[] }
+    const result = (await getMemberAvailabilityTool.execute({ outingId: 'o1' }, ctx)) as {
+      slots: unknown[]
+    }
 
     expect(result.slots).toHaveLength(0)
   })
@@ -209,12 +210,14 @@ export const getMemberAvailabilityTool: MCPTool = {
       : 0
 
     return {
-      slots: (slots as Array<{
-        id: string
-        startsAt: Date
-        endsAt: Date
-        votes: Array<{ userId: string; available: boolean }>
-      }>).map(slot => ({
+      slots: (
+        slots as Array<{
+          id: string
+          startsAt: Date
+          endsAt: Date
+          votes: Array<{ userId: string; available: boolean }>
+        }>
+      ).map(slot => ({
         slotId: slot.id,
         startsAt: slot.startsAt.toISOString(),
         endsAt: slot.endsAt.toISOString(),
@@ -248,6 +251,7 @@ Add to `packages/mcp/package.json`:
 ```
 
 Then run:
+
 ```bash
 npm install --workspace=packages/mcp
 ```
@@ -272,6 +276,7 @@ git commit -m "feat(mcp): add getMemberAvailability tool"
 ## Task 4: Add getPlaceVoteTally tool (TDD)
 
 **Files:**
+
 - Create: `packages/mcp/src/tools/getPlaceVoteTally.ts`
 - Create: `packages/mcp/tests/tools/getPlaceVoteTally.test.ts`
 
@@ -309,10 +314,9 @@ describe('getPlaceVoteTallyTool', () => {
       },
     ])
 
-    const result = await getPlaceVoteTallyTool.execute(
-      { outingId: 'o1' },
-      ctx
-    ) as { places: Array<{ placeId: string; upVotes: number; downVotes: number; score: number }> }
+    const result = (await getPlaceVoteTallyTool.execute({ outingId: 'o1' }, ctx)) as {
+      places: Array<{ placeId: string; upVotes: number; downVotes: number; score: number }>
+    }
 
     expect(result.places).toHaveLength(2)
     expect(result.places[0].placeId).toBe('p2') // score 3 wins
@@ -324,10 +328,9 @@ describe('getPlaceVoteTallyTool', () => {
   it('returns empty when no places', async () => {
     mockDb.outingPlace.findMany.mockResolvedValue([])
 
-    const result = await getPlaceVoteTallyTool.execute(
-      { outingId: 'o1' },
-      ctx
-    ) as { places: unknown[] }
+    const result = (await getPlaceVoteTallyTool.execute({ outingId: 'o1' }, ctx)) as {
+      places: unknown[]
+    }
 
     expect(result.places).toHaveLength(0)
   })
@@ -366,12 +369,14 @@ export const getPlaceVoteTallyTool: MCPTool = {
     })
 
     return {
-      places: (places as Array<{
-        placeId: string
-        name: string
-        address: string
-        votes: Array<{ vote: string }>
-      }>)
+      places: (
+        places as Array<{
+          placeId: string
+          name: string
+          address: string
+          votes: Array<{ vote: string }>
+        }>
+      )
         .map(place => {
           const upVotes = place.votes.filter(v => v.vote === 'up').length
           const downVotes = place.votes.filter(v => v.vote === 'down').length
@@ -412,6 +417,7 @@ git commit -m "feat(mcp): add getPlaceVoteTally tool"
 **Type:** non-TDD — scaffolding (server wiring, no testable behavior beyond integration)
 
 **Files:**
+
 - Create: `packages/mcp/src/server.ts`
 
 **Step 1: Create server.ts**
@@ -438,12 +444,17 @@ const ALL_TOOLS: MCPTool[] = [
   getPlaceVoteTallyTool,
 ]
 
-function zodFieldToJsonSchema(schema: z.ZodTypeAny): { type: string; description?: string; nullable?: boolean } {
+function zodFieldToJsonSchema(schema: z.ZodTypeAny): {
+  type: string
+  description?: string
+  nullable?: boolean
+} {
   const description = schema.description
   if (schema instanceof z.ZodString) return { type: 'string', description }
   if (schema instanceof z.ZodNumber) return { type: 'number', description }
   if (schema instanceof z.ZodBoolean) return { type: 'boolean', description }
-  if (schema instanceof z.ZodOptional) return { ...zodFieldToJsonSchema(schema.unwrap()), nullable: true }
+  if (schema instanceof z.ZodOptional)
+    return { ...zodFieldToJsonSchema(schema.unwrap()), nullable: true }
   if (schema instanceof z.ZodDefault) return zodFieldToJsonSchema(schema._def.innerType)
   return { type: 'string', description }
 }
@@ -518,6 +529,7 @@ git commit -m "feat(mcp): add real MCP server with ListTools/CallTool handlers"
 **Type:** non-TDD — re-export, no behavior
 
 **Files:**
+
 - Modify: `packages/mcp/src/index.ts`
 - Delete: `packages/mcp/src/tools/registry.ts`
 - Delete: `packages/mcp/src/tools/executor.ts`
@@ -558,6 +570,7 @@ git commit -m "refactor(mcp): replace registry/executor with real MCP server exp
 ## Task 7: Create claude.ts (TDD)
 
 **Files:**
+
 - Create: `apps/api/src/lib/claude.ts`
 - Create: `apps/api/tests/lib/claude.test.ts`
 
@@ -752,10 +765,14 @@ function buildSystemPrompt(groupId: string, outingId?: string): string {
   return [
     'You are a social outing assistant for Gather, an app that helps friend groups plan outings.',
     `You are generating venue suggestions for group ID: ${groupId}.`,
-    outingId ? `The outing ID is: ${outingId}. Avoid suggesting places already added to this outing.` : '',
+    outingId
+      ? `The outing ID is: ${outingId}. Avoid suggesting places already added to this outing.`
+      : '',
     '',
     'STEP 1: Call get_group_context to understand the group.',
-    outingId ? 'STEP 2: Call get_outing_places to see what venues are already added — avoid duplicates.' : '',
+    outingId
+      ? 'STEP 2: Call get_outing_places to see what venues are already added — avoid duplicates.'
+      : '',
     'STEP 3: Call get_past_outings to see where they have been before — aim for variety.',
     'STEP 4: Call search_mapbox_places 1-2 times with specific queries to find real local venues.',
     '',
@@ -838,9 +855,7 @@ export async function generateAISuggestions(
 
     await mcpClient.close()
 
-    const textBlock = lastResponse?.content.find(
-      (b): b is Anthropic.TextBlock => b.type === 'text'
-    )
+    const textBlock = lastResponse?.content.find((b): b is Anthropic.TextBlock => b.type === 'text')
     const text = textBlock?.text?.trim() ?? ''
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (!jsonMatch) throw new Error('No JSON found in Claude response')
@@ -874,6 +889,7 @@ git commit -m "feat(api): add Claude + MCP agent replacing Gemini in claude.ts"
 ## Task 8: AI route tests (TDD)
 
 **Files:**
+
 - Create: `apps/api/tests/routes/ai.test.ts`
 
 **Step 1: Write failing tests**
@@ -960,9 +976,7 @@ describe('POST /api/groups/:groupId/ai-suggestions', () => {
   })
 
   it('401 — no auth', async () => {
-    const res = await request(app)
-      .post('/api/groups/fake-id/ai-suggestions')
-      .send({})
+    const res = await request(app).post('/api/groups/fake-id/ai-suggestions').send({})
 
     expect(res.status).toBe(401)
   })
@@ -1078,6 +1092,7 @@ git commit -m "feat(api): wire AI route to Claude agent, add route tests"
 **Type:** non-TDD — deletion + doc update
 
 **Files:**
+
 - Delete: `apps/api/src/lib/gemini.ts`
 - Modify: `apps/api/src/routes/ai.ts` (update OpenAPI tag description)
 
@@ -1138,6 +1153,7 @@ git commit -m "chore(api): delete gemini.ts, update OpenAPI description to Claud
 - Task 9: depends on Task 8
 
 Independent groups (can run in parallel):
+
 - **Group A:** Task 1
 - **Group B:** Task 2 (after Group A)
 - **Group C:** Tasks 3, 4 (after Group B — independent of each other)
@@ -1150,11 +1166,13 @@ Independent groups (can run in parallel):
 ## Environment Variable Change
 
 Add to `.env.local` (and EC2 `.env.production`):
+
 ```
 ANTHROPIC_API_KEY=your-key-here
 ```
 
 Remove (no longer needed):
+
 ```
 GEMINI_API_KEY=...
 ```

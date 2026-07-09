@@ -26,14 +26,14 @@ describe('requireAuth middleware', () => {
   it('401 — header does not start with "Bearer "', () => {
     const res = mockRes()
     requireAuth(mockReq('Basic abc'), res, next)
-    expect((res.status as jest.Mock)).toHaveBeenCalledWith(401)
+    expect(res.status as jest.Mock).toHaveBeenCalledWith(401)
     expect(next).not.toHaveBeenCalled()
   })
 
   it('401 — invalid token', () => {
     const res = mockRes()
     requireAuth(mockReq('Bearer not-a-real-token'), res, next)
-    expect((res.status as jest.Mock)).toHaveBeenCalledWith(401)
+    expect(res.status as jest.Mock).toHaveBeenCalledWith(401)
     expect(next).not.toHaveBeenCalled()
   })
 

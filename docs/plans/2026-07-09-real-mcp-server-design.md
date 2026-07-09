@@ -1,4 +1,5 @@
 # Real MCP Server — Design Spec
+
 **Date:** 2026-07-09  
 **Goal:** Replace Gemini agent with a real MCP server (stdio transport) + Claude, supporting both AI suggestions and human-in-the-loop outing confirmation.
 
@@ -10,6 +11,7 @@
 MCP server runs as a child process of Express API, communicating via stdin/stdout. Single deployment unit, real MCP protocol, compatible with any MCP-aware LLM client.
 
 Rejected:
+
 - B (HTTP transport) — extra service to deploy on already-constrained EC2 t3.micro
 - C (in-process, no protocol) — not a real MCP server
 
@@ -34,6 +36,7 @@ Anthropic SDK (claude-sonnet-4-6)
 ```
 
 **Request flow:**
+
 1. `POST /api/groups/:id/ai-suggestions` → `claude.ts`
 2. `claude.ts` spawns MCP server subprocess
 3. MCP client calls `listTools()` → gets tool definitions
@@ -65,6 +68,7 @@ packages/mcp/
 ```
 
 **server.ts pattern:**
+
 ```ts
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
@@ -82,15 +86,15 @@ await server.connect(transport)
 
 ## Tools
 
-| Tool | Type | Description |
-|------|------|-------------|
-| `get_group_context` | read | name, member count, outing history |
-| `get_outing_places` | read | places + vote tallies for current outing |
-| `get_past_outings` | read | past outings for variety (avoid repeats) |
-| `get_member_availability` | read | who is available per time slot |
-| `get_place_vote_tally` | read | detailed vote results per place |
-| `confirm_outing` | **write** | confirms place + slot (phase 2, human-approved only) |
-| `notify_members` | **write** | sends email via Resend (phase 2) |
+| Tool                      | Type      | Description                                          |
+| ------------------------- | --------- | ---------------------------------------------------- |
+| `get_group_context`       | read      | name, member count, outing history                   |
+| `get_outing_places`       | read      | places + vote tallies for current outing             |
+| `get_past_outings`        | read      | past outings for variety (avoid repeats)             |
+| `get_member_availability` | read      | who is available per time slot                       |
+| `get_place_vote_tally`    | read      | detailed vote results per place                      |
+| `confirm_outing`          | **write** | confirms place + slot (phase 2, human-approved only) |
+| `notify_members`          | **write** | sends email via Resend (phase 2)                     |
 
 `search_mapbox_places` removed — confirmation agent works from existing DB data only.
 
@@ -100,15 +104,16 @@ await server.connect(transport)
 
 **Key differences from gemini.ts:**
 
-| | Gemini | Claude |
-|--|--|--|
-| Tool format | `functionDeclarations` | `tools` with `input_schema` |
-| Tool call in response | `response.functionCalls()` | `content.filter(b => b.type === 'tool_use')` |
-| Stop signal | `calls.length === 0` | `stop_reason === 'end_turn'` |
-| Conversation history | automatic (chat session) | manual — must push to `messages[]` |
-| Tool result format | `{ functionResponse: { name, response } }` | `{ type: 'tool_result', tool_use_id, content }` |
+|                       | Gemini                                     | Claude                                          |
+| --------------------- | ------------------------------------------ | ----------------------------------------------- |
+| Tool format           | `functionDeclarations`                     | `tools` with `input_schema`                     |
+| Tool call in response | `response.functionCalls()`                 | `content.filter(b => b.type === 'tool_use')`    |
+| Stop signal           | `calls.length === 0`                       | `stop_reason === 'end_turn'`                    |
+| Conversation history  | automatic (chat session)                   | manual — must push to `messages[]`              |
+| Tool result format    | `{ functionResponse: { name, response } }` | `{ type: 'tool_result', tool_use_id, content }` |
 
 **Loop pattern:**
+
 ```ts
 const messages = [{ role: 'user', content: buildPrompt(groupId, outingId) }]
 
@@ -119,7 +124,7 @@ for (let turn = 0; turn < 5; turn++) {
 
   const toolUses = response.content.filter(b => b.type === 'tool_use')
   const toolResults = await Promise.all(
-    toolUses.map(async (tu) => {
+    toolUses.map(async tu => {
       const result = await mcpClient.callTool({ name: tu.name, arguments: tu.input })
       return { type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify(result) }
     })
@@ -159,6 +164,7 @@ Write tools (`confirmOuting`, `notifyMembers`) reserved for a future fully-auton
 ## File Changes
 
 **New:**
+
 - `packages/mcp/src/server.ts`
 - `packages/mcp/src/tools/read/getMemberAvailability.ts`
 - `packages/mcp/src/tools/read/getPlaceVoteTally.ts`
@@ -167,12 +173,14 @@ Write tools (`confirmOuting`, `notifyMembers`) reserved for a future fully-auton
 - `apps/api/src/lib/claude.ts`
 
 **Modified:**
+
 - `packages/mcp/src/index.ts` — MCP server entry point
 - `apps/api/src/routes/ai.ts` — call `claude.ts` instead of `gemini.ts`
 - `apps/api/package.json` — add `@anthropic-ai/sdk`, `@modelcontextprotocol/sdk`
 - `packages/mcp/package.json` — add `@modelcontextprotocol/sdk`
 
 **Deleted:**
+
 - `apps/api/src/lib/gemini.ts`
 - `packages/mcp/src/tools/registry.ts` — MCP SDK handles this
 - `packages/mcp/src/tools/executor.ts` — MCP SDK handles this

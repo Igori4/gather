@@ -19,22 +19,22 @@ gather/                          ← npm workspaces root
 
 ## Tech Stack
 
-| Layer      | Technology                                                         |
-| ---------- | ------------------------------------------------------------------ |
-| Frontend   | React 18, Vite, React Router v6, TanStack Query v5, Zustand, Axios |
-| Forms      | React Hook Form + `@hookform/resolvers` + Zod                      |
-| Maps       | Mapbox GL JS                                                       |
-| Charts     | Recharts                                                           |
-| Real-time  | Socket.IO (client ↔ server)                                        |
-| Backend    | Express 4, Helmet, CORS, express-rate-limit, cookie-parser         |
-| ORM        | Prisma 5 (PostgreSQL via Supabase)                                 |
-| Auth       | JWT (15m access / 7d refresh) + Google OAuth via Passport.js       |
-| Email      | Resend                                                             |
-| AI         | Google Gemini (`@google/generative-ai`, gemini-1.5-flash)          |
-| Validation | Zod (shared schemas in `packages/shared`)                          |
-| Monitoring | Sentry (frontend + backend, separate DSNs)                         |
+| Layer      | Technology                                                             |
+| ---------- | ---------------------------------------------------------------------- |
+| Frontend   | React 18, Vite, React Router v6, TanStack Query v5, Zustand, Axios     |
+| Forms      | React Hook Form + `@hookform/resolvers` + Zod                          |
+| Maps       | Mapbox GL JS                                                           |
+| Charts     | Recharts                                                               |
+| Real-time  | Socket.IO (client ↔ server)                                            |
+| Backend    | Express 4, Helmet, CORS, express-rate-limit, cookie-parser             |
+| ORM        | Prisma 5 (PostgreSQL via Supabase)                                     |
+| Auth       | JWT (15m access / 7d refresh) + Google OAuth via Passport.js           |
+| Email      | Resend                                                                 |
+| AI         | Google Gemini (`@google/generative-ai`, gemini-1.5-flash)              |
+| Validation | Zod (shared schemas in `packages/shared`)                              |
+| Monitoring | Sentry (frontend + backend, separate DSNs)                             |
 | Deploy     | Frontend → AWS S3+CloudFront, Backend → AWS EC2+CloudFront (free tier) |
-| Node       | >=20.0.0                                                           |
+| Node       | >=20.0.0                                                               |
 
 ## Common Commands
 
@@ -108,7 +108,7 @@ npm run db:studio --workspace=apps/api
   4. **Message gap recovery** — on reconnect, invalidate `['messages', outingId]` to refetch latest page and fill gap from disconnect window
   5. **Token refresh on socket auth failure** — intercept `connect_error` with reason "Invalid or expired token" → call refresh endpoint → `connectSocket(newToken)` (prevents silent socket death after 15-min JWT expiry)
   6. **`chat:message:edited` frontend listener** — `useChatRoom` only handles `chat:message`; add handler for `chat:message:edited` to update cached message body in-place
-  
+
   Files: `apps/web/src/hooks/useChatRoom.ts`, `apps/web/src/components/chat/ChatWindow.tsx`, `apps/web/src/lib/socket.ts`
 
 ### Epic 5 — AI Suggestions (Gemini + Custom MCP)
@@ -403,49 +403,56 @@ Full step-by-step guide: `docs/DEPLOY_AWS.md`. Replaces the original Vercel/Rail
 plan — chosen for $0/mo on AWS free tier (12 months from account creation).
 
 **Architecture:**
+
 ```
 Browser ──HTTPS──> CloudFront (frontend) ──> S3 (private, OAC)   [static React build]
 Browser ──HTTPS/WSS──> CloudFront (backend proxy) ──> EC2:80 (Express + Socket.IO)
 EC2 ──> Supabase Postgres (unchanged)
 ```
+
 No custom domain or ACM cert needed — both CloudFront distributions get free
 HTTPS on their own `*.cloudfront.net` domains, which is also what makes
 WebSocket (Socket.IO) work without extra config.
 
 **Live resources (AWS account 302290383528, region us-east-1):**
 
-| Resource | ID / Address |
-| --- | --- |
-| Frontend URL | `https://d27ahufp1d5dg9.cloudfront.net` |
-| Backend URL | `https://d2e4rup9a7fq2s.cloudfront.net` |
-| Frontend CloudFront distribution | `ECJ4NU6ZENKC0` |
-| Backend CloudFront distribution | `E7Y9AK78BI91K` |
-| S3 bucket (frontend) | `gather-web-302290383528` |
-| CloudFront OAC | `E3T9X6H9H01BL8` |
-| EC2 instance | `i-0eb4d1f1eb68ebe07` (54.82.100.254, t3.micro) |
-| EC2 security group | `sg-0edfbd5523ac8b091` (SSH from one IP, HTTP open) |
-| SSH key | `C:\Users\User\.ssh\gather-deploy-key.pem` |
-| IAM deploy user | `gather-deploy` (AdministratorAccess) |
+| Resource                         | ID / Address                                        |
+| -------------------------------- | --------------------------------------------------- |
+| Frontend URL                     | `https://d27ahufp1d5dg9.cloudfront.net`             |
+| Backend URL                      | `https://d2e4rup9a7fq2s.cloudfront.net`             |
+| Frontend CloudFront distribution | `ECJ4NU6ZENKC0`                                     |
+| Backend CloudFront distribution  | `E7Y9AK78BI91K`                                     |
+| S3 bucket (frontend)             | `gather-web-302290383528`                           |
+| CloudFront OAC                   | `E3T9X6H9H01BL8`                                    |
+| EC2 instance                     | `i-0eb4d1f1eb68ebe07` (54.82.100.254, t3.micro)     |
+| EC2 security group               | `sg-0edfbd5523ac8b091` (SSH from one IP, HTTP open) |
+| SSH key                          | `C:\Users\User\.ssh\gather-deploy-key.pem`          |
+| IAM deploy user                  | `gather-deploy` (AdministratorAccess)               |
 
 **Redeploy frontend:**
+
 ```bash
 npm run build --workspace=apps/web
 aws s3 sync apps/web/dist s3://gather-web-302290383528 --delete
 aws cloudfront create-invalidation --distribution-id ECJ4NU6ZENKC0 --paths "/*"
 ```
+
 `VITE_API_URL`/`VITE_SOCKET_URL` in `apps/web/.env.production` are baked in
 at build time — editing that file alone does nothing until rebuilt.
 
 **Redeploy backend:**
+
 ```bash
 ssh -i ~/.ssh/gather-deploy-key.pem ubuntu@54.82.100.254 \
   "cd gather && git pull && sudo docker compose -f docker-compose.prod.yml up -d --build"
 ```
+
 Secrets live in `.env.production` on the EC2 box itself (never committed).
 `Dockerfile.prod` runs `prisma migrate deploy` on every container start.
 
 **Known gotchas (already fixed in current `Dockerfile.prod`/`tsconfig.json`,
 worth knowing if touching either):**
+
 - `apps/api/tsconfig.json` `rootDir` is `../..` (not `./src`) — needed so
   `tsc` can compile `packages/shared` imports; compiled entrypoint lives at
   `dist/apps/api/src/index.js`, not `dist/index.js`.
@@ -455,7 +462,7 @@ worth knowing if touching either):**
   compiled output.
 - `prisma.config.ts` lives next to `package.json`, not inside `prisma/` —
   must be explicitly copied into the runtime image or `prisma migrate
-  deploy` fails with "datasource.url required".
+deploy` fails with "datasource.url required".
 - Supabase free-tier projects auto-pause after ~1 week idle — looks like a
   credentials error (`FATAL: tenant/user not found`) but is fixed by
   clicking "Restore project" in the Supabase dashboard.
@@ -553,34 +560,34 @@ draft → voting → confirmed → done
 
 ## Key Existing Files
 
-| File                                    | Purpose                                         |
-| --------------------------------------- | ----------------------------------------------- |
-| `apps/api/src/app.ts`                   | Express app, all middleware, route registration |
-| `apps/api/src/index.ts`                 | HTTP server entry, Socket.IO init               |
-| `apps/api/src/routes/auth.ts`                    | Auth routes (thin, OpenAPI docs)                |
-| `apps/api/src/routes/groups.ts`                  | Groups routes (thin, OpenAPI docs)              |
-| `apps/api/src/routes/flags.ts`                   | Feature flags + experiments routes              |
-| `apps/api/src/controllers/auth.controller.ts`    | Auth request handlers                           |
-| `apps/api/src/controllers/groups.controller.ts`  | Groups request handlers                         |
-| `apps/api/src/controllers/flags.controller.ts`   | Flags/experiments request handlers              |
-| `apps/api/src/repositories/user.repository.ts`   | User + RefreshToken + PasswordResetToken DB ops |
-| `apps/api/src/repositories/group.repository.ts`  | Group + GroupMember + Invitation DB ops         |
-| `apps/api/src/repositories/event.repository.ts`  | Analytics event tracking DB ops                 |
-| `apps/api/src/middleware/auth.ts`                | `requireAuth` middleware — attaches `AuthRequest`|
-| `apps/api/src/middleware/identity.ts`            | Anonymous identity tracking middleware          |
-| `apps/api/src/lib/prisma.ts`                     | Prisma singleton                                |
-| `apps/api/src/lib/jwt.ts`                        | Token sign/verify helpers                       |
-| `apps/api/src/lib/email.ts`                      | Resend email helper                             |
-| `apps/api/src/lib/flags.ts`                      | Feature flag definitions + experiment names     |
-| `apps/api/src/lib/hash.ts`                       | Hash utilities                                  |
-| `apps/api/src/lib/experimentAssignment.ts`       | A/B variant assignment logic                    |
-| `apps/api/src/lib/conversionRate.ts`             | Conversion rate tracking helpers                |
-| `apps/api/src/socket/index.ts`                   | Socket.IO init (skeleton — add handlers here)   |
-| `apps/api/prisma/schema.prisma`         | Full DB schema (13 models)                      |
-| `apps/web/src/lib/axios.ts`             | Axios instance with silent refresh              |
-| `apps/web/src/lib/socket.ts`            | Socket.IO client helpers                        |
-| `apps/web/src/stores/authStore.ts`      | Zustand auth store                              |
-| `apps/web/src/routes/authRoutes.tsx`    | Auth page routes                                |
-| `apps/web/src/routes/groupRoutes.tsx`   | App routes (extend this for new pages)          |
-| `apps/web/src/pages/auth/LoginPage.tsx` | Login form — reference for form pattern         |
-| `packages/shared/src/schemas/`          | All Zod schemas — start here for any new domain |
+| File                                            | Purpose                                           |
+| ----------------------------------------------- | ------------------------------------------------- |
+| `apps/api/src/app.ts`                           | Express app, all middleware, route registration   |
+| `apps/api/src/index.ts`                         | HTTP server entry, Socket.IO init                 |
+| `apps/api/src/routes/auth.ts`                   | Auth routes (thin, OpenAPI docs)                  |
+| `apps/api/src/routes/groups.ts`                 | Groups routes (thin, OpenAPI docs)                |
+| `apps/api/src/routes/flags.ts`                  | Feature flags + experiments routes                |
+| `apps/api/src/controllers/auth.controller.ts`   | Auth request handlers                             |
+| `apps/api/src/controllers/groups.controller.ts` | Groups request handlers                           |
+| `apps/api/src/controllers/flags.controller.ts`  | Flags/experiments request handlers                |
+| `apps/api/src/repositories/user.repository.ts`  | User + RefreshToken + PasswordResetToken DB ops   |
+| `apps/api/src/repositories/group.repository.ts` | Group + GroupMember + Invitation DB ops           |
+| `apps/api/src/repositories/event.repository.ts` | Analytics event tracking DB ops                   |
+| `apps/api/src/middleware/auth.ts`               | `requireAuth` middleware — attaches `AuthRequest` |
+| `apps/api/src/middleware/identity.ts`           | Anonymous identity tracking middleware            |
+| `apps/api/src/lib/prisma.ts`                    | Prisma singleton                                  |
+| `apps/api/src/lib/jwt.ts`                       | Token sign/verify helpers                         |
+| `apps/api/src/lib/email.ts`                     | Resend email helper                               |
+| `apps/api/src/lib/flags.ts`                     | Feature flag definitions + experiment names       |
+| `apps/api/src/lib/hash.ts`                      | Hash utilities                                    |
+| `apps/api/src/lib/experimentAssignment.ts`      | A/B variant assignment logic                      |
+| `apps/api/src/lib/conversionRate.ts`            | Conversion rate tracking helpers                  |
+| `apps/api/src/socket/index.ts`                  | Socket.IO init (skeleton — add handlers here)     |
+| `apps/api/prisma/schema.prisma`                 | Full DB schema (13 models)                        |
+| `apps/web/src/lib/axios.ts`                     | Axios instance with silent refresh                |
+| `apps/web/src/lib/socket.ts`                    | Socket.IO client helpers                          |
+| `apps/web/src/stores/authStore.ts`              | Zustand auth store                                |
+| `apps/web/src/routes/authRoutes.tsx`            | Auth page routes                                  |
+| `apps/web/src/routes/groupRoutes.tsx`           | App routes (extend this for new pages)            |
+| `apps/web/src/pages/auth/LoginPage.tsx`         | Login form — reference for form pattern           |
+| `packages/shared/src/schemas/`                  | All Zod schemas — start here for any new domain   |

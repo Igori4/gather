@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-secondary">
               <MailCheck className="h-6 w-6 text-secondary-foreground" />
             </div>
-            <CardHeader className='mb-6'>
+            <CardHeader className="mb-6">
               <CardTitle>Check your email</CardTitle>
               <CardDescription>
                 If that address is registered, a secure reset link is on its way.
@@ -74,8 +74,8 @@ export default function ForgotPasswordPage() {
             <CardHeader className="mb-6">
               <CardTitle>Forgot password?</CardTitle>
               <CardDescription>
-                No worries, it happens to the best of us. Enter your email and we&apos;ll send
-                you a secure link to reset it.
+                No worries, it happens to the best of us. Enter your email and we&apos;ll send you a
+                secure link to reset it.
               </CardDescription>
             </CardHeader>
 
@@ -100,7 +100,11 @@ export default function ForgotPasswordPage() {
                 </CardContent>
 
                 <CardFooter className="flex flex-col gap-4">
-                  <Button type="submit" className="w-full rounded-full" disabled={mutation.isPending}>
+                  <Button
+                    type="submit"
+                    className="w-full rounded-full"
+                    disabled={mutation.isPending}
+                  >
                     {mutation.isPending ? 'Sending…' : 'Send Recovery Link'}
                     <ArrowRight className="h-4 w-4" />
                   </Button>

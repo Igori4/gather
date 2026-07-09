@@ -45,9 +45,7 @@ export function useABVariant(experimentName: string): {
   const { data, isLoading } = useQuery({
     queryKey: ['experiment-variant', experimentName],
     queryFn: async () => {
-      const { data } = await api.get<VariantResponse>(
-        `/api/experiments/${experimentName}/variant`
-      )
+      const { data } = await api.get<VariantResponse>(`/api/experiments/${experimentName}/variant`)
       return data.variant
     },
     staleTime: Infinity,

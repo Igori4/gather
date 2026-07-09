@@ -106,9 +106,7 @@ export default function GroupDetailPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold">{group.name}</h1>
-          {group.description && (
-            <p className="text-muted-foreground mt-1">{group.description}</p>
-          )}
+          {group.description && <p className="text-muted-foreground mt-1">{group.description}</p>}
         </div>
         <div className="flex items-center gap-2">
           {isAdmin && (
@@ -121,7 +119,10 @@ export default function GroupDetailPage() {
             variant="ghost"
             size="sm"
             className="text-destructive hover:text-destructive"
-            onClick={() => { setLeaveError(null); leaveGroup.mutate() }}
+            onClick={() => {
+              setLeaveError(null)
+              leaveGroup.mutate()
+            }}
             disabled={leaveGroup.isPending}
           >
             Leave group
@@ -140,9 +141,7 @@ export default function GroupDetailPage() {
           <CreateOutingModal groupId={id} />
         </div>
 
-        {outingsLoading && (
-          <p className="text-muted-foreground text-sm">Loading outings…</p>
-        )}
+        {outingsLoading && <p className="text-muted-foreground text-sm">Loading outings…</p>}
 
         {outings && outings.length === 0 && (
           <p className="text-muted-foreground text-sm">No outings yet. Create one!</p>
@@ -202,16 +201,11 @@ export default function GroupDetailPage() {
           <DialogHeader>
             <DialogTitle>Edit group</DialogTitle>
           </DialogHeader>
-          <form
-            onSubmit={handleSubmit(data => updateGroup.mutate(data))}
-            className="space-y-4"
-          >
+          <form onSubmit={handleSubmit(data => updateGroup.mutate(data))} className="space-y-4">
             <div className="space-y-1">
               <Label htmlFor="name">Name</Label>
               <Input id="name" {...register('name')} />
-              {errors.name && (
-                <p className="text-xs text-destructive">{errors.name.message}</p>
-              )}
+              {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
             <div className="space-y-1">
               <Label htmlFor="description">Description</Label>

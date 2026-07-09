@@ -17,8 +17,7 @@ export const GroupRepository = {
       orderBy: { createdAt: 'desc' },
     }),
 
-  findById: (id: string) =>
-    prisma.group.findUnique({ where: { id } }),
+  findById: (id: string) => prisma.group.findUnique({ where: { id } }),
 
   findByIdWithMembers: (id: string) =>
     prisma.group.findUnique({
@@ -37,8 +36,7 @@ export const GroupRepository = {
       where: { groupId_userId: { groupId, userId } },
     }),
 
-  findInvitation: (token: string) =>
-    prisma.invitation.findUnique({ where: { token } }),
+  findInvitation: (token: string) => prisma.invitation.findUnique({ where: { token } }),
 
   // Transaction: create member + mark invitation accepted atomically
   joinViaInvitation: (invitationId: string, groupId: string, userId: string, role: string) =>
@@ -55,12 +53,10 @@ export const GroupRepository = {
     expiresAt: Date
   }) => prisma.invitation.create({ data }),
 
-  update: (id: string, data: UpdateGroupInput) =>
-    prisma.group.update({ where: { id }, data }),
+  update: (id: string, data: UpdateGroupInput) => prisma.group.update({ where: { id }, data }),
 
   removeMember: (groupId: string, userId: string) =>
     prisma.groupMember.delete({ where: { groupId_userId: { groupId, userId } } }),
 
-  countAdmins: (groupId: string) =>
-    prisma.groupMember.count({ where: { groupId, role: 'admin' } }),
+  countAdmins: (groupId: string) => prisma.groupMember.count({ where: { groupId, role: 'admin' } }),
 }

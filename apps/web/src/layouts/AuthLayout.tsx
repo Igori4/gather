@@ -11,7 +11,10 @@ export function AuthLayout() {
     <div className="min-h-screen justify-between flex flex-col px-4 container mx-auto">
       <div className="w-full flex justify-between items-center py-4">
         <h1 className="text-3xl text-primary font-bold tracking-tight">Gather</h1>
-        <a href="#" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+        <a
+          href="#"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        >
           <HelpCircle className="h-4 w-4" />
           Support
         </a>

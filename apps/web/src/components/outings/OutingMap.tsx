@@ -42,10 +42,12 @@ export function OutingMap({ places, searchResults, onSelect }: OutingMapProps) {
           map.flyTo({ center: [coords.longitude, coords.latitude], zoom: 13, duration: 800 })
         }
       },
-      () => { /* permission denied — keep default */ }
+      () => {
+        /* permission denied — keep default */
+      }
     )
 
-    map.on('click', async (e) => {
+    map.on('click', async e => {
       clickMarkerRef.current?.remove()
       clickMarkerRef.current = null
 
@@ -66,7 +68,9 @@ export function OutingMap({ places, searchResults, onSelect }: OutingMapProps) {
             address = parts.slice(1).join(', ')
           }
         }
-      } catch { /* use coordinate fallback */ }
+      } catch {
+        /* use coordinate fallback */
+      }
 
       const popupNode = document.createElement('div')
       popupNode.innerHTML = `
@@ -75,8 +79,7 @@ export function OutingMap({ places, searchResults, onSelect }: OutingMapProps) {
         <button id="map-add-btn" class="mt-1 text-xs font-semibold text-blue-600 hover:underline">+ Add this place</button>
       `
 
-      const popup = new mapboxgl.Popup({ offset: 14, closeButton: true })
-        .setDOMContent(popupNode)
+      const popup = new mapboxgl.Popup({ offset: 14, closeButton: true }).setDOMContent(popupNode)
 
       popup.on('open', () => {
         document.getElementById('map-add-btn')?.addEventListener('click', () => {

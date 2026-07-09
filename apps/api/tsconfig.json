@@ -17,12 +17,24 @@
     "paths": {
       "@gather/shared": ["../../packages/shared/src"],
       "@gather/mcp": ["../../packages/mcp/src"],
-      "@modelcontextprotocol/sdk/server": ["../../node_modules/@modelcontextprotocol/sdk/dist/cjs/server/index"],
-      "@modelcontextprotocol/sdk/client": ["../../node_modules/@modelcontextprotocol/sdk/dist/cjs/client/index"],
-      "@modelcontextprotocol/sdk/types": ["../../node_modules/@modelcontextprotocol/sdk/dist/cjs/types"],
-      "@modelcontextprotocol/sdk/types.js": ["../../node_modules/@modelcontextprotocol/sdk/dist/cjs/types"],
-      "@modelcontextprotocol/sdk/inMemory": ["../../node_modules/@modelcontextprotocol/sdk/dist/cjs/inMemory"],
-      "@modelcontextprotocol/sdk/inMemory.js": ["../../node_modules/@modelcontextprotocol/sdk/dist/cjs/inMemory"]
+      "@modelcontextprotocol/sdk/server": [
+        "../../node_modules/@modelcontextprotocol/sdk/dist/cjs/server/index"
+      ],
+      "@modelcontextprotocol/sdk/client": [
+        "../../node_modules/@modelcontextprotocol/sdk/dist/cjs/client/index"
+      ],
+      "@modelcontextprotocol/sdk/types": [
+        "../../node_modules/@modelcontextprotocol/sdk/dist/cjs/types"
+      ],
+      "@modelcontextprotocol/sdk/types.js": [
+        "../../node_modules/@modelcontextprotocol/sdk/dist/cjs/types"
+      ],
+      "@modelcontextprotocol/sdk/inMemory": [
+        "../../node_modules/@modelcontextprotocol/sdk/dist/cjs/inMemory"
+      ],
+      "@modelcontextprotocol/sdk/inMemory.js": [
+        "../../node_modules/@modelcontextprotocol/sdk/dist/cjs/inMemory"
+      ]
     }
   },
   "include": ["src", "prisma"],

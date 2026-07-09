@@ -52,9 +52,7 @@ describe('POST /api/groups/:groupId/outings', () => {
   })
 
   it('401 — no auth', async () => {
-    const res = await request(app)
-      .post('/api/groups/fake-id/outings')
-      .send({ title: 'x' })
+    const res = await request(app).post('/api/groups/fake-id/outings').send({ title: 'x' })
     expect(res.status).toBe(401)
   })
 
@@ -289,9 +287,7 @@ describe('POST /api/outings/:id/places/:placeId/vote', () => {
   })
 
   it('401 — no auth', async () => {
-    const res = await request(app)
-      .post('/api/outings/fake/places/fake/vote')
-      .send({ vote: 'up' })
+    const res = await request(app).post('/api/outings/fake/places/fake/vote').send({ vote: 'up' })
     expect(res.status).toBe(401)
   })
 
@@ -332,8 +328,8 @@ describe('POST /api/outings/:id/places/:placeId/vote', () => {
 
 // ─── Slot helpers ────────────────────────────────────────────────────────────
 
-const FUTURE_START = new Date(Date.now() + 86400000).toISOString()  // tomorrow
-const FUTURE_END   = new Date(Date.now() + 90000000).toISOString()  // tomorrow + 1h
+const FUTURE_START = new Date(Date.now() + 86400000).toISOString() // tomorrow
+const FUTURE_END = new Date(Date.now() + 90000000).toISOString() // tomorrow + 1h
 
 async function createOutingForSlots(token: string) {
   const groupId = await createTestGroup(token)
@@ -571,7 +567,13 @@ async function createFullOuting(token: string) {
   const placeRes = await request(app)
     .post(`/api/outings/${outingId}/places`)
     .set('Authorization', `Bearer ${token}`)
-    .send({ placeId: `place-${uid()}`, name: 'Test Venue', address: '1 Main St', lat: 50.4, lng: 30.5 })
+    .send({
+      placeId: `place-${uid()}`,
+      name: 'Test Venue',
+      address: '1 Main St',
+      lat: 50.4,
+      lng: 30.5,
+    })
   const placeId = placeRes.body.placeId as string
 
   const slotRes = await request(app)
@@ -741,9 +743,7 @@ describe('POST /api/outings/:id/rsvp', () => {
   })
 
   it('401 — no auth', async () => {
-    const res = await request(app)
-      .post('/api/outings/fake/rsvp')
-      .send({ status: 'going' })
+    const res = await request(app).post('/api/outings/fake/rsvp').send({ status: 'going' })
     expect(res.status).toBe(401)
   })
 

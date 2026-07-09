@@ -19,7 +19,8 @@ interface MapboxFeature {
 
 export const searchMapboxPlacesTool: MCPTool = {
   name: 'search_mapbox_places',
-  description: 'Search for real venues near a location using Mapbox Geocoding — use this to find specific place suggestions',
+  description:
+    'Search for real venues near a location using Mapbox Geocoding — use this to find specific place suggestions',
   inputSchema,
   async execute({ query, proximity }, { mapboxToken }: ToolContext) {
     const params = new URLSearchParams({

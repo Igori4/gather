@@ -12,4 +12,3 @@ export interface MCPTool {
   inputSchema: z.ZodObject<z.ZodRawShape>
   execute: (input: Record<string, unknown>, ctx: ToolContext) => Promise<unknown>
 }
-

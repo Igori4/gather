@@ -20,6 +20,7 @@
 **Type:** non-TDD — schema change and migration.
 
 **Files:**
+
 - Modify: `apps/api/prisma/schema.prisma`
 
 **Step 1: Update Invitation model and User model**
@@ -84,6 +85,7 @@ git commit -m "chore(db): add declinedAt and invitedBy to Invitation model"
 **Type:** non-TDD — pure DB abstraction, behaviour tested via route tests in Tasks 5 and 7.
 
 **Files:**
+
 - Create: `apps/api/src/repositories/invitation.repository.ts`
 - Modify: `apps/api/src/repositories/user.repository.ts`
 
@@ -109,8 +111,7 @@ export const InvitationRepository = {
       orderBy: { expiresAt: 'asc' },
     }),
 
-  findById: (id: string) =>
-    prisma.invitation.findUnique({ where: { id } }),
+  findById: (id: string) => prisma.invitation.findUnique({ where: { id } }),
 
   decline: (id: string) =>
     prisma.invitation.update({
@@ -161,6 +162,7 @@ git commit -m "feat(api): add InvitationRepository and UserRepository.search"
 **Type:** non-TDD — Zod type definitions, no route behaviour.
 
 **Files:**
+
 - Create: `packages/shared/src/schemas/user.ts`
 - Modify: `packages/shared/src/index.ts`
 
@@ -210,6 +212,7 @@ git commit -m "feat(shared): add UserSearchResultSchema"
 **Type:** TDD — write failing tests first.
 
 **Files:**
+
 - Create: `apps/api/tests/routes/users.test.ts`
 
 **Step 1: Write failing tests**
@@ -265,9 +268,7 @@ describe('GET /api/users/search', () => {
   it('200 — returns max 10 results', async () => {
     const { token } = await createTestUser('Searcher')
     // create 12 users with same searchable prefix
-    await Promise.all(
-      Array.from({ length: 12 }, (_, i) => createTestUser(`Prefixed${i}`))
-    )
+    await Promise.all(Array.from({ length: 12 }, (_, i) => createTestUser(`Prefixed${i}`)))
 
     const res = await request(app)
       .get('/api/users/search?q=Prefixed')
@@ -280,9 +281,7 @@ describe('GET /api/users/search', () => {
   it('400 — missing q param', async () => {
     const { token } = await createTestUser('NoQuery')
 
-    const res = await request(app)
-      .get('/api/users/search')
-      .set('Authorization', `Bearer ${token}`)
+    const res = await request(app).get('/api/users/search').set('Authorization', `Bearer ${token}`)
 
     expect(res.status).toBe(400)
   })
@@ -309,6 +308,7 @@ Expected: FAIL — routes not registered (404 or 401 for auth test only).
 **Type:** TDD — make Task 4 tests pass.
 
 **Files:**
+
 - Create: `apps/api/src/controllers/users.controller.ts`
 - Create: `apps/api/src/routes/users.ts`
 - Modify: `apps/api/src/app.ts`
@@ -420,6 +420,7 @@ git commit -m "feat(api): add user search endpoint GET /api/users/search"
 **Type:** TDD — write failing tests first.
 
 **Files:**
+
 - Create: `apps/api/tests/routes/invitations.test.ts`
 
 **Step 1: Write failing tests**
@@ -541,7 +542,7 @@ describe('POST /api/invitations/:id/accept', () => {
     expect(res.body.id).toBe(groupId)
   })
 
-  it('403 — cannot accept someone else\'s invitation', async () => {
+  it("403 — cannot accept someone else's invitation", async () => {
     const { token: adminToken } = await createTestUser('admin-acc2')
     const { token: memberToken, email: memberEmail } = await createTestUser('member-acc2')
     const { token: otherToken } = await createTestUser('other-acc2')
@@ -637,7 +638,7 @@ describe('POST /api/invitations/:id/decline', () => {
     expect(afterRes.body.every((inv: { id: string }) => inv.id !== invId)).toBe(true)
   })
 
-  it('403 — cannot decline someone else\'s invitation', async () => {
+  it("403 — cannot decline someone else's invitation", async () => {
     const { token: adminToken } = await createTestUser('admin-dec2')
     const { token: memberToken, email: memberEmail } = await createTestUser('member-dec2')
     const { token: otherToken } = await createTestUser('other-dec2')
@@ -682,6 +683,7 @@ Expected: FAIL — routes not registered yet.
 **Type:** TDD — make Task 6 tests pass.
 
 **Files:**
+
 - Create: `apps/api/src/controllers/invitations.controller.ts`
 - Create: `apps/api/src/routes/invitations.ts`
 - Modify: `apps/api/src/app.ts`
@@ -714,7 +716,12 @@ export async function acceptInvitation(req: Request, res: Response) {
   if (!user) return res.status(404).json({ error: 'User not found' })
 
   const invitation = await InvitationRepository.findById(id)
-  if (!invitation || invitation.acceptedAt || invitation.declinedAt || invitation.expiresAt <= new Date()) {
+  if (
+    !invitation ||
+    invitation.acceptedAt ||
+    invitation.declinedAt ||
+    invitation.expiresAt <= new Date()
+  ) {
     return res.status(404).json({ error: 'Invitation not found or expired' })
   }
 
@@ -727,7 +734,12 @@ export async function acceptInvitation(req: Request, res: Response) {
     return res.status(409).json({ error: 'Already a member of this group' })
   }
 
-  await GroupRepository.joinViaInvitation(invitation.id, invitation.groupId, userId, invitation.role)
+  await GroupRepository.joinViaInvitation(
+    invitation.id,
+    invitation.groupId,
+    userId,
+    invitation.role
+  )
 
   const group = await GroupRepository.findById(invitation.groupId)
   return res.json(group)
@@ -875,6 +887,7 @@ git commit -m "feat(api): invitations inbox — list, accept by ID, decline (PBI
 **Type:** non-TDD — wires existing route to new schema field; existing tests still cover the route.
 
 **Files:**
+
 - Modify: `apps/api/src/repositories/group.repository.ts`
 - Modify: `apps/api/src/controllers/groups.controller.ts`
 
@@ -898,14 +911,14 @@ In `apps/api/src/repositories/group.repository.ts`, replace `createInvitation`:
 In `apps/api/src/controllers/groups.controller.ts`, in `inviteMember`, replace the `createInvitation` call:
 
 ```typescript
-  const invitation = await GroupRepository.createInvitation({
-    groupId: req.params.id,
-    email: parsed.data.email,
-    role: parsed.data.role,
-    token,
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    invitedBy: userId,
-  })
+const invitation = await GroupRepository.createInvitation({
+  groupId: req.params.id,
+  email: parsed.data.email,
+  role: parsed.data.role,
+  token,
+  expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  invitedBy: userId,
+})
 ```
 
 **Step 3: Verify typecheck + tests**
@@ -930,6 +943,7 @@ git commit -m "feat(api): store invitedBy on invitation when admin invites membe
 **Type:** non-TDD — API integration layer.
 
 **Files:**
+
 - Create: `apps/web/src/api/users.ts`
 - Create: `apps/web/src/api/invitations.ts`
 - Create: `apps/web/src/hooks/useInvitations.ts`
@@ -967,7 +981,9 @@ export async function fetchMyInvitations(): Promise<PendingInvitation[]> {
   return res.data
 }
 
-export async function acceptInvitationById(invitationId: string): Promise<{ id: string; name: string }> {
+export async function acceptInvitationById(
+  invitationId: string
+): Promise<{ id: string; name: string }> {
   const res = await api.post(`/api/invitations/${invitationId}/accept`)
   return res.data
 }
@@ -982,11 +998,7 @@ export async function declineInvitation(invitationId: string): Promise<void> {
 ```typescript
 // apps/web/src/hooks/useInvitations.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  fetchMyInvitations,
-  acceptInvitationById,
-  declineInvitation,
-} from '@/api/invitations'
+import { fetchMyInvitations, acceptInvitationById, declineInvitation } from '@/api/invitations'
 
 export function useMyInvitations() {
   return useQuery({
@@ -1039,6 +1051,7 @@ git commit -m "feat(web): invitations and users API clients + hooks"
 **Type:** non-TDD — UI component.
 
 **Files:**
+
 - Create: `apps/web/src/components/groups/InviteMemberSearch.tsx`
 - Modify: `apps/web/src/api/groups.ts`
 - Modify: `apps/web/src/pages/groups/GroupDetailPage.tsx`
@@ -1053,10 +1066,10 @@ export async function inviteMember(
   email: string,
   role: 'admin' | 'member' = 'member'
 ): Promise<{ token: string; email: string }> {
-  const res = await api.post<{ token: string; email: string }>(
-    `/api/groups/${groupId}/invite`,
-    { email, role }
-  )
+  const res = await api.post<{ token: string; email: string }>(`/api/groups/${groupId}/invite`, {
+    email,
+    role,
+  })
   return res.data
 }
 ```
@@ -1183,18 +1196,20 @@ import { useAuthStore } from '@/stores/authStore'
 Inside the component, after the `const { data: outings ... }` line, add:
 
 ```typescript
-  const currentUserId = useAuthStore(s => s.user?.id)
-  const isAdmin = group?.members.some(m => m.userId === currentUserId && m.role === 'admin')
+const currentUserId = useAuthStore(s => s.user?.id)
+const isAdmin = group?.members.some(m => m.userId === currentUserId && m.role === 'admin')
 ```
 
 In the Members section JSX, add before the `<ul>`:
 
 ```tsx
-        {isAdmin && (
-          <div className="mb-4">
-            <InviteMemberSearch groupId={id} />
-          </div>
-        )}
+{
+  isAdmin && (
+    <div className="mb-4">
+      <InviteMemberSearch groupId={id} />
+    </div>
+  )
+}
 ```
 
 **Step 5: Verify typecheck**
@@ -1219,6 +1234,7 @@ git commit -m "feat(web): InviteMemberSearch component with debounced user searc
 **Type:** non-TDD — UI page.
 
 **Files:**
+
 - Create: `apps/web/src/pages/InvitationsPage.tsx`
 - Modify: `apps/web/src/routes/groupRoutes.tsx`
 
@@ -1342,6 +1358,7 @@ git commit -m "feat(web): InvitationsPage — list, accept, decline invitations"
 **Type:** non-TDD — UI wiring.
 
 **Files:**
+
 - Modify: `apps/web/src/layouts/AppLayout.tsx`
 
 **Step 1: Add invitation badge to nav**
@@ -1356,28 +1373,28 @@ import { Bell } from 'lucide-react'
 Inside `AppLayout`, after the `compactNav` line, add:
 
 ```typescript
-  const { data: invitations = [] } = useMyInvitations()
-  const pendingCount = invitations.length
+const { data: invitations = [] } = useMyInvitations()
+const pendingCount = invitations.length
 ```
 
 In the `<nav>` element, add a second NavLink after the Groups link:
 
 ```tsx
-            <NavLink
-              to="/invitations"
-              title="Invitations"
-              className={({ isActive }) =>
-                `relative flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${isActive ? 'text-foreground' : 'text-muted-foreground'}`
-              }
-            >
-              <Bell className="h-4 w-4" />
-              {!compactNav && 'Invitations'}
-              {pendingCount > 0 && (
-                <span className="absolute -top-1.5 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
-                  {pendingCount > 9 ? '9+' : pendingCount}
-                </span>
-              )}
-            </NavLink>
+<NavLink
+  to="/invitations"
+  title="Invitations"
+  className={({ isActive }) =>
+    `relative flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${isActive ? 'text-foreground' : 'text-muted-foreground'}`
+  }
+>
+  <Bell className="h-4 w-4" />
+  {!compactNav && 'Invitations'}
+  {pendingCount > 0 && (
+    <span className="absolute -top-1.5 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold">
+      {pendingCount > 9 ? '9+' : pendingCount}
+    </span>
+  )}
+</NavLink>
 ```
 
 **Step 2: Verify typecheck**
@@ -1421,6 +1438,7 @@ git commit -m "feat(web): nav badge showing pending invitation count"
 - Task 12: depends on Task 9 (useMyInvitations hook)
 
 Independent groups (can run in parallel):
+
 - **Group A:** Task 1 (must go first — schema)
 - **Group B:** Task 2 + Task 3 (after Task 1; Task 3 is independent of Task 2)
 - **Group C:** Task 4 + Task 6 (after Group B — write both failing test files in parallel)

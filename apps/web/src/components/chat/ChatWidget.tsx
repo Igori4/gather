@@ -23,7 +23,9 @@ export function ChatWidget({ outingId }: ChatWidgetProps) {
       if (!isOpenRef.current) setUnread(n => n + 1)
     }
     socket.on('chat:message', onMessage)
-    return () => { socket.off('chat:message', onMessage) }
+    return () => {
+      socket.off('chat:message', onMessage)
+    }
   }, [])
 
   return (
@@ -64,10 +66,7 @@ export function ChatWidget({ outingId }: ChatWidgetProps) {
         style={{ height: '52px', width: '52px' }}
         aria-label="Open chat"
       >
-        {isOpen
-          ? <X className="h-5 w-5" />
-          : <MessageCircle className="h-5 w-5" />
-        }
+        {isOpen ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
 
         {!isOpen && unread > 0 && (
           <span className="absolute -top-1 -right-1 h-5 min-w-5 rounded-full bg-destructive text-destructive-foreground text-[11px] font-bold flex items-center justify-center px-1 leading-none">

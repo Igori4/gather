@@ -22,9 +22,11 @@ const ALL_TOOLS: MCPTool[] = [
   getPlaceVoteTallyTool,
 ]
 
-function zodFieldToJsonSchema(
-  schema: z.ZodTypeAny
-): { type: string; description?: string; nullable?: boolean } {
+function zodFieldToJsonSchema(schema: z.ZodTypeAny): {
+  type: string
+  description?: string
+  nullable?: boolean
+} {
   const description = schema.description
   if (schema instanceof z.ZodString) return { type: 'string', description }
   if (schema instanceof z.ZodNumber) return { type: 'number', description }

@@ -246,10 +246,12 @@ describe('POST /api/groups/accept-invite', () => {
     const group = await prisma.group.create({
       data: {
         name: 'Exp Group',
-        createdBy: (await prisma.user.findFirst({ where: { email: { contains: 'accept-exp' } } }))!.id,
+        createdBy: (await prisma.user.findFirst({ where: { email: { contains: 'accept-exp' } } }))!
+          .id,
         members: {
           create: {
-            userId: (await prisma.user.findFirst({ where: { email: { contains: 'accept-exp' } } }))!.id,
+            userId: (await prisma.user.findFirst({ where: { email: { contains: 'accept-exp' } } }))!
+              .id,
             role: 'admin',
           },
         },

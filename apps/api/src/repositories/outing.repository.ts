@@ -1,18 +1,28 @@
 import { prisma } from '../lib/prisma'
 
 export const OutingRepository = {
-  create: (data: { groupId: string; title: string; description?: string | null; createdBy: string }) =>
-    prisma.outing.create({ data }),
+  create: (data: {
+    groupId: string
+    title: string
+    description?: string | null
+    createdBy: string
+  }) => prisma.outing.create({ data }),
 
   findAllForGroup: (groupId: string) =>
     prisma.outing.findMany({
       where: { groupId },
       orderBy: { createdAt: 'desc' },
-      select: { id: true, title: true, description: true, status: true, createdAt: true, createdBy: true },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        createdAt: true,
+        createdBy: true,
+      },
     }),
 
-  findById: (id: string) =>
-    prisma.outing.findUnique({ where: { id } }),
+  findById: (id: string) => prisma.outing.findUnique({ where: { id } }),
 
   findByIdWithGroup: (id: string) =>
     prisma.outing.findUnique({
@@ -31,8 +41,16 @@ export const OutingRepository = {
       },
     }),
 
-  addPlace: (data: { outingId: string; placeId: string; name: string; address: string; lat: number; lng: number; mapboxUrl?: string; addedBy: string }) =>
-    prisma.outingPlace.create({ data }),
+  addPlace: (data: {
+    outingId: string
+    placeId: string
+    name: string
+    address: string
+    lat: number
+    lng: number
+    mapboxUrl?: string
+    addedBy: string
+  }) => prisma.outingPlace.create({ data }),
 
   findPlace: (outingId: string, placeId: string) =>
     prisma.outingPlace.findUnique({ where: { outingId_placeId: { outingId, placeId } } }),
@@ -46,8 +64,7 @@ export const OutingRepository = {
   proposeSlot: (data: { outingId: string; proposedBy: string; startsAt: Date; endsAt: Date }) =>
     prisma.timeSlot.create({ data }),
 
-  findSlot: (slotId: string) =>
-    prisma.timeSlot.findUnique({ where: { id: slotId } }),
+  findSlot: (slotId: string) => prisma.timeSlot.findUnique({ where: { id: slotId } }),
 
   findSlotsForOuting: (outingId: string) =>
     prisma.timeSlot.findMany({
@@ -56,8 +73,7 @@ export const OutingRepository = {
       include: { votes: { select: { userId: true, available: true } } },
     }),
 
-  deleteSlot: (slotId: string) =>
-    prisma.timeSlot.delete({ where: { id: slotId } }),
+  deleteSlot: (slotId: string) => prisma.timeSlot.delete({ where: { id: slotId } }),
 
   voteSlot: async (slotId: string, userId: string, available: boolean) => {
     await prisma.timeSlotVote.upsert({

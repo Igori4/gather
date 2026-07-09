@@ -20,6 +20,7 @@
 **Type:** non-TDD — pure DB abstraction, behaviour tested via route tests in Task 3.
 
 **Files:**
+
 - Create: `apps/api/src/repositories/outing.repository.ts`
 
 **Step 1: Create file**
@@ -28,18 +29,28 @@
 import { prisma } from '../lib/prisma'
 
 export const OutingRepository = {
-  create: (data: { groupId: string; title: string; description?: string | null; createdBy: string }) =>
-    prisma.outing.create({ data }),
+  create: (data: {
+    groupId: string
+    title: string
+    description?: string | null
+    createdBy: string
+  }) => prisma.outing.create({ data }),
 
   findAllForGroup: (groupId: string) =>
     prisma.outing.findMany({
       where: { groupId },
       orderBy: { createdAt: 'desc' },
-      select: { id: true, title: true, description: true, status: true, createdAt: true, createdBy: true },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        createdAt: true,
+        createdBy: true,
+      },
     }),
 
-  findById: (id: string) =>
-    prisma.outing.findUnique({ where: { id } }),
+  findById: (id: string) => prisma.outing.findUnique({ where: { id } }),
 
   findByIdWithGroup: (id: string) =>
     prisma.outing.findUnique({
@@ -65,6 +76,7 @@ git commit -m "feat(api): add OutingRepository"
 **Type:** TDD — write failing tests before implementation.
 
 **Files:**
+
 - Create: `apps/api/tests/routes/outings.test.ts`
 
 **Step 1: Write failing tests**
@@ -124,9 +136,7 @@ describe('POST /api/groups/:groupId/outings', () => {
   })
 
   it('401 — no auth', async () => {
-    const res = await request(app)
-      .post('/api/groups/fake-id/outings')
-      .send({ title: 'x' })
+    const res = await request(app).post('/api/groups/fake-id/outings').send({ title: 'x' })
     expect(res.status).toBe(401)
   })
 
@@ -250,6 +260,7 @@ Expected: FAIL — routes not registered yet (404 responses).
 **Type:** TDD — make Task 2 tests pass.
 
 **Files:**
+
 - Create: `apps/api/src/controllers/outings.controller.ts`
 - Create: `apps/api/src/routes/outings.ts`
 - Modify: `apps/api/src/app.ts`
@@ -393,10 +404,13 @@ outingsRouter.get('/outings/:id', OutingsController.getOuting)
 **Step 3: Register in app.ts** — replace the commented line:
 
 In `apps/api/src/app.ts` replace:
+
 ```typescript
 // app.use('/api/outings', outingsRouter) — Phase 3
 ```
+
 with:
+
 ```typescript
 import { outingsRouter } from './routes/outings'
 // ...
@@ -406,11 +420,13 @@ app.use('/api', outingsRouter)
 Actually add the import at the top with other imports and replace the comment line:
 
 At the top of `apps/api/src/app.ts`, after existing route imports add:
+
 ```typescript
 import { outingsRouter } from './routes/outings'
 ```
 
 In the Routes section replace `// app.use('/api/outings', outingsRouter) — Phase 3` with:
+
 ```typescript
 app.use('/api', outingsRouter)
 ```
@@ -437,6 +453,7 @@ git commit -m "feat(api): add Outings API (PBI-3.1)"
 **Type:** non-TDD — pure DB abstraction, behaviour tested via route tests in Task 6.
 
 **Files:**
+
 - Create: `apps/api/src/repositories/chat.repository.ts`
 
 **Step 1: Create file**
@@ -465,8 +482,7 @@ export const ChatRepository = {
       include: { user: { select: { id: true, name: true, avatarUrl: true } } },
     }),
 
-  findById: (id: string) =>
-    prisma.chatMessage.findUnique({ where: { id } }),
+  findById: (id: string) => prisma.chatMessage.findUnique({ where: { id } }),
 
   editMessage: (id: string, body: string) =>
     prisma.chatMessage.update({
@@ -475,8 +491,7 @@ export const ChatRepository = {
       include: { user: { select: { id: true, name: true, avatarUrl: true } } },
     }),
 
-  deleteMessage: (id: string) =>
-    prisma.chatMessage.delete({ where: { id } }),
+  deleteMessage: (id: string) => prisma.chatMessage.delete({ where: { id } }),
 }
 ```
 
@@ -496,6 +511,7 @@ git commit -m "feat(api): add ChatRepository"
 **Type:** TDD — write failing tests first.
 
 **Files:**
+
 - Create: `apps/api/tests/routes/chat.test.ts`
 
 **Step 1: Write failing tests**
@@ -564,9 +580,7 @@ describe('POST /api/outings/:id/messages', () => {
   })
 
   it('401 — no auth', async () => {
-    const res = await request(app)
-      .post('/api/outings/fake/messages')
-      .send({ body: 'x' })
+    const res = await request(app).post('/api/outings/fake/messages').send({ body: 'x' })
     expect(res.status).toBe(401)
   })
 
@@ -658,7 +672,7 @@ describe('PATCH /api/outings/:id/messages/:messageId', () => {
     expect(res.body.editedAt).toBeTruthy()
   })
 
-  it('403 — another member cannot edit someone else\'s message', async () => {
+  it("403 — another member cannot edit someone else's message", async () => {
     const { token: adminToken } = await createTestUser('edit-admin')
     const groupId = await createTestGroup(adminToken)
     const outingId = await createTestOuting(adminToken, groupId)
@@ -673,7 +687,11 @@ describe('PATCH /api/outings/:id/messages/:messageId', () => {
     const inviteRes = await request(app)
       .post(`/api/groups/${groupId}/invite`)
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ email: (await prisma.user.findUnique({ where: { id: otherId }, select: { email: true } }))!.email, role: 'member' })
+      .send({
+        email: (await prisma.user.findUnique({ where: { id: otherId }, select: { email: true } }))!
+          .email,
+        role: 'member',
+      })
     await request(app)
       .post('/api/groups/accept-invite')
       .set('Authorization', `Bearer ${otherToken}`)
@@ -724,6 +742,7 @@ Expected: FAIL — routes not registered yet.
 **Type:** TDD — make Task 5 tests pass.
 
 **Files:**
+
 - Create: `apps/api/src/controllers/chat.controller.ts`
 - Create: `apps/api/src/routes/chat.ts`
 - Modify: `apps/api/src/app.ts`
@@ -945,11 +964,13 @@ chatRouter.delete('/outings/:id/messages/:messageId', ChatController.deleteMessa
 **Step 3: Register in app.ts**
 
 Add import at top of `apps/api/src/app.ts`:
+
 ```typescript
 import { chatRouter } from './routes/chat'
 ```
 
 Add after `app.use('/api', outingsRouter)`:
+
 ```typescript
 app.use('/api', chatRouter)
 ```
@@ -984,6 +1005,7 @@ git commit -m "feat(api): add Chat REST API (PBI-4.1)"
 **Type:** non-TDD — Socket.IO wiring; integration tested manually in Task 13.
 
 **Files:**
+
 - Modify: `apps/api/src/socket/index.ts`
 - Create: `apps/api/src/socket/chatHandler.ts`
 
@@ -1085,6 +1107,7 @@ git commit -m "feat(api): Socket.IO rooms + chat handler (PBI-4.2)"
 **Type:** non-TDD — socket singleton initialization.
 
 **Files:**
+
 - Modify: `apps/web/src/lib/socket.ts`
 
 **Step 1: Update to accept token**
@@ -1157,6 +1180,7 @@ git commit -m "feat(web): socket connects with auth token on app mount"
 **Type:** non-TDD — API integration layer.
 
 **Files:**
+
 - Create: `apps/web/src/api/outings.ts`
 - Create: `apps/web/src/hooks/useOutings.ts`
 
@@ -1238,6 +1262,7 @@ git commit -m "feat(web): Outings API client and TanStack Query hooks"
 **Type:** non-TDD — UI component.
 
 **Files:**
+
 - Create: `apps/web/src/pages/groups/GroupDetailPage.tsx`
 - Create: `apps/web/src/components/outings/CreateOutingModal.tsx`
 - Modify: `apps/web/src/routes/groupRoutes.tsx`
@@ -1456,6 +1481,7 @@ git commit -m "feat(web): GroupDetailPage with outing list and create modal (PBI
 **Type:** non-TDD — API integration layer.
 
 **Files:**
+
 - Create: `apps/web/src/api/chat.ts`
 - Create: `apps/web/src/hooks/useMessages.ts`
 
@@ -1493,7 +1519,11 @@ export async function sendMessage(outingId: string, data: SendMessageInput): Pro
   return res.data
 }
 
-export async function editMessage(outingId: string, messageId: string, data: EditMessageInput): Promise<ChatMessage> {
+export async function editMessage(
+  outingId: string,
+  messageId: string,
+  data: EditMessageInput
+): Promise<ChatMessage> {
   const res = await api.patch<ChatMessage>(`/api/outings/${outingId}/messages/${messageId}`, data)
   return res.data
 }
@@ -1515,7 +1545,7 @@ export function useMessages(outingId: string) {
     queryKey: ['messages', outingId],
     queryFn: ({ pageParam }) => fetchMessages(outingId, pageParam as string | undefined),
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    getNextPageParam: lastPage => lastPage.nextCursor ?? undefined,
   })
 }
 
@@ -1524,7 +1554,7 @@ export function useAddMessageToCache(outingId: string) {
   return (message: ChatMessage) => {
     queryClient.setQueryData<ReturnType<typeof useMessages>['data']>(
       ['messages', outingId],
-      (old) => {
+      old => {
         if (!old) return old
         const firstPage = old.pages[0]
         return {
@@ -1554,6 +1584,7 @@ git commit -m "feat(web): chat API client and useMessages infinite query hook"
 **Type:** non-TDD — Socket.IO lifecycle hook.
 
 **Files:**
+
 - Create: `apps/web/src/hooks/useChatRoom.ts`
 
 **Step 1: Create hook**
@@ -1601,6 +1632,7 @@ git commit -m "feat(web): useChatRoom Socket.IO hook (PBI-4.2)"
 **Type:** non-TDD — UI components.
 
 **Files:**
+
 - Create: `apps/web/src/components/chat/Message.tsx`
 - Create: `apps/web/src/components/chat/ChatWindow.tsx`
 
@@ -1758,6 +1790,7 @@ git commit -m "feat(web): ChatWindow and Message components (PBI-4.3)"
 **Type:** non-TDD — wires ChatWindow into a page and adds route.
 
 **Files:**
+
 - Create: `apps/web/src/pages/outings/OutingDetailPage.tsx`
 - Modify: `apps/web/src/routes/groupRoutes.tsx`
 
@@ -1836,7 +1869,7 @@ npm run dev
 2. User A creates a group → navigates to group detail page.
 3. User A creates an outing.
 4. User A navigates to the outing detail page — chat window is visible.
-5. User B registers and (for now) cannot join without invite — invite User B from the group page using the existing `/api/groups/:id/invite` route tested via API, then `POST /api/groups/accept-invite` with the token. *(Full invite UI is PBI-2.3.)*
+5. User B registers and (for now) cannot join without invite — invite User B from the group page using the existing `/api/groups/:id/invite` route tested via API, then `POST /api/groups/accept-invite` with the token. _(Full invite UI is PBI-2.3.)_
 6. Open the outing detail page in both tabs.
 7. User A sends a message — it appears instantly in User B's tab via Socket.IO without page refresh.
 8. User B sends a reply — appears in User A's tab.
@@ -1867,6 +1900,7 @@ Check browser devtools and API terminal for socket connection errors or 4xx/5xx 
 - Task 15: depends on all tasks
 
 Independent groups (can run in parallel):
+
 - **Group A:** Tasks 1, 2, 4 (all repository/test setup, no dependencies)
 - **Group B:** Task 3 (after Task 1+2), Task 7 (after Task 1)
 - **Group C:** Task 5 (after Task 3), Task 8 (independent)

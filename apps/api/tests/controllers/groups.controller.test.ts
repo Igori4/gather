@@ -13,11 +13,7 @@ jest.mock('../../src/repositories/group.repository', () => ({
   },
 }))
 
-import {
-  acceptInvite,
-  getGroup,
-  inviteMember,
-} from '../../src/controllers/groups.controller'
+import { acceptInvite, getGroup, inviteMember } from '../../src/controllers/groups.controller'
 import { GroupRepository } from '../../src/repositories/group.repository'
 
 const repo = GroupRepository as jest.Mocked<typeof GroupRepository>
@@ -41,45 +37,58 @@ describe('acceptInvite', () => {
   it('400 — missing token in body', async () => {
     const res = mockRes()
     await acceptInvite(mockReq({ body: {} }), res)
-    expect((res.status as jest.Mock)).toHaveBeenCalledWith(400)
+    expect(res.status as jest.Mock).toHaveBeenCalledWith(400)
   })
 
   it('400 — invitation not found', async () => {
     repo.findInvitation.mockResolvedValue(null)
     const res = mockRes()
     await acceptInvite(mockReq({ body: { token: 'abc' } }), res)
-    expect((res.status as jest.Mock)).toHaveBeenCalledWith(400)
+    expect(res.status as jest.Mock).toHaveBeenCalledWith(400)
   })
 
   it('400 — invitation expired', async () => {
     repo.findInvitation.mockResolvedValue({
-      id: 'inv1', groupId: 'g1', role: 'member',
-      acceptedAt: null, expiresAt: new Date(Date.now() - 1000),
+      id: 'inv1',
+      groupId: 'g1',
+      role: 'member',
+      acceptedAt: null,
+      expiresAt: new Date(Date.now() - 1000),
     } as any)
     const res = mockRes()
     await acceptInvite(mockReq({ body: { token: 'abc' } }), res)
-    expect((res.status as jest.Mock)).toHaveBeenCalledWith(400)
+    expect(res.status as jest.Mock).toHaveBeenCalledWith(400)
   })
 
   it('400 — invitation already accepted', async () => {
     repo.findInvitation.mockResolvedValue({
-      id: 'inv1', groupId: 'g1', role: 'member',
-      acceptedAt: new Date(), expiresAt: new Date(Date.now() + 3600_000),
+      id: 'inv1',
+      groupId: 'g1',
+      role: 'member',
+      acceptedAt: new Date(),
+      expiresAt: new Date(Date.now() + 3600_000),
     } as any)
     const res = mockRes()
     await acceptInvite(mockReq({ body: { token: 'abc' } }), res)
-    expect((res.status as jest.Mock)).toHaveBeenCalledWith(400)
+    expect(res.status as jest.Mock).toHaveBeenCalledWith(400)
   })
 
   it('409 — already a member', async () => {
     repo.findInvitation.mockResolvedValue({
-      id: 'inv1', groupId: 'g1', role: 'member',
-      acceptedAt: null, expiresAt: new Date(Date.now() + 3600_000),
+      id: 'inv1',
+      groupId: 'g1',
+      role: 'member',
+      acceptedAt: null,
+      expiresAt: new Date(Date.now() + 3600_000),
     } as any)
-    repo.findMembership.mockResolvedValue({ groupId: 'g1', userId: 'user_abc', role: 'member' } as any)
+    repo.findMembership.mockResolvedValue({
+      groupId: 'g1',
+      userId: 'user_abc',
+      role: 'member',
+    } as any)
     const res = mockRes()
     await acceptInvite(mockReq({ body: { token: 'abc' } }), res)
-    expect((res.status as jest.Mock)).toHaveBeenCalledWith(409)
+    expect(res.status as jest.Mock).toHaveBeenCalledWith(409)
   })
 })
 
@@ -90,7 +99,7 @@ describe('getGroup', () => {
     repo.findByIdWithMembers.mockResolvedValue(null)
     const res = mockRes()
     await getGroup(mockReq({ params: { id: 'unknown' } }), res)
-    expect((res.status as jest.Mock)).toHaveBeenCalledWith(404)
+    expect(res.status as jest.Mock).toHaveBeenCalledWith(404)
   })
 
   it('403 — requester is not a member', async () => {
@@ -101,7 +110,7 @@ describe('getGroup', () => {
     const res = mockRes()
     // userId on req = 'user_abc', not in members
     await getGroup(mockReq({ params: { id: 'g1' } }), res)
-    expect((res.status as jest.Mock)).toHaveBeenCalledWith(403)
+    expect(res.status as jest.Mock).toHaveBeenCalledWith(403)
   })
 })
 
@@ -111,7 +120,7 @@ describe('inviteMember', () => {
   it('400 — invalid request body', async () => {
     const res = mockRes()
     await inviteMember(mockReq({ params: { id: 'g1' }, body: {} }), res)
-    expect((res.status as jest.Mock)).toHaveBeenCalledWith(400)
+    expect(res.status as jest.Mock).toHaveBeenCalledWith(400)
   })
 
   it('403 — requester is not a member', async () => {
@@ -119,18 +128,22 @@ describe('inviteMember', () => {
     const res = mockRes()
     await inviteMember(
       mockReq({ params: { id: 'g1' }, body: { email: 'a@b.com', role: 'member' } }),
-      res,
+      res
     )
-    expect((res.status as jest.Mock)).toHaveBeenCalledWith(403)
+    expect(res.status as jest.Mock).toHaveBeenCalledWith(403)
   })
 
   it('403 — requester is a member but not admin', async () => {
-    repo.findMembership.mockResolvedValue({ groupId: 'g1', userId: 'user_abc', role: 'member' } as any)
+    repo.findMembership.mockResolvedValue({
+      groupId: 'g1',
+      userId: 'user_abc',
+      role: 'member',
+    } as any)
     const res = mockRes()
     await inviteMember(
       mockReq({ params: { id: 'g1' }, body: { email: 'a@b.com', role: 'member' } }),
-      res,
+      res
     )
-    expect((res.status as jest.Mock)).toHaveBeenCalledWith(403)
+    expect(res.status as jest.Mock).toHaveBeenCalledWith(403)
   })
 })

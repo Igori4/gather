@@ -30,8 +30,7 @@ export const AiRepository = {
       data: { dismissedAt: new Date() },
     }),
 
-  findById: (id: string) =>
-    prisma.aiSuggestion.findUnique({ where: { id } }),
+  findById: (id: string) => prisma.aiSuggestion.findUnique({ where: { id } }),
 
   DAILY_LIMIT,
 }

@@ -20,8 +20,7 @@ export const ChatRepository = {
       include: { user: { select: { id: true, name: true, avatarUrl: true } } },
     }),
 
-  findById: (id: string) =>
-    prisma.chatMessage.findUnique({ where: { id } }),
+  findById: (id: string) => prisma.chatMessage.findUnique({ where: { id } }),
 
   editMessage: (id: string, body: string) =>
     prisma.chatMessage.update({
@@ -30,6 +29,5 @@ export const ChatRepository = {
       include: { user: { select: { id: true, name: true, avatarUrl: true } } },
     }),
 
-  deleteMessage: (id: string) =>
-    prisma.chatMessage.delete({ where: { id } }),
+  deleteMessage: (id: string) => prisma.chatMessage.delete({ where: { id } }),
 }

@@ -1,5 +1,12 @@
 import { Request, Response } from 'express'
-import { CreateOutingSchema, AddPlaceSchema, CastVoteSchema, ProposeSlotSchema, ConfirmOutingSchema, RSVPSchema } from '@gather/shared'
+import {
+  CreateOutingSchema,
+  AddPlaceSchema,
+  CastVoteSchema,
+  ProposeSlotSchema,
+  ConfirmOutingSchema,
+  RSVPSchema,
+} from '@gather/shared'
 import { AuthRequest } from '../middleware/auth'
 import { OutingRepository } from '../repositories/outing.repository'
 import { GroupRepository } from '../repositories/group.repository'
@@ -123,7 +130,8 @@ export async function voteSlot(req: Request, res: Response) {
   if (!slot || slot.outingId !== outingId) return res.status(404).json({ error: 'Slot not found' })
 
   const { available } = req.body
-  if (typeof available !== 'boolean') return res.status(400).json({ error: 'available must be boolean' })
+  if (typeof available !== 'boolean')
+    return res.status(400).json({ error: 'available must be boolean' })
 
   const tally = await OutingRepository.voteSlot(slotId, userId, available)
   return res.json(tally)
@@ -153,7 +161,8 @@ export async function confirmOuting(req: Request, res: Response) {
   if (!outing) return res.status(404).json({ error: 'Outing not found' })
 
   const membership = await GroupRepository.findMembership(outing.groupId, userId)
-  if (!membership || membership.role !== 'admin') return res.status(403).json({ error: 'Admin only' })
+  if (!membership || membership.role !== 'admin')
+    return res.status(403).json({ error: 'Admin only' })
 
   if (outing.status === 'confirmed') return res.status(409).json({ error: 'Already confirmed' })
 
@@ -164,9 +173,14 @@ export async function confirmOuting(req: Request, res: Response) {
   if (!place) return res.status(404).json({ error: 'Place not found in this outing' })
 
   const slot = await OutingRepository.findSlot(parsed.data.slotId)
-  if (!slot || slot.outingId !== req.params.id) return res.status(404).json({ error: 'Slot not found in this outing' })
+  if (!slot || slot.outingId !== req.params.id)
+    return res.status(404).json({ error: 'Slot not found in this outing' })
 
-  const updated = await OutingRepository.confirmOuting(req.params.id, parsed.data.placeId, parsed.data.slotId)
+  const updated = await OutingRepository.confirmOuting(
+    req.params.id,
+    parsed.data.placeId,
+    parsed.data.slotId
+  )
   return res.json(updated)
 }
 

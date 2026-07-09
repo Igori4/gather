@@ -7,7 +7,8 @@ const inputSchema = z.object({
 
 export const getOutingPlacesTool: MCPTool = {
   name: 'get_outing_places',
-  description: 'Get places already added to a specific outing — use this to avoid suggesting duplicates',
+  description:
+    'Get places already added to a specific outing — use this to avoid suggesting duplicates',
   inputSchema,
   async execute({ outingId }, { db }: ToolContext) {
     const places = await db.outingPlace.findMany({

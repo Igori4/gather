@@ -1,8 +1,7 @@
 import { prisma } from '../lib/prisma'
 
 export const UserRepository = {
-  findByEmail: (email: string) =>
-    prisma.user.findUnique({ where: { email } }),
+  findByEmail: (email: string) => prisma.user.findUnique({ where: { email } }),
 
   findById: (id: string) =>
     prisma.user.findUnique({
@@ -26,8 +25,7 @@ export const UserRepository = {
   revokeRefreshToken: (id: string) =>
     prisma.refreshToken.update({ where: { id }, data: { revoked: true } }),
 
-  revokeAllRefreshTokens: (userId: string) =>
-    prisma.refreshToken.deleteMany({ where: { userId } }),
+  revokeAllRefreshTokens: (userId: string) => prisma.refreshToken.deleteMany({ where: { userId } }),
 
   // ── Password reset tokens ────────────────────────────────────────────────────
 

@@ -91,9 +91,7 @@ export function PlaceSearch({ onSelect, onResults, disabled }: PlaceSearchProps)
           onChange={e => handleChange(e.target.value)}
           disabled={disabled}
         />
-        {loading && (
-          <span className="self-center text-sm text-muted-foreground">Searching…</span>
-        )}
+        {loading && <span className="self-center text-sm text-muted-foreground">Searching…</span>}
       </div>
 
       {error && <p className="mt-1 text-sm text-destructive">{error}</p>}

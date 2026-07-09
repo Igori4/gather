@@ -35,13 +35,19 @@ describe('POST /auth/register', () => {
 
   it('409 — duplicate email', async () => {
     const e = email('dup')
-    await request(app).post('/auth/register').send({ email: e, password: 'Password123!', name: 'A' })
-    const res = await request(app).post('/auth/register').send({ email: e, password: 'Password123!', name: 'B' })
+    await request(app)
+      .post('/auth/register')
+      .send({ email: e, password: 'Password123!', name: 'A' })
+    const res = await request(app)
+      .post('/auth/register')
+      .send({ email: e, password: 'Password123!', name: 'B' })
     expect(res.status).toBe(409)
   })
 
   it('400 — missing required fields', async () => {
-    const res = await request(app).post('/auth/register').send({ email: email('bad') })
+    const res = await request(app)
+      .post('/auth/register')
+      .send({ email: email('bad') })
     expect(res.status).toBe(400)
   })
 
@@ -76,7 +82,9 @@ describe('POST /auth/login', () => {
   })
 
   it('401 — non-existent email', async () => {
-    const res = await request(app).post('/auth/login').send({ email: email('none'), password })
+    const res = await request(app)
+      .post('/auth/login')
+      .send({ email: email('none'), password })
     expect(res.status).toBe(401)
   })
 })
@@ -102,9 +110,7 @@ describe('POST /auth/refresh', () => {
   })
 
   it('401 — cookie with invalid token', async () => {
-    const res = await request(app)
-      .post('/auth/refresh')
-      .set('Cookie', ['refreshToken=bad-token'])
+    const res = await request(app).post('/auth/refresh').set('Cookie', ['refreshToken=bad-token'])
     expect(res.status).toBe(401)
   })
 })
@@ -153,9 +159,7 @@ describe('GET /auth/me', () => {
   })
 
   it('401 — invalid token', async () => {
-    expect(
-      (await request(app).get('/auth/me').set('Authorization', 'Bearer bad')).status
-    ).toBe(401)
+    expect((await request(app).get('/auth/me').set('Authorization', 'Bearer bad')).status).toBe(401)
   })
 })
 
@@ -164,14 +168,18 @@ describe('GET /auth/me', () => {
 describe('POST /auth/forgot-password', () => {
   it('200 — registered email (does not leak existence)', async () => {
     const e = email('forgot')
-    await request(app).post('/auth/register').send({ email: e, password: 'Password123!', name: 'F' })
+    await request(app)
+      .post('/auth/register')
+      .send({ email: e, password: 'Password123!', name: 'F' })
     const res = await request(app).post('/auth/forgot-password').send({ email: e })
     expect(res.status).toBe(200)
     expect(res.body.message).toBeDefined()
   })
 
   it('200 — unknown email (same response, no info leak)', async () => {
-    const res = await request(app).post('/auth/forgot-password').send({ email: email('unknown') })
+    const res = await request(app)
+      .post('/auth/forgot-password')
+      .send({ email: email('unknown') })
     expect(res.status).toBe(200)
   })
 
@@ -204,19 +212,23 @@ describe('POST /auth/reset-password', () => {
 
     const res = await request(app).post('/auth/reset-password').send({
       token: rawToken,
-      password: 'NewPassword99!', confirmPassword: 'NewPassword99!',
+      password: 'NewPassword99!',
+      confirmPassword: 'NewPassword99!',
     })
     expect(res.status).toBe(200)
 
     // Can now login with new password
-    const loginRes = await request(app).post('/auth/login').send({ email: e, password: 'NewPassword99!' })
+    const loginRes = await request(app)
+      .post('/auth/login')
+      .send({ email: e, password: 'NewPassword99!' })
     expect(loginRes.status).toBe(200)
   })
 
   it('400 — invalid token', async () => {
     const res = await request(app).post('/auth/reset-password').send({
       token: 'nonexistent-token',
-      password: 'NewPassword99!', confirmPassword: 'NewPassword99!',
+      password: 'NewPassword99!',
+      confirmPassword: 'NewPassword99!',
     })
     expect(res.status).toBe(400)
   })
@@ -238,7 +250,8 @@ describe('POST /auth/reset-password', () => {
 
     const res = await request(app).post('/auth/reset-password').send({
       token: rawToken,
-      password: 'NewPassword99!', confirmPassword: 'NewPassword99!',
+      password: 'NewPassword99!',
+      confirmPassword: 'NewPassword99!',
     })
     expect(res.status).toBe(400)
   })
@@ -259,7 +272,8 @@ describe('POST /auth/reset-password', () => {
 
     const res = await request(app).post('/auth/reset-password').send({
       token: rawToken,
-      password: 'NewPassword99!', confirmPassword: 'NewPassword99!',
+      password: 'NewPassword99!',
+      confirmPassword: 'NewPassword99!',
     })
     expect(res.status).toBe(400)
   })

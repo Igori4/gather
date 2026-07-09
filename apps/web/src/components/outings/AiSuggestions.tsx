@@ -29,9 +29,12 @@ export function AiSuggestions({ groupId, outingId }: AiSuggestionsProps) {
     setSuggestions(null)
     setDismissed(new Set())
     try {
-      const res = await api.post<AiSuggestion & { id: string }>(`/api/groups/${groupId}/ai-suggestions`, {
-        outingId,
-      })
+      const res = await api.post<AiSuggestion & { id: string }>(
+        `/api/groups/${groupId}/ai-suggestions`,
+        {
+          outingId,
+        }
+      )
       setSuggestions(res.data.suggestions)
       setRecordId(res.data.id)
     } catch (err: unknown) {
@@ -44,7 +47,9 @@ export function AiSuggestions({ groupId, outingId }: AiSuggestionsProps) {
 
   async function handleDismissAll() {
     if (recordId) {
-      try { await api.delete(`/api/ai-suggestions/${recordId}`) } catch {}
+      try {
+        await api.delete(`/api/ai-suggestions/${recordId}`)
+      } catch {}
     }
     setSuggestions(null)
     setDismissed(new Set())
@@ -119,7 +124,9 @@ export function AiSuggestions({ groupId, outingId }: AiSuggestionsProps) {
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{s.whyItFits}</p>
 
                 <div className="flex items-center justify-between mt-3">
-                  <span className="text-xs text-muted-foreground font-medium">{s.estimatedCostRange}</span>
+                  <span className="text-xs text-muted-foreground font-medium">
+                    {s.estimatedCostRange}
+                  </span>
                   <a
                     href={s.googleMapsLink}
                     target="_blank"
@@ -146,10 +153,7 @@ export function AiSuggestions({ groupId, outingId }: AiSuggestionsProps) {
       {suggestions && visible.length === 0 && (
         <div className="text-center py-3">
           <p className="text-sm text-muted-foreground">All suggestions dismissed.</p>
-          <button
-            onClick={handleGenerate}
-            className="mt-2 text-xs text-primary hover:underline"
-          >
+          <button onClick={handleGenerate} className="mt-2 text-xs text-primary hover:underline">
             Generate new ideas
           </button>
         </div>

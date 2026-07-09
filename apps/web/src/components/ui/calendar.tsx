@@ -3,7 +3,12 @@ import { cn } from '@/lib/utils'
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
-export function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
+export function Calendar({
+  className,
+  classNames,
+  showOutsideDays = true,
+  ...props
+}: CalendarProps) {
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -22,7 +27,8 @@ export function Calendar({ className, classNames, showOutsideDays = true, ...pro
         ),
         month_grid: 'w-full border-collapse',
         weekdays: 'flex',
-        weekday: 'text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] flex-1 text-center',
+        weekday:
+          'text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] flex-1 text-center',
         weeks: 'w-full',
         week: 'flex w-full mt-2',
         day: 'flex-1 text-center text-sm p-0 relative',
@@ -30,7 +36,8 @@ export function Calendar({ className, classNames, showOutsideDays = true, ...pro
           'h-9 w-9 p-0 font-normal mx-auto flex items-center justify-center rounded-md',
           'hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer'
         ),
-        selected: 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground rounded-md',
+        selected:
+          'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground rounded-md',
         today: 'bg-accent text-accent-foreground rounded-md',
         outside: 'text-muted-foreground opacity-50',
         disabled: 'text-muted-foreground opacity-50 cursor-not-allowed',

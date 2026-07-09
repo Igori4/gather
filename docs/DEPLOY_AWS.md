@@ -29,18 +29,22 @@ without buying a domain.
 
 1. **Build the frontend** with prod env vars pointing at the backend CloudFront
    domain (you'll get this URL in Part C — placeholder for now, fix later):
+
    ```
    apps/web/.env.production
      VITE_API_URL=https://<backend-cloudfront-domain>
      VITE_SOCKET_URL=https://<backend-cloudfront-domain>
    ```
+
    ```bash
    npm run build --workspace=apps/web
    ```
+
    Output: `apps/web/dist/`
 
 2. **Create private S3 bucket** (block all public access — CloudFront reads
    via Origin Access Control, not a public bucket policy):
+
    ```bash
    aws s3api create-bucket --bucket gather-web-<unique-suffix> --region us-east-1
    aws s3api put-public-access-block --bucket gather-web-<unique-suffix> \
@@ -48,6 +52,7 @@ without buying a domain.
    ```
 
 3. **Upload the build**:
+
    ```bash
    aws s3 sync apps/web/dist s3://gather-web-<unique-suffix> --delete
    ```
@@ -79,6 +84,7 @@ without buying a domain.
    - Create/download a key pair for SSH
 
 2. **SSH in and install Docker**:
+
    ```bash
    ssh -i your-key.pem ubuntu@<ec2-public-ip>
    curl -fsSL https://get.docker.com | sudo sh
@@ -88,6 +94,7 @@ without buying a domain.
    ```
 
 3. **Get the code onto the box**:
+
    ```bash
    git clone <your-repo-url> gather
    cd gather
@@ -100,9 +107,11 @@ without buying a domain.
    (from Part A step 4), `FRONTEND_URL=https://<frontend-cloudfront-domain>`.
 
 5. **Run it**:
+
    ```bash
    sudo docker compose -f docker-compose.prod.yml up -d --build
    ```
+
    `Dockerfile.prod` runs `prisma migrate deploy` on container start, then
    `node dist/index.js`. Container listens on 4000 inside, mapped to host
    port 80 (see `docker-compose.prod.yml`).

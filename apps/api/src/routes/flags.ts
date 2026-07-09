@@ -34,7 +34,11 @@ flagsRouter.get('/flags', resolveIdentity, FlagsController.getFlags)
  *       404:
  *         description: Unknown experiment
  */
-flagsRouter.get('/experiments/:experimentName/variant', resolveIdentity, FlagsController.getExperimentVariant)
+flagsRouter.get(
+  '/experiments/:experimentName/variant',
+  resolveIdentity,
+  FlagsController.getExperimentVariant
+)
 
 /**
  * @openapi

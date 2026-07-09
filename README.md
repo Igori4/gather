@@ -2,9 +2,9 @@
 
 ## Feature Flags & A/B Testing
 
-**Source of truth: the backend.** Flag/experiment *names* live in
+**Source of truth: the backend.** Flag/experiment _names_ live in
 `packages/shared/src/flagNames.ts` (`FEATURE_FLAGS`, `EXPERIMENTS`) so neither
-app hardcodes a magic string, but the *values* — whether a flag is on, which
+app hardcodes a magic string, but the _values_ — whether a flag is on, which
 variants an experiment has — are defined once in
 `apps/api/src/lib/flags.ts` and never duplicated on the frontend. The
 frontend only ever asks the API "what's the value for X" — it never decides
@@ -36,7 +36,7 @@ variant they were already shown.
   on demand and returns `{ variant, isLoading }`.
 - **Flicker:** this is pure CSR, so there's no SSR-rendered "correct" first
   paint to fall back to. `main.tsx` prefetches `/api/flags` into the
-  QueryClient *in parallel* with the existing auth-refresh call (which
+  QueryClient _in parallel_ with the existing auth-refresh call (which
   already blocks first render) — so feature flags never have a loading
   state to flicker through, at effectively zero added latency. Per-experiment
   variants (`useABVariant`) are intentionally **not** prefetched the same

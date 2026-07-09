@@ -47,7 +47,7 @@ describe('assignVariant', () => {
 
   it('handles race condition — reads back on create conflict', async () => {
     mockFindUnique
-      .mockResolvedValueOnce(null)           // first lookup: no assignment
+      .mockResolvedValueOnce(null) // first lookup: no assignment
       .mockResolvedValueOnce({ variant: 'control' }) // second lookup after conflict
     mockCreate.mockRejectedValue(new Error('Unique constraint violation'))
 

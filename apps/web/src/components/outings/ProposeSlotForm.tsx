@@ -18,8 +18,14 @@ export function ProposeSlotForm({ onPropose, isPending }: ProposeSlotFormProps) 
 
   function handleSubmit() {
     setError(null)
-    if (!date) { setError('Pick a date'); return }
-    if (!startTime || !endTime) { setError('Fill both times'); return }
+    if (!date) {
+      setError('Pick a date')
+      return
+    }
+    if (!startTime || !endTime) {
+      setError('Fill both times')
+      return
+    }
 
     const [sh, sm] = startTime.split(':').map(Number)
     const [eh, em] = endTime.split(':').map(Number)
@@ -28,7 +34,10 @@ export function ProposeSlotForm({ onPropose, isPending }: ProposeSlotFormProps) 
     const endsAt = new Date(date)
     endsAt.setHours(eh, em, 0, 0)
 
-    if (endsAt <= startsAt) { setError('End must be after start'); return }
+    if (endsAt <= startsAt) {
+      setError('End must be after start')
+      return
+    }
 
     onPropose(startsAt.toISOString(), endsAt.toISOString())
     setDate(undefined)
@@ -77,12 +86,7 @@ export function ProposeSlotForm({ onPropose, isPending }: ProposeSlotFormProps) 
 
       {error && <p className="text-xs text-destructive">{error}</p>}
 
-      <Button
-        size="sm"
-        className="w-full"
-        onClick={handleSubmit}
-        disabled={isPending || !date}
-      >
+      <Button size="sm" className="w-full" onClick={handleSubmit} disabled={isPending || !date}>
         {isPending ? 'Proposing…' : 'Propose Slot'}
       </Button>
     </div>

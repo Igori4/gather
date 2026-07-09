@@ -1,9 +1,4 @@
-import {
-  FEATURE_FLAGS,
-  EXPERIMENTS,
-  FeatureFlagName,
-  ExperimentName,
-} from '@gather/shared'
+import { FEATURE_FLAGS, EXPERIMENTS, FeatureFlagName, ExperimentName } from '@gather/shared'
 
 export { FEATURE_FLAGS, EXPERIMENTS }
 export type { FeatureFlagName, ExperimentName }

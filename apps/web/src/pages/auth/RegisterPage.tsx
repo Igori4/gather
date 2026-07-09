@@ -173,23 +173,23 @@ export default function RegisterPage() {
                 )}
               />
 
-                <label className="flex items-start gap-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="mt-0.5 h-4 w-4 accent-primary"
-                    checked={agreed}
-                    onChange={e => setAgreed(e.target.checked)}
-                  />
-                  I agree to the{' '}
-                  <Link to="/terms" className="font-medium text-primary hover:underline">
-                    Terms of Service
-                  </Link>{' '}
-                  and{' '}
-                  <Link to="/privacy" className="font-medium text-primary hover:underline">
-                    Privacy Policy
-                  </Link>
-                  .
-                </label>
+              <label className="flex items-start gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 accent-primary"
+                  checked={agreed}
+                  onChange={e => setAgreed(e.target.checked)}
+                />
+                I agree to the{' '}
+                <Link to="/terms" className="font-medium text-primary hover:underline">
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link to="/privacy" className="font-medium text-primary hover:underline">
+                  Privacy Policy
+                </Link>
+                .
+              </label>
 
               {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
             </CardContent>
