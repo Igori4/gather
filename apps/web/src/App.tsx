@@ -3,7 +3,7 @@ import { authRoutes } from '@/routes/authRoutes'
 import { groupRoutes } from '@/routes/groupRoutes'
 
 export default function App() {
-  console.log('App deployed!!!')
+  console.log('App deployed!!!v1')
   return (
     <Routes>
       {authRoutes}
