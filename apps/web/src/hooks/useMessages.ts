@@ -27,7 +27,7 @@ export function useAddMessageToCache(outingId: string) {
         }
       )
     },
-    
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [outingId]
   )
