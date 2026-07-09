@@ -49,7 +49,9 @@ export function AiSuggestions({ groupId, outingId }: AiSuggestionsProps) {
     if (recordId) {
       try {
         await api.delete(`/api/ai-suggestions/${recordId}`)
-      } catch {}
+      } catch (err: unknown) {
+        setError('Failed to dismiss suggestions. Try again.')
+      }
     }
     setSuggestions(null)
     setDismissed(new Set())
@@ -83,7 +85,7 @@ export function AiSuggestions({ groupId, outingId }: AiSuggestionsProps) {
       {!suggestions && !loading && (
         <div className="text-center py-4 space-y-3">
           <p className="text-sm text-muted-foreground">
-            Get personalised venue ideas based on your group's history and preferences.
+            Get personalised venue ideas based on your group&apos;s history and preferences.
           </p>
           <button
             onClick={handleGenerate}

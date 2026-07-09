@@ -193,7 +193,7 @@ function AvailabilitySection({
                           : 'border hover:bg-red-50 hover:text-red-600 hover:border-red-300'
                       }`}
                   >
-                    Can't
+                    Can&apos;t
                   </button>
                   <button
                     onClick={() => onDelete(slot.id)}

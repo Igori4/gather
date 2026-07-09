@@ -21,7 +21,7 @@ export default function GroupListPage() {
         <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed py-16 text-center">
           <Users className="h-8 w-8 text-muted-foreground" />
           <p className="text-muted-foreground">
-            You're not in any groups yet. Create one to start planning outings.
+            You&apos;re not in any groups yet. Create one to start planning outings.
           </p>
         </div>
       )}
