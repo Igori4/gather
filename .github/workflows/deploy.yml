@@ -39,6 +39,10 @@ jobs:
 
       - name: Run tests
         run: npm run test
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
   deploy:
     name: Build & deploy to S3
