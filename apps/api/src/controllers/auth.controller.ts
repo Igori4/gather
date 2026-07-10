@@ -13,11 +13,13 @@ import { sendPasswordResetEmail } from '../lib/email'
 import { UserRepository } from '../repositories/user.repository'
 
 // httpOnly means JavaScript cannot read this cookie — protects against XSS
+// SameSite=None required in prod: frontend/backend are different cloudfront.net subdomains (cross-site)
 function setRefreshCookie(res: Response, token: string) {
+  const isProd = process.env.NODE_ENV === 'production'
   res.cookie('refreshToken', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'strict',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   })
 }
@@ -116,7 +118,12 @@ export async function refresh(req: Request, res: Response) {
 export async function logout(req: Request, res: Response) {
   const { userId } = req as AuthRequest
   await UserRepository.revokeAllRefreshTokens(userId)
-  res.clearCookie('refreshToken')
+  const isProd = process.env.NODE_ENV === 'production'
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'strict',
+  })
   return res.status(204).send()
 }
 
