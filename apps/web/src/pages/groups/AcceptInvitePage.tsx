@@ -65,8 +65,8 @@ export default function AcceptInvitePage() {
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center space-y-4 max-w-sm">
         <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto" />
-        <h1 className="text-xl font-semibold">You're in!</h1>
-        <p className="text-muted-foreground text-sm">You've successfully joined the group.</p>
+        <h1 className="text-xl font-semibold">You&apos;re in!</h1>
+        <p className="text-muted-foreground text-sm">You&apos;ve successfully joined the group.</p>
         <Button onClick={() => navigate(groupId ? `/groups/${groupId}` : '/groups')}>
           Go to group
         </Button>
