@@ -182,6 +182,24 @@ PBI-10.1 → PBI-10.2 → PBI-10.3 → PBI-10.4
 
 ---
 
+## Feature Documentation
+
+Feature docs live in `docs/features/<domain>.md` — one file per feature domain.
+
+**Required sections per doc:**
+- **What it does** — 2-3 sentences
+- **API routes** — method + path + auth requirement
+- **Key files** — path → purpose
+- **Data model** — relevant Prisma models + key fields
+- **Known gaps / open issues** — replaces scattered PBI notes
+- **Status** — `done` | `partial` | `planned`
+
+**Rule:** when touching a feature, update its doc. When starting a new feature, create the doc first.
+
+Current feature docs: `docs/features/chat.md`, `docs/features/realtime.md`
+
+---
+
 ## Conventions
 
 ### Shared Schemas (`packages/shared`)
@@ -425,7 +443,7 @@ WebSocket (Socket.IO) work without extra config.
 | Backend CloudFront distribution  | `E7Y9AK78BI91K`                                     |
 | S3 bucket (frontend)             | `gather-web-302290383528`                           |
 | CloudFront OAC                   | `E3T9X6H9H01BL8`                                    |
-| EC2 instance                     | `i-0eb4d1f1eb68ebe07` (54.82.100.254, t3.micro)     |
+| EC2 instance                     | `i-053307ace13d7803f` (100.53.120.138, t3.micro)     |
 | EC2 security group               | `sg-0edfbd5523ac8b091` (SSH from one IP, HTTP open) |
 | SSH key                          | `C:\Users\User\.ssh\gather-deploy-key.pem`          |
 | IAM deploy user                  | `gather-deploy` (AdministratorAccess)               |
