@@ -15,6 +15,7 @@
     "format:check": "prettier --check .",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
+    "precommit:check": "npm run format:check && npm run lint",
     "ci:check": "npm run format:check && npm run lint && npm run typecheck && npm run test"
   },
   "devDependencies": {
