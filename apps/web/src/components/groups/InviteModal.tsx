@@ -55,10 +55,7 @@ export function InviteModal({ groupId }: Props) {
             <DialogTitle>Invite member</DialogTitle>
           </DialogHeader>
 
-          <form
-            onSubmit={handleSubmit(data => invite.mutate(data))}
-            className="space-y-4"
-          >
+          <form onSubmit={handleSubmit(data => invite.mutate(data))} className="space-y-4">
             <div className="space-y-1">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -67,9 +64,7 @@ export function InviteModal({ groupId }: Props) {
                 placeholder="friend@example.com"
                 {...register('email')}
               />
-              {errors.email && (
-                <p className="text-xs text-destructive">{errors.email.message}</p>
-              )}
+              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-1">
@@ -86,8 +81,8 @@ export function InviteModal({ groupId }: Props) {
 
             {invite.isError && (
               <p className="text-xs text-destructive">
-                {(invite.error as { response?: { data?: { error?: string } } })
-                  ?.response?.data?.error ?? 'Failed to send invite'}
+                {(invite.error as { response?: { data?: { error?: string } } })?.response?.data
+                  ?.error ?? 'Failed to send invite'}
               </p>
             )}
 

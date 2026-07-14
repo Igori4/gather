@@ -22,15 +22,14 @@ export default function AcceptInvitePage() {
       return
     }
 
-    api.post<{ groupId: string }>('/api/groups/accept-invite', { token })
+    api
+      .post<{ groupId: string }>('/api/groups/accept-invite', { token })
       .then(res => {
         setGroupId(res.data.groupId)
         setState('success')
       })
       .catch(err => {
-        setError(
-          err.response?.data?.error ?? 'This invite link is invalid or has expired.'
-        )
+        setError(err.response?.data?.error ?? 'This invite link is invalid or has expired.')
         setState('error')
       })
   }, [token])

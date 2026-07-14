@@ -1,6 +1,10 @@
 import { Resend } from 'resend'
 
-export async function sendInviteEmail(email: string, inviteUrl: string, groupName: string): Promise<void> {
+export async function sendInviteEmail(
+  email: string,
+  inviteUrl: string,
+  groupName: string
+): Promise<void> {
   if (process.env.NODE_ENV !== 'production') {
     console.log(`\n[DEV] Invite link for ${email}:\n      ${inviteUrl}\n`)
   }
