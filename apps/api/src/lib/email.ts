@@ -1,5 +1,26 @@
 import { Resend } from 'resend'
 
+export async function sendInviteEmail(email: string, inviteUrl: string, groupName: string): Promise<void> {
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`\n[DEV] Invite link for ${email}:\n      ${inviteUrl}\n`)
+  }
+
+  if (process.env.NODE_ENV === 'production' && !process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is required in production')
+  }
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  await resend.emails.send({
+    from: process.env.EMAIL_FROM ?? 'noreply@gather.app',
+    to: email,
+    subject: `You've been invited to join ${groupName} on Gather`,
+    html: `
+      <p>You've been invited to join <strong>${groupName}</strong> on Gather.</p>
+      <p><a href="${inviteUrl}">Accept invitation</a></p>
+      <p>This link expires in 7 days.</p>
+    `,
+  })
+}
+
 export async function sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
   // In development, always log the URL so you can test without a real email service.
   // Check your terminal (or `docker logs gather_api`) for the reset link.

@@ -14,6 +14,9 @@ import { swaggerSpec } from './lib/swagger'
 
 export const app = express()
 
+// Trust CloudFront/proxy X-Forwarded-For headers
+app.set('trust proxy', 1)
+
 // Security headers
 app.use(helmet())
 

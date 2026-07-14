@@ -81,6 +81,7 @@ npm run db:studio --workspace=apps/api
 - [x] **PBI-2.1** Groups API — create, list, get, invite by email, accept invitation → `apps/api/src/routes/groups.ts`
 - [x] **PBI-2.2** Groups UI — GroupListPage (cards + create modal), GroupDetailPage (member list, roles) → `apps/web/src/pages/groups/`
 - [x] **PBI-2.3** Group management — edit name/description/cover, remove member, leave group (admin-only guarded in API + UI)
+- [x] **PBI-2.4** Invite UI — `InviteModal` (email + role, admin-only) in GroupDetailPage; `AcceptInvitePage` auto-accepts token from email link; `sendInviteEmail` added to `apps/api/src/lib/email.ts` → `apps/web/src/components/groups/InviteModal.tsx`, `apps/web/src/pages/groups/AcceptInvitePage.tsx`
 
 ### Epic 3 — Outing Planning Flow ← **core domain, start here after groups UI**
 
@@ -101,7 +102,7 @@ npm run db:studio --workspace=apps/api
 - [ ] **PBI-4.5** Live vote tallies — `vote:cast` + `slot:vote` events update UI without refetch
 - [ ] **PBI-4.6** Live RSVP + outing confirm — `rsvp:updated` + `outing:confirmed` push to all room members
 - [ ] **PBI-4.7** Presence indicators — `presence:join/leave`, avatar strip on outing page, unread badge on outing card
-- [ ] **PBI-4.8** Chat resilience & error handling — fix 6 known gaps discovered 2026-07-07:
+- [x] **PBI-4.8** Chat resilience & error handling — fixed 5/6 gaps (bug #2 connection banner skipped); added message edit UI (`Message.tsx`); `useSocketAuth` hook extracted:
   1. **Re-join on reconnect** — `useChatRoom` must listen to `socket.on('connect')` and re-emit `outing:join` so user rejoins the room after any disconnect (currently misses all messages after reconnect)
   2. **Connection-state UI** — listen to `socket.on('disconnect')` / `socket.on('connect')` → show a banner/toast ("Reconnecting…" / "Back online") inside `ChatWindow`
   3. **Send error handling** — `Input.handleSubmit` has no `catch`; network/server errors are silently swallowed; add catch, show inline error, restore body text

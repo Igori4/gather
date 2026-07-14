@@ -8,6 +8,7 @@ import { api } from '@/lib/axios'
 import { useAuthStore } from '@/stores/authStore'
 import { useOutings } from '@/hooks/useOutings'
 import { CreateOutingModal } from '@/components/outings/CreateOutingModal'
+import { InviteModal } from '@/components/groups/InviteModal'
 import { Users, CalendarDays, Pencil } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -169,10 +170,13 @@ export default function GroupDetailPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-          <Users className="h-4 w-4" />
-          Members ({group.members.length})
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Members ({group.members.length})
+          </h2>
+          {isAdmin && <InviteModal groupId={id} />}
+        </div>
         <ul className="space-y-2">
           {group.members.map(m => (
             <li key={m.userId} className="flex items-center justify-between text-sm">

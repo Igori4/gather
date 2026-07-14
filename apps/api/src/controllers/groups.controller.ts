@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { CreateGroupSchema, InviteMemberSchema, UpdateGroupSchema } from '@gather/shared'
 import { AuthRequest } from '../middleware/auth'
 import { GroupRepository } from '../repositories/group.repository'
+import { sendInviteEmail } from '../lib/email'
 
 export async function createGroup(req: Request, res: Response) {
   const { userId } = req as AuthRequest
@@ -73,6 +74,9 @@ export async function inviteMember(req: Request, res: Response) {
     return res.status(403).json({ error: 'Only admins can invite members' })
   }
 
+  const group = await GroupRepository.findById(req.params.id)
+  if (!group) return res.status(404).json({ error: 'Group not found' })
+
   const token = crypto.randomBytes(32).toString('hex')
   const invitation = await GroupRepository.createInvitation({
     groupId: req.params.id,
@@ -81,6 +85,10 @@ export async function inviteMember(req: Request, res: Response) {
     token,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   })
+
+  const clientUrl = process.env.CORS_ORIGIN ?? 'http://localhost:5173'
+  const inviteUrl = `${clientUrl}/accept-invite?token=${token}`
+  await sendInviteEmail(parsed.data.email, inviteUrl, group.name)
 
   return res.status(201).json({ token: invitation.token, email: invitation.email })
 }

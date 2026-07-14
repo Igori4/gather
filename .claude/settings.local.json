@@ -63,7 +63,12 @@
       "Bash(python -c \"import sys,json; p=json.load\\(sys.stdin\\); deps={**p.get\\('dependencies',{}\\),**p.get\\('devDependencies',{}\\)}; [print\\(k,v\\) for k,v in deps.items\\(\\) if any\\(x in k for x in ['day-picker','date-fns','clsx','tailwind-merge']\\)]\")",
       "Bash(gh repo *)",
       "Bash(gh api *)",
-      "PowerShell(npm uninstall *)"
+      "PowerShell(npm uninstall *)",
+      "Bash(ssh *)",
+      "Bash(tar --exclude='./node_modules' --exclude='./.git' --exclude='*/node_modules' --exclude='*/dist' --exclude='.env*' -czf /tmp/gather.tar.gz .)",
+      "Bash(scp -i ~/.ssh/gather-deploy-key.pem /tmp/gather.tar.gz ubuntu@ec2-100-53-120-138.compute-1.amazonaws.com:/home/ubuntu/)",
+      "Bash(git push *)",
+      "Bash(aws cloudfront get-distribution-config *)"
     ]
   }
 }
